@@ -113,10 +113,10 @@ void lcd_menu_vars(void){     // grab vars for menu
 			&bar_playing,
 			&seq_step_long,
 			&seq_current_step,
-			&current_midi,
 			&loop_current_speed,
+			&current_midi,
 			&tempo,
-			&pattern_select,
+			&note_enable_list_selected,
 			&current_scale,
 			&current_accent,
 			&lcd_page_extra
@@ -124,7 +124,7 @@ void lcd_menu_vars(void){     // grab vars for menu
 			};			// lcd pointers menu page 1 list  , start position + variable+ length
 
 	uint8_t lcd_page1_ref[]={
-			1,4,7,10,13,16,19,22,25,28,0,0,0
+			0,3,7,10,13,16,19,22,25,28,0,0,0
 	};
 
 
@@ -192,7 +192,18 @@ void lcd_message(void){    // prints controls being used while being used, can h
 
 }
 
+void led_full_clear(void){   // ok ,delayed initial screen clear , won't work if not connected
+if(led_clear) {
 
+
+	led_clear++;
+	if (led_clear==30)  memset (button_states,10,99);	// after an elapsed time
+if (led_clear==32)  memset (button_states,0,99);
+if (led_clear>40) led_clear=0;
+}
+
+
+}
 
 
 

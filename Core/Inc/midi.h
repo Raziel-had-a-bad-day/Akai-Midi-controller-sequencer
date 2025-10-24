@@ -108,16 +108,20 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			i=0;
 			// not super important but good for testing , below
 			uint8_t current_velocity=64;
-			uint8_t offset_pitch=seq_pos>>3; // 0-15
+			uint8_t offset_pitch=seq_pos>>3; // 0-15  , one bar
 				//counterb=(pattern_select*512) +(offset_pitch*32) ; // pattern=512bytes or 16*32
 				uint16_t drum_byte_select;   // selects a trigger 16 + (i*4) 16*64 ... 0-256
 				uint8_t drum_byte;
 				 uint16_t pattern=bar_playing; // modified
 				 uint8_t random_list[16]; // alt pots
+				 uint8_t note_enable[16];
 				uint8_t note_velocities[16];  // holds temp velocities ,can be modified
 				 // memcpy (random_list,alt_pots+(pattern*16),16); // load tones for current pattern  , might do it with pitch change selector
 				 memcpy (random_list,alt_pots+(alt_pots_selector*8),16); // load tones for current pattern
+				// memcpy (random_list,alt_pots+(0),16); // disable keychange , just defualts alt pots for now
+
 				 memcpy (note_velocities,note_accent,16);
+				 memcpy(note_enable,note_enable_list_counter,16);
 				 //uint8_t pitch_seq=alt_pots[((seq_pos>>3)&7)+(pattern_select*16)]; // loops 0-7 ,steps
 						uint8_t pitch_counter; // keeps track of pitch count up
 
@@ -128,9 +132,9 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 						uint8_t high_row_enable=0; // select second sounds scene ,default on
 
 						uint8_t high_row=0;
-						 uint8_t first_step=0;
-						if ((!seq_pos)&& (!bar_playing)) first_step=1;
-
+						 uint8_t first_step=0;  // to controll pitch sequence for notes
+					//	if ((!seq_step)&& (!bar_playing)) first_step=1; // resets on seq_pos and zero bar
+						if ((!seq_step)) first_step=1; // resets on seq_step , doenst seem to work
 						//memcpy(button_states_temp,button_states,8); // transfer bottom row data for blinky lights
 
 						if (current_scene>7) high_row_enable=1;
@@ -170,6 +174,8 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 			if (mute_list[i] || pause) {current_velocity=0;} // mutes sound also sound button button goes dark
 
+			if (note_enable[i]) current_velocity=0; // disable if note enable is not zero
+
 			if ((midi_channel_select == 9)&&(current_velocity)) {			//drums playing
 
 				if (drum_byte & (1 << (((offset_pitch) & 3) * 2))) { // ok , drums
@@ -185,10 +191,12 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 				}
 			}
 			if ((midi_channel_select != 9)&&(current_velocity)) {			// not drums playing
+				if (!seq_step)last_pitch_count[i]=0;
 
 				if (drum_byte & (1 << (((offset_pitch) & 3) * 2))) { // ok , notes
 
-					if (first_step) pitch_counter=0; else pitch_counter=last_pitch_count[i];  // resets pitch sequence on start or reads last count step
+					//if (first_step) {pitch_counter=0;}  else pitch_counter=last_pitch_count[i];  // resets pitch sequence on start or reads last count step
+					pitch_counter=last_pitch_count[i];
 					current_velocity=(loop_lfo_out[i+32]+current_velocity)&127; //modify velocity with lfo , only temp
 
 				  pitch_seq=pattern_scale_process(random_list[(pitch_counter)],i);  // note from alt_pots+scale
@@ -205,13 +213,16 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 						note_midi[(cue_counter) + 1] =last_note_on_channel[i];
 						note_midi[(cue_counter) + 2] = 0;
 						cue_counter = cue_counter + 3;
-
+						note_timing[i]=0;
 					}
-
 					last_note_on_channel[i] = pitch_seq; // saves last pitch step
 
 					pitch_counter=(pitch_counter+1)&7;
-					last_pitch_count[i]=pitch_counter;
+
+
+
+					 last_pitch_count[i]=pitch_counter;
+
 					note_timing[i] = 4; // resets counter
 				}
 			}
@@ -400,7 +411,7 @@ void loop_lfo(void) {  // 0-64-0(default)  >>  127-(lfo*gain)
 				if (lfo_out[i]<0) lfo_out[i]=0;
 
 				temp_hold=((lfo_out[i]*lfo_settings_list[(i*2)+1])>>6);   // level  64*lfo level
-
+						if (temp_hold>127) temp_hold=127;
 						lfo_out[i+32]=127-temp_hold;  // bytes 32-48 ,lfo output
 			}
 

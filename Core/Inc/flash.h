@@ -33,14 +33,14 @@ void flash_page_write(uint8_t page_select,uint8_t* data){    // write single pag
 
 void settings_storage(void){   // runs to store setting and read back
 
-			uint8_t *settings[11]={scene_transpose,pot_states,pot_tracking,mute_list,note_accent,midi_channel_list, pitch_list_for_drums,pattern_scale_list,lfo_settings_list,single_settings_list,pitch_change_store};
-			uint8_t settings_multi[11]={1,1,4,1,1,1,4,1,2,1,4};   // sets length,  sound_set*x
+			uint8_t *settings[variable_count]={scene_transpose,pot_states,pot_tracking,mute_list,note_accent,midi_channel_list, pitch_list_for_drums,pattern_scale_list,lfo_settings_list,single_settings_list,pitch_change_store,note_enable_list};
+			uint8_t settings_multi[variable_count]={1,1,4,1,1,1,4,1,2,1,4,1};   // sets length,  sound_set*x
 			uint8_t settings_temp[64];
 			uint8_t settings_total=0;  //adds up position
 			uint8_t length=0;
 			tempo=single_settings_list[1];
 
-			for (i=0;i<11;i++){
+			for (i=0;i<variable_count;i++){
 
 				length=(settings_multi[i]*sound_set);
 				if(settings_write_flag) {		memcpy(settings_temp,settings[i],length);	// copy to temp

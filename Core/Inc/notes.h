@@ -122,7 +122,7 @@ void note_buttons(void){  // always running only on notes though
 			}
 
 	/////////////////////////////////////////////
-					if((last_press>15)&& (last_press<24) && (select)){    // program change , right attow removed
+					if((last_press>15)&& (last_press<24) && (select_bn)){    // program change , right attow removed
 								//uint8_t pattern=pattern_select;
 					memset(button_states+16, 0, 8);
 
@@ -142,7 +142,7 @@ void note_buttons(void){  // always running only on notes though
 
 				}   // program change function when select enabled
 //////////////////////////////////////////
-				if((last_press>15)&& (last_press<24) && (!select) && (selected_scene<8)){    // pitch  change on first page  only
+				if((last_press>15)&& (last_press<24) && (!select_bn) && (selected_scene<8)){    // pitch  change on first page  only
 											//uint8_t pattern=pattern_select;
 								memset(button_states+16, 0, 8);
 
@@ -270,7 +270,7 @@ void buttons_store(void){    // incoming data from controller
 		 if ((button_states[solo_button])&& shift) memset(mute_list,0,16); // clear all mute info when shift held
 
 		 if (button_states[right_arrow_button])  {right_arrow=1;     }  //shift notes right
-		if (button_states[select_button])  {select=1;} else select=0;  // select enable
+		if (button_states[select_button])  {select_bn=1;} else select_bn=0;  // select enable
 
 		if (button_states[down_arrow_button] && (!pattern_copy_full)) {down_arrow=1;  	 memcpy(pattern_copy,drum_store_one+drum_store_select,4);pattern_copy_full=1; }		else down_arrow=0;  // use for copy pattern
 
@@ -285,7 +285,7 @@ void buttons_store(void){    // incoming data from controller
 		if (button_states[send_button])  send=1; else send=0; // flash write or read  ,not working during pause ?
 		if (button_states[rec_arm_button])  rec_arm=1; else rec_arm=0;
 		if (button_states[device_button])  {device=1;memset(button_states+24,0,16);button_states[31+(current_midi&7)-((current_midi>>3)<<3)]=yellow_blink_button;  }else {device=0; } // shows midi channel , for now
-		if (button_states[stop_all_clips])  {button_states[play_pause_button]=3;pause=5; seq_step=0;seq_step_long=0;play_position=0;bar_selector=0;button_states[stop_all_clips]=0; }// stop all clips, pause and reset to start
+		if (button_states[stop_all_clips])  {button_states[play_pause_button]=3;pause=5; seq_step=0;seq_step_long=0;play_position=0;bar_selector=0;button_states[stop_all_clips]=0; memset(note_enable_list_counter,1,16); }// stop all clips, pause and reset to start
 		if (button_states[play_pause_button]) pause=5; else {pause=0;button_states[stop_all_clips]=0;}
 
 		if ((button_states[clip_stop_button])  )    {clip_stop=1; lcd_downcount=10;lcd_messages_select=3;scene_solo=0;button_states[83]=0;  } else clip_stop=0;
@@ -348,8 +348,9 @@ void buttons_store(void){    // incoming data from controller
 //		}
 
 		if ((incoming_data1==pot_2) )
-		pattern_count=((pot_states[1]>>4))&7;
-		if ((incoming_data1==pot_3) && (!select) && (current_scene < 8))
+		note_enable_list[current_scene]=((pot_states[1]>>4))&15; // sets notes playing only on these bars
+
+		if ((incoming_data1==pot_3) && (!select_bn) && (current_scene < 8))
 			{pitch_list_for_drums[(pitch_selected_for_drums[current_scene])+(current_scene*8)] =incoming_message[2];
 			//pitch_change_flag=1;
 			lcd_downcount=3;lcd_messages_select=7;
@@ -360,7 +361,7 @@ void buttons_store(void){    // incoming data from controller
 					{pattern_scale_list[current_scene]=(pot_states[3]>>3)&15;lcd_downcount=3;lcd_messages_select=0;}
 
 
-		if ((incoming_data1==pot_1) &&(select) && (current_scene>3))  //  cc function
+		if ((incoming_data1==pot_1) &&(select_bn) && (current_scene>3))  //  cc function
 			{
 
 			//	midi_cc[scene_buttons[0]+4]=incoming_message[2];   // use filter on es1  or else
@@ -486,7 +487,7 @@ void pattern_settings(void){     // pattern change function , also program chang
 		if ((!seq_step) || (seq_step==8)) { // program change automation ,modified to change twice on note 0 and 8
 		if (pc_set)     program_change[0] = (pc_set - 1) & 7; //change pc but only on fresh data
 
-	if (select)	{memset(button_states + 16, 0, 8);   // sets lights for program change but only if select is on
+	if (select_bn)	{memset(button_states + 16, 0, 8);   // sets lights for program change but only if select is on
 
 		if (current_scene<12) button_states[program_change[0] + 16] = red_button;
 		else button_states[alt_pots_selector + 16] = red_button;  //sets selected program change light
@@ -510,7 +511,8 @@ void pattern_settings(void){     // pattern change function , also program chang
 ///////////bar section
 	if ((seq_pos==0) && (!pause)){memset(button_states+8,0,8);
 
-	{ if (bar_playing!=bar_selector) bar_playing=bar_selector;  else bar_playing=(bar_playing+1)&7;   }
+	//{ if (bar_playing!=bar_selector) bar_playing=bar_selector;  else bar_playing=(bar_playing+1)&7;   }
+	{ if (bar_playing!=bar_selector) bar_playing=bar_selector;   }  // disable bar advance for now
 
 	button_states[bar_playing+8]=green_button;
 	loop_screen();
@@ -526,7 +528,7 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 /////////////pitch section
 
-	if (((seq_pos==0) || pause  || punch_in[0] ) && (!select)){     // apply pitch to drum notes
+	if (((seq_pos==0) || pause  || punch_in[0] ) && (!select_bn)){     // apply pitch to drum notes
 
 		for(i=0;i<8;i++){   // loads up pitch values
 		uint8_t pitch_byte_select=bar_playing+(i*8);	// 0-3 + 0-28

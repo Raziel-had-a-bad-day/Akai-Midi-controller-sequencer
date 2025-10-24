@@ -110,6 +110,7 @@ void arrows(void);
 void cdc_send(void);
 void all_notes_off(void);
 void play_muting(void);
+void led_full_clear(void); // runs once clearing all leds
 
 void lcd_start(void);
 void lcd_print(uint8_t  pos , char print);  // position 0-39 , character
@@ -255,8 +256,25 @@ int main(void)
 	  if ((s_temp) != (seq_pos>>3)) {			// runs on note steps 0-15
 
 
-		  	  midi_extras();
+
+		  midi_extras();
 			  pattern_settings();
+			  led_full_clear();
+			  uint8_t current_scene=scene_buttons[0]; //  local
+			  seq_current_step=loop_lfo_out[current_scene+32];
+			  loop_current_speed=pattern_scale_list[current_scene];
+
+			  if (!seq_pos){
+			  for (i=0;i<16;i++){
+				  note_enable_list_counter[i]++;
+
+				  if (note_enable_list_counter[i]>note_enable_list[i]) note_enable_list_counter[i]=0 ; // note enabled on 0
+
+			  }
+
+			  }
+			  note_enable_list_selected=note_enable_list[current_scene]+1;
+
 
 			  if ((!seq_pos)&& (!pause)) seq_step_long=(seq_step_long+1)&31;    // this needs to be main clock
 
@@ -290,8 +308,8 @@ int main(void)
 			  }
 
 
-			  printf("   %d",s_temp );
-			  printf("   %d",pattern_loop);
+			  printf("   %d",seq_step );
+			  printf("   %d",led_clear);
 			  printf("   %d",pattern_select );
 
 			  printf("   %d",midi_cue_time[midi_cue_count] );

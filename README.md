@@ -10,6 +10,7 @@ row 4= select a bar to play
 row 5 = select sound, 0-11 drums 12-16 keys
 
 Pot 1 + Shift =	program change only for non drum channels
+Pot 2 = play notes only on every X bar 
 Pot 3= set pitch for drums during pause , select preset first on row 3 
 Pot 4 = 	set musical scale type for notes,
 pot5=		LFO rate  sends NRPN only for filter, also modifies velocity for keys for now 
@@ -23,8 +24,8 @@ arm_rec = 	records pitch change selections on drums
 stop_all_clips = pause and jumps to start
 
 Hold Shift to enter notes with velocity=96 .
-Down arrow = copy , not used
-Left arrow= 	paste
+Down arrow = copy current part in bar
+Left arrow= 	select another bar  than paste
 
 send = write to flash , 
 send + shift = reload 

@@ -30,6 +30,7 @@
 #define red_blink_button 4
 #define yellow_button 5
 #define yellow_blink_button 6
+#define variable_count 12   // for flash mem
 
 #define pot_1 48
 #define pot_2 49
@@ -61,7 +62,7 @@ uint8_t volume; // volume button
 uint8_t pan;
 uint8_t shift; // track shift button
 uint8_t pause; // enable pause mode
-uint8_t select; //select button
+uint8_t select_bn; //select button
 uint8_t right_arrow;
 uint8_t left_arrow;
 uint8_t up_arrow;
@@ -86,6 +87,7 @@ uint8_t note_bank[18];   //contains note on and off info
 uint8_t last_note=0; // 1-3  last note played on note bank
 uint8_t last_key=0;  // last actual key played
 uint8_t clear[3]={0,0,0};
+uint8_t led_clear=1; // track claearing leds
 
 uint8_t note_temp[3]={0,0,0};   // holds current note being filled
 uint8_t note_replace_enable=0;
@@ -199,6 +201,9 @@ uint8_t seq_current_step; // current position on selected from seq_step_list
 uint8_t seq_step_reset[sound_set];  // tracks when seq_step_list reset to start
 uint8_t seq_step_long; // 16*32
 uint8_t seq_step_enable[sound_set]; // step change tracking
+uint8_t note_enable_list[sound_set]; //  plays note one every X number of bar
+uint8_t note_enable_list_counter[sound_set]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}; // keeps count for the note enable list
+uint8_t note_enable_list_selected; // just current note neable
 
 
 
