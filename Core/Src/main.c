@@ -260,20 +260,23 @@ int main(void)
 		  midi_extras();
 			  pattern_settings();
 			  led_full_clear();
+
 			  uint8_t current_scene=scene_buttons[0]; //  local
 			  seq_current_step=loop_lfo_out[current_scene+32];
 			  loop_current_speed=pattern_scale_list[current_scene];
 
-			  if (!seq_pos){
-			  for (i=0;i<16;i++){
-				  note_enable_list_counter[i]++;
+			  if (!seq_pos) LFO_tracking(); // runs once per bar
 
-				  if (note_enable_list_counter[i]>note_enable_list[i]) note_enable_list_counter[i]=0 ; // note enabled on 0
 
-			  }
 
-			  }
-			  note_enable_list_selected=note_enable_list[current_scene]+1;
+
+			  note_enable_list_selected=0;
+			  note_enable_list_selected=LFO_high_list[current_scene]+1; // for lcd , note period
+			  note_enable_list_selected=((LFO_low_list[current_scene]+1)*10)+note_enable_list_selected;
+			 // note_enable_list_selected=((LFO_delay_list[current_scene]+1)*100)+note_enable_list_selected;
+
+
+
 
 
 			  if ((!seq_pos)&& (!pause)) seq_step_long=(seq_step_long+1)&31;    // this needs to be main clock

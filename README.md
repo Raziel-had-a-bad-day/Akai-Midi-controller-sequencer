@@ -9,8 +9,10 @@ row 3 + select= program_change for drums(0-7) or select alt_pots pitch bank (0-7
 row 4= select a bar to play 
 row 5 = select sound, 0-11 drums 12-16 keys
 
-Pot 1 + Shift =	program change only for non drum channels
-Pot 2 = play notes only on every X bar 
+(Pot 1 + Shift =	program change only for non drum channels) disabled
+Pot 1 + Shift = LFO phase
+Pot 1=play notes only after so many bars bar, LFO low, synced to bars low
+Pot 2 =repeat bar so many times when playing, LFO high
 Pot 3= set pitch for drums during pause , select preset first on row 3 
 Pot 4 = 	set musical scale type for notes,
 pot5=		LFO rate  sends NRPN only for filter, also modifies velocity for keys for now 

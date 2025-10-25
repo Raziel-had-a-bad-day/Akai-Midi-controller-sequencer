@@ -33,8 +33,9 @@ void flash_page_write(uint8_t page_select,uint8_t* data){    // write single pag
 
 void settings_storage(void){   // runs to store setting and read back
 
-			uint8_t *settings[variable_count]={scene_transpose,pot_states,pot_tracking,mute_list,note_accent,midi_channel_list, pitch_list_for_drums,pattern_scale_list,lfo_settings_list,single_settings_list,pitch_change_store,note_enable_list};
-			uint8_t settings_multi[variable_count]={1,1,4,1,1,1,4,1,2,1,4,1};   // sets length,  sound_set*x
+			uint8_t *settings[variable_count]={scene_transpose,pot_states,pot_tracking,mute_list,note_accent,midi_channel_list, pitch_list_for_drums,pattern_scale_list,lfo_settings_list,single_settings_list,pitch_change_store,LFO_low_list
+			,LFO_high_list,LFO_phase_list};
+			uint8_t settings_multi[variable_count]={1,1,4,1,1,1,4,1,2,1,4,4,4,4};   // sets length,  sound_set*x
 			uint8_t settings_temp[64];
 			uint8_t settings_total=0;  //adds up position
 			uint8_t length=0;
@@ -54,7 +55,7 @@ void settings_storage(void){   // runs to store setting and read back
 
 			}
 
-			for (i=0;i<511;i++){if (all_settings[i]>127) all_settings[i]=0;}  // reset value just in case
+			for (i=0;i<1023;i++){if (all_settings[i]>127) all_settings[i]=0;}  // reset values just in case
 			settings_write_flag=0;
 
 }
@@ -120,8 +121,11 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 			patch_mem=patch_mem+1;
 			flash_page_write(patch_mem,alt_pots);
 			patch_mem=patch_mem+1;
-			flash_page_write(patch_mem,all_settings+256); // second half
-
+			flash_page_write(patch_mem,all_settings+256); // second half ,getting full
+			patch_mem=patch_mem+1;
+			flash_page_write(patch_mem,all_settings+512);
+			patch_mem=patch_mem+1;
+			flash_page_write(patch_mem,all_settings+768);
 
 
 

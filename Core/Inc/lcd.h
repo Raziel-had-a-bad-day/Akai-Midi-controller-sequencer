@@ -101,16 +101,16 @@ void lcd_menu_vars(void){     // grab vars for menu
 
 
 	uint8_t lcd_page_extra=0;
-
+	uint8_t extra_value1=LFO_phase_list[scene_buttons[0]];
 	uint8_t current_scale=pattern_scale_list[pattern_select]; // scale select variable
 	uint8_t *lcd_message_list[]={&current_scale,&current_accent,NULL,NULL
 
 	};   // list of variables for lcd messages
 	lcd_page_extra=*lcd_message_list[lcd_messages_select]; // grab data from variables
 
-	uint8_t *lcd_page1 []={
+	uint8_t *lcd_page1 []={ // need to enable more pages, also letters etc
 
-			&bar_playing,
+			&extra_value1,
 			&seq_step_long,
 			&seq_current_step,
 			&loop_current_speed,

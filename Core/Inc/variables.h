@@ -30,7 +30,7 @@
 #define red_blink_button 4
 #define yellow_button 5
 #define yellow_blink_button 6
-#define variable_count 12   // for flash mem
+#define variable_count 14   // for flash mem
 
 #define pot_1 48
 #define pot_2 49
@@ -161,7 +161,7 @@ uint8_t send_spi2[260];
 uint8_t write_once; // allow only a single flash write for now
 uint8_t test_data[32]={0,0,0,0,1,0,5,1,1,0,1,5,1,1,0,1,1,3,0,1,1,0,1,0,1,0,1,0,1,0,1};
 uint8_t spi_hold[260]={0,10,0,0};
-uint8_t all_settings[512];  // store all extra settings:  transpose , pots
+uint8_t all_settings[1024];  // store all extra settings:  transpose , pots
 uint8_t other_buttons; // update control button lights
 uint8_t other_buttons_hold[100]; // keeps track of buttons
 uint8_t send_buffer_sent;
@@ -201,9 +201,16 @@ uint8_t seq_current_step; // current position on selected from seq_step_list
 uint8_t seq_step_reset[sound_set];  // tracks when seq_step_list reset to start
 uint8_t seq_step_long; // 16*32
 uint8_t seq_step_enable[sound_set]; // step change tracking
+
 uint8_t note_enable_list[sound_set]; //  plays note one every X number of bar
+
 uint8_t note_enable_list_counter[sound_set]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}; // keeps count for the note enable list
 uint8_t note_enable_list_selected; // just current note neable
+uint8_t LFO_low_list[sound_set*4]; // sets period low ,LFO bar count, *4 sets for various things, 1=note on/off  2=change pitch maybe
+uint8_t LFO_high_list[sound_set*4]; // sets high period
+uint8_t LFO_phase_list[sound_set*4];// 0-1 , might put it elsewhere
+uint8_t LFO_tracking_counter[sound_set*4]; //keeps track of LFO ,counts 0-7 then flips to 15-23 depending on settings
+uint8_t LFO_tracking_out[sound_set*4]; // LFO output
 
 
 

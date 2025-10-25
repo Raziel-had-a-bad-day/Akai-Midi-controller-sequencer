@@ -147,7 +147,7 @@ void note_buttons(void){  // always running only on notes though
 								memset(button_states+16, 0, 8);
 
 								pitch_selected_for_drums[selected_scene]=last_press-16; button_states[square_buttons_list[last_press-16]]=yellow_button; // controls lights
-								if(rec_arm | pause) {
+							//	if(rec_arm | pause) {   // might just drop this
 									//uint8_t pitch_byte_select=(bar_playing)+((selected_scene&7)*8);	// 0-3 + 0-28
 									uint8_t pitch_select=(bar_playing&7)+((selected_scene&7)*8); // 0-63
 
@@ -156,7 +156,8 @@ void note_buttons(void){  // always running only on notes though
 
 									//pitch_byte=(pitch_byte & (~pitch_mask)) | ((last_press-15)&7);   //clears bits then or in the new ones
 									//pitch_change_store[pitch_byte_select]=pitch_byte ;
-								}
+							//	}
+
 
 								pitch_change_flag=1; //enable pitch nrpn send
 								punch_in[0]=last_press-15; // +1
@@ -257,38 +258,76 @@ void buttons_store(void){    // incoming data from controller
 			button_states[incoming_data1]=alt_list;
 
 		}
-		if ((incoming_data1>7)&&(incoming_data1 <24) ){				// button lights, pattern select
+
+
+
+		// function select logic  here , change from if-then
+
+		//resets
+
+
+		if (button_states[incoming_data1] && (incoming_data1>40))  //only test if button is switched on
+		{
+		switch(incoming_data1){
+
+		case up_arrow_button:
+		 if ((scene_buttons[0]<8)) 	{scene_buttons[0]=scene_buttons[0]+8;second_scene=8;lcd_downcount=10;lcd_messages_select=2;loop_screen();}
+		break;
+
+		case solo_button: {scene_solo=1;clip_stop=0;button_states[82]=0; } //solo but with pots now ,turns off clip stop or mute
+		 if (shift) memset(mute_list,0,16); // clear all mute info when shift held
+		break;
+		case right_arrow_button:right_arrow=1;  break;//shift notes right
+		case select_button: {select_bn=1;} ;break; // select enable
+		case down_arrow_button: if ((!pattern_copy_full)) {down_arrow=1;  	 memcpy(pattern_copy,drum_store_one+drum_store_select,4);pattern_copy_full=1; }	// use for copy pattern
+		break;
+		case left_arrow_button: {left_arrow=1;  memcpy(drum_store_one+drum_store_select,pattern_copy,4);midi_cue_fill();pattern_copy_full=0; down_arrow=0;button_states[65]=0;button_states[66]=0;left_arrow=0; 	   }
+		break;// use for paste pattern
+
+		case mute_button:scene_mute=1;break;
+		case record_button:record=1;break;
+		case volume_button:volume=1;break;
+		case pan_button:pan=1;patch_screen();break;
+		case send_button:send=1;break;
+		case rec_arm_button:rec_arm=1;break;
+		case device_button:{device=1;memset(button_states+24,0,16);button_states[31+(current_midi&7)-((current_midi>>3)<<3)]=yellow_blink_button;}break;// shows midi channel , for now
+		case stop_all_clips:  {button_states[play_pause_button]=3;pause=5; seq_step=0;seq_step_long=0;play_position=0;bar_selector=0;button_states[stop_all_clips]=0;
+		memset(LFO_tracking_counter,0,64); }// stop all clips, pause and reset to start
+		break;
+
+		case play_pause_button:pause=5;break;
+		case clip_stop_button: {clip_stop=1; lcd_downcount=10;lcd_messages_select=3;scene_solo=0;button_states[83]=0;  } break;
+		default:break;
+
+
+		}
+		}
+
+
+		if ((!button_states[incoming_data1]) && (incoming_data1>40))  //only test if button is getting switched off, may not as reliable but quicker
+			{
+			switch(incoming_data1){
+
+			case up_arrow_button:up_arrow=0;if ((scene_buttons[0]>7)) {scene_buttons[0]=scene_buttons[0]-8;second_scene=0;loop_screen();};break;
+			case right_arrow_button:right_arrow=0;  break;//shift notes right
+			case select_button: {select_bn=0;} ;break; // select enable
+			case down_arrow_button:down_arrow=0; break;
+			case left_arrow_button: left_arrow=0; break;// use for paste pattern
+			case mute_button:scene_mute=0;break;
+			case record_button:record=0;break;
+			case volume_button:volume=0;break;
+			case pan_button:pan=0;break;
+			case send_button:send=0;break;
+			case rec_arm_button:rec_arm=0;break;
+			case device_button:device=0;break;// shows midi channel , for now
+			case play_pause_button:{pause=0;button_states[stop_all_clips]=0;}break;
+			case clip_stop_button: {clip_stop=0;} break;
+			default:break;
+
 
 			}
+			}
 
-
-		// function select logic  here
-
-		if ((!button_states[up_arrow_button]) && (scene_buttons[0]>7)) {scene_buttons[0]=scene_buttons[0]-8;second_scene=0;loop_screen();}
-		 if (button_states[up_arrow_button] && (scene_buttons[0]<8)) 	{scene_buttons[0]=scene_buttons[0]+8;second_scene=8;lcd_downcount=10;lcd_messages_select=2;loop_screen();}
-		 if (button_states[solo_button]) {scene_solo=1;clip_stop=0;button_states[82]=0; } else scene_solo=0;  //solo but with pots now ,turns off clip stop or mute
-		 if ((button_states[solo_button])&& shift) memset(mute_list,0,16); // clear all mute info when shift held
-
-		 if (button_states[right_arrow_button])  {right_arrow=1;     }  //shift notes right
-		if (button_states[select_button])  {select_bn=1;} else select_bn=0;  // select enable
-
-		if (button_states[down_arrow_button] && (!pattern_copy_full)) {down_arrow=1;  	 memcpy(pattern_copy,drum_store_one+drum_store_select,4);pattern_copy_full=1; }		else down_arrow=0;  // use for copy pattern
-
-		if (button_states[left_arrow_button]) {left_arrow=1;  memcpy(drum_store_one+drum_store_select,pattern_copy,4);midi_cue_fill();pattern_copy_full=0; down_arrow=0;button_states[65]=0;button_states[66]=0;left_arrow=0; 	   }
-		else left_arrow=0;  // use for paste pattern
-		if (button_states[right_arrow_button] )  {right_arrow=1;} else right_arrow=0;   // enables program instead of pattern select
-		if (button_states[mute_button]) { scene_mute=1;} else scene_mute=0;
-		if (button_states[record_button]) { record=1;} else {record=0;} // select enable
-
-		if (button_states[volume_button])  volume=1; else volume=0;
-		if (button_states[pan_button])  { pan=1; patch_screen()  ;   }   else pan=0;
-		if (button_states[send_button])  send=1; else send=0; // flash write or read  ,not working during pause ?
-		if (button_states[rec_arm_button])  rec_arm=1; else rec_arm=0;
-		if (button_states[device_button])  {device=1;memset(button_states+24,0,16);button_states[31+(current_midi&7)-((current_midi>>3)<<3)]=yellow_blink_button;  }else {device=0; } // shows midi channel , for now
-		if (button_states[stop_all_clips])  {button_states[play_pause_button]=3;pause=5; seq_step=0;seq_step_long=0;play_position=0;bar_selector=0;button_states[stop_all_clips]=0; memset(note_enable_list_counter,1,16); }// stop all clips, pause and reset to start
-		if (button_states[play_pause_button]) pause=5; else {pause=0;button_states[stop_all_clips]=0;}
-
-		if ((button_states[clip_stop_button])  )    {clip_stop=1; lcd_downcount=10;lcd_messages_select=3;scene_solo=0;button_states[83]=0;  } else clip_stop=0;
 		if (shift && pause && clip_stop) { 			// clear all program change info on drums , needs to be saved though
 			memset(program_change_automation,0,32);
 			memcpy(alt_pots+128,program_change_automation,32);clip_stop=0;button_states[82]=0;
@@ -337,65 +376,55 @@ void buttons_store(void){    // incoming data from controller
 			patch_screen();
 		}
 
-//		if ((incoming_data1==48) &&(!select) && (scene_buttons[0]<4))  // filter
-//		{
-//
-//			es_filter[scene_buttons[0]+4]=incoming_message[2];   // use filter on es1  or else
-//	//	if ( (es_filter[i&3])!=(es_filter[(i&3)+4]))
-//
-//		{es_filter_cue[0] =scene_buttons[0]+1; es_filter_cue[1] =incoming_message[2]; }
-//
-//		}
 
-		if ((incoming_data1==pot_2) )
-		note_enable_list[current_scene]=((pot_states[1]>>4))&15; // sets notes playing only on these bars
+		switch(incoming_data1){   // pots data selector
 
-		if ((incoming_data1==pot_3) && (!select_bn) && (current_scene < 8))
-			{pitch_list_for_drums[(pitch_selected_for_drums[current_scene])+(current_scene*8)] =incoming_message[2];
-			//pitch_change_flag=1;
-			lcd_downcount=3;lcd_messages_select=7;
-			} // sets pitch for drums ,only first page
+		case pot_1:
+
+		if ((shift)){
+		// {if (midi_channel_list[current_scene]!=9)  {program_change[1]=incoming_message[2]; program_change[2]=1;}}}   // program change for channels other than drums  pot 1 , not owrking atm
 
 
-		if ((incoming_data1==pot_4) )
-					{pattern_scale_list[current_scene]=(pot_states[3]>>3)&15;lcd_downcount=3;lcd_messages_select=0;}
+			//uint8_t pot_temp_in=((pot_states[0]>>4))&7;
+			//uint8_t pot_temp_old=LFO_delay_list[current_scene];
+		//	uint8_t current_lfo_pos=LFO_tracking_counter[current_scene];
 
+			//if(pot_temp_old>pot_temp_in){current_lfo_pos=(current_lfo_pos&48)+((current_lfo_pos&7)-(pot_temp_old-pot_temp_in));}   // modify lfo counter position
 
-		if ((incoming_data1==pot_1) &&(select_bn) && (current_scene>3))  //  cc function
-			{
+			// else {current_lfo_pos=(current_lfo_pos&48)+((current_lfo_pos&7)+(pot_temp_in-pot_temp_old));}
 
-			//	midi_cc[scene_buttons[0]+4]=incoming_message[2];   // use filter on es1  or else
-		//	if ( (es_filter[i&3])!=(es_filter[(i&3)+4]))
+			//LFO_tracking_counter[current_scene]= current_lfo_pos;
+			LFO_phase_list[current_scene]=((pot_states[0]>>5))&1;	 // lfo phase setting
 
-			{midi_cc_cue[0] =midi_channel_list[current_scene]+176; midi_cc_cue[1] =incoming_message[2]; }
-
-			}
-
-
-
-
-		if ((shift) && (device)){   // pots alt functions set , tempo , midi
-
-			if (incoming_data1==pot_7)   {midi_channel_list[current_scene]=(incoming_message[2]>>3);current_midi=midi_channel_list[current_scene]+1;
-			memset(button_states+24,0,16);button_states[31+(current_midi&7)-((current_midi>>3)<<3)]=yellow_blink_button;}   // sets midi channel on selected sound
-
-			if (incoming_data1==pot_8) {timer_value=bpm_table[incoming_message[2]+64]; tempo=incoming_message[2]+64;} //tempo
 
 		}
+		else 	LFO_low_list[current_scene]=((pot_states[0]>>4))&7;
+		break;
 
+		//if ((select_bn) && (current_scene>3))  //  cc function
+		//{midi_cc_cue[0] =midi_channel_list[current_scene]+176; midi_cc_cue[1] =incoming_message[2]; };break; // sets notes playing only on these bars
 
-		if ((incoming_data1<56)&&(incoming_data1>pot_4)&& (!device))  {    // pots 4-8  , with device button off
+		case pot_2:LFO_high_list[current_scene]=((pot_states[1]>>4))&7;break; // sets notes playing only on these bars
 
+		case pot_3:	if ((!select_bn) && (current_scene < 8))
+		{pitch_list_for_drums[(pitch_selected_for_drums[current_scene])+(current_scene*8)] =incoming_message[2];//pitch_change_flag=1;
+		lcd_downcount=3;lcd_messages_select=7;
+		} ;break;// sets pitch for drums ,only first page
 
-		if ((incoming_data1==pot_5)&& (!clip_stop)) {lfo_settings_list[(current_scene*2)]=incoming_message[2];lcd_downcount=3;lcd_messages_select=8;}   // lfo rate
+		case pot_4:{pattern_scale_list[current_scene]=(pot_states[3]>>3)&15;lcd_downcount=3;lcd_messages_select=0;};break;
+		case pot_5: 	if ((!device)&& (!clip_stop)) {lfo_settings_list[(current_scene*2)]=incoming_message[2];lcd_downcount=3;lcd_messages_select=8;} ;break;  // lfo rate
+		case pot_6: if ((!device) && (!clip_stop))   {lfo_settings_list[(current_scene*2)+1]=incoming_message[2] ;lcd_downcount=3;lcd_messages_select=6;} ;break;  // lfo level
 
-		if ((incoming_data1==pot_6) && (!clip_stop))   {lfo_settings_list[(current_scene*2)+1]=incoming_message[2] ;lcd_downcount=3;lcd_messages_select=6;}   // lfo level
+		case pot_7:	if ((shift) && (device)) 		 {midi_channel_list[current_scene]=(incoming_message[2]>>3);current_midi=midi_channel_list[current_scene]+1;
+		memset(button_states+24,0,16);button_states[31+(current_midi&7)-((current_midi>>3)<<3)]=yellow_blink_button;};break;   // sets midi channel on selected sound
 
-		if ((incoming_data1==pot_8)&&(!shift)) {note_accent[current_scene]=incoming_message[2];rand_velocities[current_scene]=incoming_message[2];     // accent input
-
-		//if  (record) {drum_byte=(drum_byte & (1<<(((i&3)*2)+1)));   } // get accent info
-
+		case pot_8:
+			if ((shift) && (device))		{timer_value=bpm_table[incoming_message[2]+64]; tempo=incoming_message[2]+64;} //tempo
+			if ((!device)&&(!shift)) {note_accent[current_scene]=incoming_message[2];rand_velocities[current_scene]=incoming_message[2];     // accent input
 		lcd_control=1;lcd_downcount=3;lcd_messages_select=1;current_accent=pot_states[7];}  // accent also used for tempo with shift
+		;break;
+		default:break;
+
 
 
 		}
@@ -403,12 +432,7 @@ void buttons_store(void){    // incoming data from controller
 		//	if ((note_off_flag[0])&& (note_off_flag[1]<32))  scene_velocity[square_buttons_list[note_off_flag[1]]+(scene_buttons[0]*32)]=  pot_states[1];    // set velocity for now for held button , only for notes
 
 
-			if ((incoming_data1==pot_1) && (shift)){     // program change for channels other than drums  pot 1
-				if (midi_channel_list[current_scene]!=9)  {program_change[1]=incoming_message[2]; program_change[2]=1;}}
-
-
-
-			if ((incoming_data1==pot_3) && (!keyboard[0]))  // if held down
+/*			if ((incoming_data1==pot_3) && (!keyboard[0]))  // if held down
 
 		{
 
@@ -416,10 +440,7 @@ void buttons_store(void){    // incoming data from controller
 
 			if (shift)  play_list_write=1; // enter to play list when enabled
 
-
-
-
-		}
+		}*/
 
 		//if ((incoming_data1==pot_2) && (button_states[68]))   scene_velocity[seq_step_pointer]=  (((pot_states[1]>>5)<<5)+31)&112;  // update velocity in realtime if volume button pressed
 
@@ -503,10 +524,6 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 	} // end of program change
 
-
-	//memset(button_states+8,0,8);
-	//if ((seq_step&3)==3)button_states[pattern_select+8]=0;  else button_states[pattern_select+8]=yellow_button;  // blink on quarter
-	//button_states[(seq_step_long>>2)+8]=1;
 
 ///////////bar section
 	if ((seq_pos==0) && (!pause)){memset(button_states+8,0,8);

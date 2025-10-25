@@ -121,7 +121,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 				// memcpy (random_list,alt_pots+(0),16); // disable keychange , just defualts alt pots for now
 
 				 memcpy (note_velocities,note_accent,16);
-				 memcpy(note_enable,note_enable_list_counter,16);
+				 memcpy(note_enable,LFO_tracking_out,16);
 				 //uint8_t pitch_seq=alt_pots[((seq_pos>>3)&7)+(pattern_select*16)]; // loops 0-7 ,steps
 						uint8_t pitch_counter; // keeps track of pitch count up
 
@@ -132,9 +132,9 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 						uint8_t high_row_enable=0; // select second sounds scene ,default on
 
 						uint8_t high_row=0;
-						 uint8_t first_step=0;  // to controll pitch sequence for notes
+						// uint8_t first_step=0;  // to controll pitch sequence for notes
 					//	if ((!seq_step)&& (!bar_playing)) first_step=1; // resets on seq_pos and zero bar
-						if ((!seq_step)) first_step=1; // resets on seq_step , doenst seem to work
+					//	if ((!seq_step)) first_step=1; // resets on seq_step , doenst seem to work
 						//memcpy(button_states_temp,button_states,8); // transfer bottom row data for blinky lights
 
 						if (current_scene>7) high_row_enable=1;
@@ -174,7 +174,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 			if (mute_list[i] || pause) {current_velocity=0;} // mutes sound also sound button button goes dark
 
-			if (note_enable[i]) current_velocity=0; // disable if note enable is not zero
+			if (!note_enable[i]) current_velocity=0; // disable if note enable is not zero
 
 			if ((midi_channel_select == 9)&&(current_velocity)) {			//drums playing
 
@@ -459,6 +459,35 @@ void midi_extras(void){    // extra midi data added here , program change , cc
 
 		}
 
+void LFO_tracking(void){ //0-7 15-23 , simple on -off lfo based on bar count ,effective , 4x
 
+	uint8_t lfo_counter;
+	uint8_t lfo_phase_value;
+	uint8_t lfo_out;
+	#define max_LFO_value 8
+
+
+					for (i=0;i<(sound_set*4);i++){
+					lfo_counter=LFO_tracking_counter[i];
+					lfo_phase_value=LFO_phase_list[i];
+					lfo_out =LFO_tracking_out[i];
+
+				if (lfo_counter<max_LFO_value){  // only low count
+
+					if((lfo_counter)<LFO_low_list[i]) lfo_counter++; else lfo_counter=max_LFO_value;
+
+					}
+				else {if((lfo_counter-max_LFO_value)<(LFO_high_list[i])) lfo_counter++; else lfo_counter=0;}  // high count
+
+				if (lfo_counter<max_LFO_value) lfo_out=0; else lfo_out=1;  // output
+				if(lfo_phase_value) lfo_out=!lfo_out;
+				LFO_tracking_out[i]=lfo_out;
+
+				if (LFO_low_list[i]) LFO_tracking_counter[i]=lfo_counter; else LFO_tracking_counter[i]=1;   // always high if low period is 0
+
+			}
+
+
+		}
 
 
