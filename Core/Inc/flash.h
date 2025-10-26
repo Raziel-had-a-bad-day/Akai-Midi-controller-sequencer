@@ -33,12 +33,13 @@ void flash_page_write(uint8_t page_select,uint8_t* data){    // write single pag
 
 void settings_storage(void){   // runs to store setting and read back
 
-			uint8_t *settings[variable_count]={scene_transpose,pot_states,pot_tracking,mute_list,note_accent,midi_channel_list, pitch_list_for_drums,pattern_scale_list,lfo_settings_list,single_settings_list,pitch_change_store,LFO_low_list
+			uint8_t *settings[variable_count]={scene_transpose,pot_states,pot_tracking,mute_list,note_accent,midi_channel_list, pitch_list_for_drums,pattern_scale_list,
+					lfo_settings_list,single_settings_list,pitch_change_store,LFO_low_list
 			,LFO_high_list,LFO_phase_list};
-			uint8_t settings_multi[variable_count]={1,1,4,1,1,1,4,1,2,1,4,4,4,4};   // sets length,  sound_set*x
-			uint8_t settings_temp[64];
-			uint8_t settings_total=0;  //adds up position
-			uint8_t length=0;
+			uint8_t settings_multi[variable_count]={1,1,4,1,1,1,4,1,2,1,4,4,4,4};   // sets length,  sound_set*x ,512 atm
+			uint8_t settings_temp[96];
+			uint16_t settings_total=0;  //adds up position , huge miss here retard alert
+			uint8_t length=0; // max 64 atm
 			tempo=single_settings_list[1];
 
 			for (i=0;i<variable_count;i++){
@@ -106,7 +107,7 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 		  	  single_settings_list[1]=tempo;
 
 		  	  settings_write_flag=1;
-			settings_storage();
+			settings_storage(); // all settings
 
 			//memcpy  (test_data3+4 ,all_settings,  256); // copy
 
@@ -151,14 +152,14 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 void flash_read(void){     // 1kbyte for now
 	HAL_Delay(100);
 
-	uint8_t test_data2[2056]={0,10,0,0};
-	uint8_t test_data3[2048]={0,10,0,0};
+	uint8_t test_data2[2560]={0,10,0,0};
+	uint8_t test_data3[2560]={0,10,0,0};
 	uint8_t patch_mem=(patch_save&15)<<4;    // 16*16 (4kbyte)   start location
 
 	test_data2[0]=0x03; //read ok , get notes
 	test_data2[2]=patch_mem;
 	HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0);  // when readin low till the end
-	HAL_SPI_TransmitReceive (&hspi1,test_data2, test_data3,  2048, 100); // request data , always leave extra room (clock) , works
+	HAL_SPI_TransmitReceive (&hspi1,test_data2, test_data3,  2560, 100); // request data , always leave extra room (clock) , works
 	HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);  // high end
 	HAL_Delay(100);
 
@@ -166,16 +167,18 @@ void flash_read(void){     // 1kbyte for now
 
 	memcpy(all_settings,test_data3+260,256); // copy back settings block
 
-	settings_storage();
+
 
 	memcpy(drum_store_one,test_data3+516,256);   // next block (+4)
 	memcpy(drum_store_one+512,test_data3+772,512); //
 	memcpy(alt_pots,test_data3+1284,256);
-	memcpy(all_settings+256,test_data3+1540,256); // second half of settings
+	memcpy(all_settings+256,test_data3+1540,768); // second half of settings
 	memcpy(program_change_automation,alt_pots+128,32); // program change data
 
 
-	tempo=all_settings[250];
+	settings_storage(); // all settings read out
+
+	tempo=single_settings_list[1];
 	if (tempo==255) tempo=120;
 	if (!tempo) tempo=120;
 

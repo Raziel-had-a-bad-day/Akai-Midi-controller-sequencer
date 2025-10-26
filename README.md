@@ -10,7 +10,7 @@ row 4= select a bar to play
 row 5 = select sound, 0-11 drums 12-16 keys
 
 (Pot 1 + Shift =	program change only for non drum channels) disabled
-Pot 1 + Shift = LFO phase
+Pot 1 + Shift = LFO phase , 0=off,1=normal,2=out of phase
 Pot 1=play notes only after so many bars bar, LFO low, synced to bars low
 Pot 2 =repeat bar so many times when playing, LFO high
 Pot 3= set pitch for drums during pause , select preset first on row 3 
@@ -19,7 +19,7 @@ pot5=		LFO rate  sends NRPN only for filter, also modifies velocity for keys for
 pot6=		 LFO level
 pot 7+shift+device = 	sets mid channel for current sound 
 pot8=		velocity/accent ,  now default and red is velocity:96
-
+pot8 +shift+device=tempo
 pause =  shift + clip_stop : clear program changes on drums , also enter pitch info for bars on selected sound 
 select=	enables program change 1-8 on drums , shows selected pitch bank for keys
 arm_rec = 	records pitch change selections on drums

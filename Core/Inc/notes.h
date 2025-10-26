@@ -1,3 +1,29 @@
+void record_overdub(void){ // runs only when triggered by keyboard , wipes old data but only when triggered
+
+
+
+
+
+
+	uint16_t drum_byte_select;
+	uint16_t clear_select;
+		uint8_t drum_byte; // note on time data
+		uint8_t selected_scene=scene_buttons[0];  // this wiil change to pattern select 0-15
+	uint8_t time=seq_step; // 0-15  , this might need to change to a stored time as it's not accurate
+
+
+				drum_byte_select= (time>>2)+(selected_scene*4)+(bar_playing*drum_store);  // select byte position from  seq_pos
+				clear_select=(selected_scene*4)+(bar_playing*drum_store);
+				drum_byte=drum_store_one[drum_byte_select];  // select byt
+
+				if (overdub_enabled==1) {memset(drum_store_one+clear_select,0,4);overdub_enabled=2;} //clear selected bar data , 4 bytes
+
+
+				drum_byte |=(1<<((time&3)*2));  // write note position , set with or
+				 button_states[square_buttons_list[time]]=yellow_button ;  // puts on a light , not ness
+				 drum_store_one[drum_byte_select]=drum_byte;
+
+}
 
 void midi_cue_fill(void){
 
@@ -35,9 +61,9 @@ void patch_screen(void)		{     // shows last loaded patch and save patch as well
 void loop_screen(void){  // always on now ,produces lights for notes,  16 notes and 8 bars , full redraw  , notes only
 
 	//uint16_t current_scene=scene_buttons[0]*256;  // pattern select
-	uint8_t selected_scene=scene_buttons[0];  // this wiil change to pattern select 0-15
-	//uint8_t current_scene_drums=((scene_buttons[0]&3)*4) + (pattern_select*16);  // pattern location
 
+	//uint8_t current_scene_drums=((scene_buttons[0]&3)*4) + (pattern_select*16);  // pattern location
+	uint8_t selected_scene=scene_buttons[0];  // this wiil change to pattern select 0-15
 	uint16_t data_temp2;
 	uint8_t accent_temp;
 	//uint16_t fast_bit;
@@ -53,7 +79,7 @@ void loop_screen(void){  // always on now ,produces lights for notes,  16 notes 
 
 		if (drums){  // for all sounds now
 
-			for (i=0;i<16;i++) {// drums fill
+			for (i=0;i<16;i++) {// drums fill  i=actual step 0-15
 
 				drum_byte_select= (i>>2)+(selected_scene*4)+(bar_playing*drum_store);  // select byte position
 				drum_byte=drum_store_one[drum_byte_select];  // get data
@@ -225,9 +251,9 @@ void buttons_store(void){    // incoming data from controller
 	if ((incoming_data1 <8)&& (status==MIDI_NOTE_ON)) {   // scene buttons
 		scene_select=incoming_data1 +1+second_scene;}  //enable scene_select section
 
-	if (status == 145)  {if((incoming_data1>47)& (incoming_data1<73)) keyboard[0]=(incoming_data1 -47);}  // store last key pressed mainly , 48-72 default setting(24)  0-24 13 in th emiddle
-	if (status == 129)  {if((incoming_data1>47)& (incoming_data1<73)) keyboard[0]=(incoming_data1 -47)+128;}  // note off keyboard
-
+	//if (status == 145)  {if((incoming_data1>47)& (incoming_data1<73)) keyboard[0]=(incoming_data1 -47);}  // store last key pressed mainly , 48-72 default setting(24)  0-24 13 in th emiddle
+	//if (status == 129)  {if((incoming_data1>47)& (incoming_data1<73)) keyboard[0]=(incoming_data1 -47)+128;}  // note off keyboard
+	if (record && keyboard[0] && (keyboard[0]<128)) record_overdub(); // only on note on , enable overdub
 	if (status == MIDI_NOTE_ON){  // Midi Note on  for buttons
 
 		note_off_flag[0]=1;note_off_flag[1]=incoming_data1 ;
@@ -285,14 +311,14 @@ void buttons_store(void){    // incoming data from controller
 		break;// use for paste pattern
 
 		case mute_button:scene_mute=1;break;
-		case record_button:record=1;break;
+		case record_button:record=1;overdub_enabled=1;break;
 		case volume_button:volume=1;break;
 		case pan_button:pan=1;patch_screen();break;
 		case send_button:send=1;break;
 		case rec_arm_button:rec_arm=1;break;
 		case device_button:{device=1;memset(button_states+24,0,16);button_states[31+(current_midi&7)-((current_midi>>3)<<3)]=yellow_blink_button;}break;// shows midi channel , for now
 		case stop_all_clips:  {button_states[play_pause_button]=3;pause=5; seq_step=0;seq_step_long=0;play_position=0;bar_selector=0;button_states[stop_all_clips]=0;
-		memset(LFO_tracking_counter,0,64); }// stop all clips, pause and reset to start
+		memset(LFO_tracking_counter,0,64);memset(last_pitch_count,0,16);  }// stop all clips, pause and reset to start
 		break;
 
 		case play_pause_button:pause=5;break;
@@ -314,7 +340,7 @@ void buttons_store(void){    // incoming data from controller
 			case down_arrow_button:down_arrow=0; break;
 			case left_arrow_button: left_arrow=0; break;// use for paste pattern
 			case mute_button:scene_mute=0;break;
-			case record_button:record=0;break;
+			case record_button:record=0;overdub_enabled=0;break;
 			case volume_button:volume=0;break;
 			case pan_button:pan=0;break;
 			case send_button:send=0;break;
@@ -394,7 +420,7 @@ void buttons_store(void){    // incoming data from controller
 			// else {current_lfo_pos=(current_lfo_pos&48)+((current_lfo_pos&7)+(pot_temp_in-pot_temp_old));}
 
 			//LFO_tracking_counter[current_scene]= current_lfo_pos;
-			LFO_phase_list[current_scene]=((pot_states[0]>>5))&1;	 // lfo phase setting
+			LFO_phase_list[current_scene]=((pot_states[0]>>5))&3;	 // lfo phase setting
 
 
 		}
@@ -545,14 +571,16 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 /////////////pitch section
 
-	if (((seq_pos==0) || pause  || punch_in[0] ) && (!select_bn)){     // apply pitch to drum notes
+	if (((seq_pos==0) || pause  || punch_in[0] ) && (!select_bn)){     // apply pitch to drum notes on first step ,however buggy
 
 		for(i=0;i<8;i++){   // loads up pitch values
 		uint8_t pitch_byte_select=bar_playing+(i*8);	// 0-3 + 0-28
 
-		uint8_t pitch_byte=pitch_change_store[pitch_byte_select]; //spits out selected pitch
+		uint8_t pitch_byte=pitch_change_store[pitch_byte_select]&7; //spits out selected pitch ,first byte seems to be changing ?
+		uint8_t pitch_final=(pitch_list_for_drums[pitch_byte+(i*8)])&127; // there should always some data
 
-		uint8_t pitch_final=(pitch_list_for_drums[pitch_byte+(i*8)])&127;
+
+		if (pitch_final<10) pitch_final=64; // in case corrupt or missing
 		if (pitch_final) pitch_selected_drum_value[i]=pitch_final;  // if missing data keep old value
 
 		}
@@ -560,10 +588,10 @@ void pattern_settings(void){     // pattern change function , also program chang
 		uint8_t pitch_byte=pitch_change_store[bar_playing+((current_scene&7)*8)];
 		memset(button_states+16,0,8);
 		button_states[pitch_byte+16]=yellow_button;
-		if (punch_in[0]) { punch_in[0]--; pitch_selected_drum_value[current_scene&7]=pitch_list_for_drums[((current_scene&7)*8)+punch_in[0]];
+	/*	if (punch_in[0]) { punch_in[0]--; pitch_selected_drum_value[current_scene&7]=pitch_list_for_drums[((current_scene&7)*8)+punch_in[0]];
 		button_states[punch_in[0]+16]=red_button;
 
-		}// replace value with current selected only temp though
+		}// replace value with current selected only temp though*/
 
 		punch_in[0]=0;
 
@@ -580,6 +608,7 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 
 	}
+
 
 
 

@@ -250,6 +250,7 @@ uint8_t green_position[20];
 uint8_t cdc_buf2[12];
 //uint8_t pattern_scales[]={"major","minor","maj penta","minor penta","blues","dorian","half diminshed","lydian", "asc melodic minor","lyidian aug"," half dimished"," octatonic","persian" };  // 8 per scale
 uint8_t pattern_scale_data[]={
+		0,0,0,0,0,0,0,0,
 		0,2,4,5,7,9,11,0,
 		0,2,3,5,7,8,10,0,
 		0,2,4,7,9,0,0,0,
@@ -318,3 +319,5 @@ uint8_t lfo_settings_list[32]; //holds lfo settings 1 rate , 2 level , testing f
 uint8_t lfo_full_send_enable=0; // lfo transmit flag
 uint8_t single_settings_list[16]; // holds single variables ie tempo for storage
 uint8_t last_pitch_count[16];
+uint8_t overdub_enabled; // flag to keep track of overdub
+uint8_t keyboard_buffer[32]; // store keyboard presses  with recorded time , maybe clear on bar if pressed again  or mute for a bar on playback

@@ -220,31 +220,16 @@ int main(void)
 	  if (seq_pos_mem!=seq_pos){     // runs  8 times /step  , control sequencer counting
 
 		  green_position[0]=seq_step; green_position[1]=seq_step;
-		  cdc_send(); // all midi compiled for send  8/per note
+		  cdc_send(); // all midi compiled for send  8/per note , sends on seq_pos=1 atm
 
 		  if (serial_len)   HAL_UART_Transmit(&huart1,serial_out,serial_len,100); // uart send disable if no info, sent seq_pos,
 		  //maybe dma if needed for now ok (2ms total for send )
 
 		  // USB_send();
 
-		  if (keyboard[0])  {    // keyboard play live
 
-			  uint8_t note_flag=144;
-			  if (keyboard[0]>>7)  note_flag=128;
 
-			  last_key=keyboard[0]&127;   //store key
-			  keyboard[1]=last_key;
 
-			  if (midi_channel_list[selected_scene]==9)   // drums send
-			  {  midi_extra_cue[0]=(note_flag+9);         // use drumlist for now
-
-			  midi_extra_cue[1]=(drum_list[selected_scene]);midi_extra_cue[2]=127; midi_extra_cue[28]=midi_extra_cue[28]+3;   // send midi
-
-			  keyboard[0]=0;}
-			  else  {midi_extra_cue[0]=note_flag+midi_channel_list[selected_scene];  midi_extra_cue[1]=((last_key+32))&127 ;
-			  midi_extra_cue[2]=127; midi_extra_cue[28]=midi_extra_cue[28]+3;keyboard[0]=0;}  // send normal then keyboard off
-
-		  }
 
 
 
@@ -266,18 +251,12 @@ int main(void)
 			  loop_current_speed=pattern_scale_list[current_scene];
 
 			  if (!seq_pos) LFO_tracking(); // runs once per bar
-
-
-
+			  if ((s_temp==14) && (overdub_enabled==2))  overdub_enabled=1; // resets bar wipe on record
 
 			  note_enable_list_selected=0;
 			  note_enable_list_selected=LFO_high_list[current_scene]+1; // for lcd , note period
 			  note_enable_list_selected=((LFO_low_list[current_scene]+1)*10)+note_enable_list_selected;
 			 // note_enable_list_selected=((LFO_delay_list[current_scene]+1)*100)+note_enable_list_selected;
-
-
-
-
 
 			  if ((!seq_pos)&& (!pause)) seq_step_long=(seq_step_long+1)&31;    // this needs to be main clock
 
@@ -297,11 +276,11 @@ int main(void)
 			  memcpy (crap,cdc_buffer,12);
 
 		//////////////PRINT///////////////////
-			  for (i=0;i<8;i++){  // i=scene
+			  for (i=0;i<16;i++){  // i=scene
 
 				//  printf(" %d",crap[i] );
 
-				  printf(" %d",pitch_selected_drum_value[i]);
+				  printf(" %d",pitch_list_for_drums[i]);
 				//  printf(" %d",pitch_list_for_drums[pitch_selected_for_drums[i]+(i*8)]);
 
 				 // printf(" %d",loop_screen_note_on[(selected_scene*32)+i] );
@@ -409,22 +388,50 @@ int main(void)
 			  if (cdc_buffer[6] )cdc_start=6;
 			  if (cdc_buffer[3] )cdc_start=3;
 			  if (cdc_buffer[0] )cdc_start=0;
-			  if (first_message) {first_message=0;  memset(other_buttons_hold,9,70);} // only runs after getting a midi message from usb
+			//  if (first_message) {first_message=0;  memset(other_buttons_hold,9,70);} // only runs after getting a midi message from usb
 
 
+			  if ((cdc_buffer[0]==145)) {keyboard[0]=cdc_buffer[1]-47;keyboard[1]=127;memset(cdc_buffer,0,9); } // works ,keyboard send ,quick
+			  if ((cdc_buffer[0]==129)) {keyboard[0]=cdc_buffer[1]-47;keyboard[1]=0;memset(cdc_buffer,0,9); }
 
-
-
-
+			  // sends straight to keyboard on receive
  		 // printf(" 1=%d ",cdc_buffer[0] ); printf(" 2=%d ",cdc_buffer[1] ); printf(" 3=%d \n ",cdc_buffer[2] );
 
- 		  buttons_store();   // only runs after receive
 
 
  		  if (pause==5)  { all_notes_off();}    // runs only once during pause
 
 
  	  }  // end of cdc message
+
+		  	  if (keyboard[0])  {    // keyboard play live
+
+					  uint8_t note_flag=144; // just use vel 0 for off
+					  uint8_t incoming=keyboard[0];
+					  uint8_t velocity=keyboard[1];
+					  uint8_t buffer_pos=keyboard_buffer[31];
+					  uint8_t current_seq_pos=seq_pos&255;
+					//  if (incoming>>7)  {note_flag=128;velocity=0;}
+					  if (buffer_pos>23) buffer_pos=0;   // reset buffer in case
+
+
+					  if (midi_channel_list[selected_scene]==9)   // drums send
+					  {  midi_extra_cue[0]=(note_flag+9);         // use drumlist for now
+
+					  midi_extra_cue[1]=(drum_list[selected_scene]);midi_extra_cue[2]=velocity; midi_extra_cue[28]=midi_extra_cue[28]+3;   // send midi
+
+					  incoming=0;}
+					  else  {midi_extra_cue[0]=note_flag+midi_channel_list[selected_scene];  midi_extra_cue[1]=((incoming+32))&127 ;
+					  midi_extra_cue[2]=velocity; midi_extra_cue[28]=midi_extra_cue[28]+3;incoming=0;}  // send normal then keyboard off
+					  keyboard[0]=incoming;
+
+					  memcpy(keyboard_buffer+buffer_pos,midi_extra_cue+1,2); keyboard_buffer[buffer_pos+2]=current_seq_pos; keyboard_buffer[31]=buffer_pos+3;  // store in buffer
+
+
+
+		  	  }//end of keyboard
+
+		  	  	  if(((seq_pos&7)>3) && (cdc_buffer[0]))   buttons_store();   // only runs after receive , might delay a bit
 
 
     /* USER CODE END WHILE */

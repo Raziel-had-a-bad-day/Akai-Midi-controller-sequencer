@@ -13,7 +13,7 @@ uint8_t pattern_scale_process(uint8_t value, uint8_t selected_sound ) {    // sc
 
 	while (count<value){
 
-		note=pattern_scale_data[note_countup+(pattern_scale_list[selected_sound]*8)];  // works only on selected sound no good
+		note=pattern_scale_data[note_countup+(pattern_scale_list[selected_sound]*8)];  // works only on selected sound ,buggy
 
 
 	if ((note_countup) && (note==0)) {octave++;note_countup=0;}  else  note_countup=(note_countup+1)&7; // reset counter or count up
@@ -161,7 +161,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 			if ((high_row_enable) && (i > 7)) high_row = 1; // enable only on second half
 
-			if ((note_timing[i] == 1) && (last_note_on_channel[i])) { // creates note off  for non drum sounds
+			if ((note_timing[i] == 1) && (last_note_on_channel[i] )) { // creates note off  for non drum sounds
 				note_midi[cue_counter] = midi_channel_select + MIDI_NOTE_OFF; // note off
 				note_midi[(cue_counter) + 1] = last_note_on_channel[i];
 				note_midi[(cue_counter) + 2] = 0;
@@ -208,7 +208,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					note_midi[(cue_counter) + 2] = current_velocity;
 					cue_counter = cue_counter + 3;
 
-					if (note_timing[i]>1 ){    // in case old note hasnt finished ,Note_off
+					if ((note_timing[i]>1 )){    // in case old note hasnt finished ,Note_off
 						note_midi[cue_counter] =midi_channel_select+ MIDI_NOTE_OFF; // note off
 						note_midi[(cue_counter) + 1] =last_note_on_channel[i];
 						note_midi[(cue_counter) + 2] = 0;
@@ -247,7 +247,10 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 		// everything from here on runs on every seq_pos 8xseq_step
 /////////////////////NRPN////////////
-		if (pitch_change_flag){   // sends pitch nrpn section
+
+
+				//pitch_change_flag=0;
+				if (pitch_change_flag){   // sends pitch nrpn section ,single send , counts down
 					uint8_t counterb=pitch_change_flag-1;
 
 					nrpn_temp[5]=((counterb&7)*8)&127;  // select part pitch
@@ -480,10 +483,11 @@ void LFO_tracking(void){ //0-7 15-23 , simple on -off lfo based on bar count ,ef
 				else {if((lfo_counter-max_LFO_value)<(LFO_high_list[i])) lfo_counter++; else lfo_counter=0;}  // high count
 
 				if (lfo_counter<max_LFO_value) lfo_out=0; else lfo_out=1;  // output
-				if(lfo_phase_value) lfo_out=!lfo_out;
+				if(lfo_phase_value>1) lfo_out=!lfo_out; // change phase
+				if (!lfo_phase_value) lfo_out=1; // lfo off
 				LFO_tracking_out[i]=lfo_out;
+				LFO_tracking_counter[i]=lfo_counter;
 
-				if (LFO_low_list[i]) LFO_tracking_counter[i]=lfo_counter; else LFO_tracking_counter[i]=1;   // always high if low period is 0
 
 			}
 
