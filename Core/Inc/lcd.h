@@ -45,6 +45,8 @@ int8_t var_size; // track size of variables for lcd
 			lcd_tx=8; // turn off enable always !!!
 			HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , &lcd_tx, 1, 100);  // enable low
 			HAL_Delay(1);
+			memset(lcd_buffer,48,32);
+			memset(lcd_buffer_mem,32,32);
 
 
 		}
@@ -55,7 +57,7 @@ int8_t var_size; // track size of variables for lcd
 		uint8_t lcd_send[8];
 
 		if (pos>31) pos=31;
-		uint8_t address=pos*8;
+
 
 		if (pos>15) pos=pos+48;  // position
 		pos=pos&127;
@@ -77,26 +79,25 @@ int8_t var_size; // track size of variables for lcd
 		lcd_send[5]=8;
 		lcd_send[6]=((print&15)<<4)+13;
 		lcd_send[7]=8;
-		memcpy(I2C_buffer+address,lcd_send,4);
+		memcpy(I2C_buffer+lcd_buffer_counter,lcd_send,8);
+		lcd_buffer_counter=lcd_buffer_counter+8;
 	//	HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , lcd_send, 4, 100);
 
 	}
 
 
 void lcd_mem(void){   // updates lcd buffer , very slow and blocking
-
+	lcd_buffer_counter=0;
 	for (lcd_pos=0;lcd_pos<32;lcd_pos++){
-		//if (lcd_buffer[lcd_pos]!=lcd_buffer_mem[lcd_pos]){
+		if (lcd_buffer[lcd_pos]!=lcd_buffer_mem[lcd_pos]){
 
 			lcd_print(lcd_pos,lcd_buffer[lcd_pos]);
 			lcd_buffer_mem[lcd_pos]=lcd_buffer[lcd_pos];
-			lcd_pos=32;// exit
 
-		//}
-
-
+		}
 	}
-	if (I2C_transmit) HAL_I2C_Master_Transmit_IT ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, 256);
+		//	if (I2C_transmit) HAL_I2C_Master_Transmit_IT ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, 256);   // this can work but produces major problems with USB , stick with blocking
+		HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, lcd_buffer_counter, 100); // this isn't too bad , updating continually causes flickering
 
 }
 
