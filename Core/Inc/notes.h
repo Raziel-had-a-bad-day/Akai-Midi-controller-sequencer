@@ -421,33 +421,33 @@ void buttons_store(void){    // incoming data from controller
 
 			//LFO_tracking_counter[current_scene]= current_lfo_pos;
 			LFO_phase_list[current_scene]=((pot_states[0]>>5))&3;	 // lfo phase setting
-
+			lcd_downcount=3;lcd_messages_select=0;
 
 		}
-		else 	LFO_low_list[current_scene]=((pot_states[0]>>4))&7;
+		else 	{LFO_low_list[current_scene]=((pot_states[0]>>4))&7;lcd_downcount=3;lcd_messages_select=6;}
 		break;
 
 		//if ((select_bn) && (current_scene>3))  //  cc function
 		//{midi_cc_cue[0] =midi_channel_list[current_scene]+176; midi_cc_cue[1] =incoming_message[2]; };break; // sets notes playing only on these bars
 
-		case pot_2:LFO_high_list[current_scene]=((pot_states[1]>>4))&7;break; // sets notes playing only on these bars
+		case pot_2:LFO_high_list[current_scene]=((pot_states[1]>>4))&7;lcd_downcount=3;lcd_messages_select=6;break; // sets notes playing only on these bars
 
 		case pot_3:	if ((!select_bn) && (current_scene < 8))
 		{pitch_list_for_drums[(pitch_selected_for_drums[current_scene])+(current_scene*8)] =incoming_message[2];//pitch_change_flag=1;
 		lcd_downcount=3;lcd_messages_select=7;
 		} ;break;// sets pitch for drums ,only first page
 
-		case pot_4:{pattern_scale_list[current_scene]=(pot_states[3]>>3)&15;lcd_downcount=3;lcd_messages_select=0;};break;
-		case pot_5: 	if ((!device)&& (!clip_stop)) {lfo_settings_list[(current_scene*2)]=incoming_message[2];lcd_downcount=3;lcd_messages_select=8;} ;break;  // lfo rate
-		case pot_6: if ((!device) && (!clip_stop))   {lfo_settings_list[(current_scene*2)+1]=incoming_message[2] ;lcd_downcount=3;lcd_messages_select=6;} ;break;  // lfo level
+		case pot_4:{pattern_scale_list[current_scene]=(pot_states[3]>>3)&15;lcd_downcount=3;lcd_messages_select=3;};break;
+		case pot_5: 	if ((!device)&& (!clip_stop)) {lfo_settings_list[(current_scene*2)]=incoming_message[2];lcd_downcount=3;lcd_messages_select=9;} ;break;  // lfo rate
+		case pot_6: if ((!device) && (!clip_stop))   {lfo_settings_list[(current_scene*2)+1]=incoming_message[2] ;lcd_downcount=3;lcd_messages_select=10;} ;break;  // lfo level
 
-		case pot_7:	if ((shift) && (device)) 		 {midi_channel_list[current_scene]=(incoming_message[2]>>3);current_midi=midi_channel_list[current_scene]+1;
+		case pot_7:	if ((shift) && (device)) 		 {midi_channel_list[current_scene]=(incoming_message[2]>>3);current_midi=midi_channel_list[current_scene]+1;lcd_downcount=3;lcd_messages_select=4;
 		memset(button_states+24,0,16);button_states[31+(current_midi&7)-((current_midi>>3)<<3)]=yellow_blink_button;};break;   // sets midi channel on selected sound
 
 		case pot_8:
 			if ((shift) && (device))		{timer_value=bpm_table[incoming_message[2]+64]; tempo=incoming_message[2]+64;} //tempo
 			if ((!device)&&(!shift)) {note_accent[current_scene]=incoming_message[2];rand_velocities[current_scene]=incoming_message[2];     // accent input
-		lcd_control=1;lcd_downcount=3;lcd_messages_select=1;current_accent=pot_states[7];}  // accent also used for tempo with shift
+		lcd_control=1;lcd_downcount=3;lcd_messages_select=8;current_accent=pot_states[7];}  // accent also used for tempo with shift
 		;break;
 		default:break;
 

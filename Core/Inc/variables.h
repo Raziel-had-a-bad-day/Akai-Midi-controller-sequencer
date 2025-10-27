@@ -214,6 +214,7 @@ uint8_t LFO_tracking_out[sound_set*4]; // LFO output
 
 
 
+
 uint8_t loop_length;
 
 uint8_t serial_out[50];
@@ -307,6 +308,10 @@ uint8_t lcd_messages_select=0;//select from lcd_meesages , do not use [5] or it'
 uint8_t current_accent;// current selected sound accent value
 uint8_t lcd_buffer[32]; // holds outgoing characters
 uint8_t lcd_buffer_mem[32]; // holds outgoing characters
+uint8_t lcd_delay_counter; // counts to 32 for sending
+uint8_t I2C_buffer[256]; // 4*32 , full page
+uint8_t I2C_transmit=1; // transmit flag
+
 uint8_t last_solo_selected=0;  // saves last selected solo button
 
 uint8_t pitch_list_for_drums[64];  // holds 8 pitches per (first page ) 8 notes for drums for automation , used with nrpn data ,separate from pitch data for now
@@ -321,3 +326,6 @@ uint8_t single_settings_list[16]; // holds single variables ie tempo for storage
 uint8_t last_pitch_count[16];
 uint8_t overdub_enabled; // flag to keep track of overdub
 uint8_t keyboard_buffer[32]; // store keyboard presses  with recorded time , maybe clear on bar if pressed again  or mute for a bar on playback
+
+typedef struct { uint8_t *var; char *name;} LCD_item;    // creates lcd menu items to make it a bit easier
+LCD_item lcd_item[12];

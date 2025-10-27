@@ -223,6 +223,8 @@ int main(void)
 		  cdc_send(); // all midi compiled for send  8/per note , sends on seq_pos=1 atm
 
 		  if (serial_len)   HAL_UART_Transmit(&huart1,serial_out,serial_len,100); // uart send disable if no info, sent seq_pos,
+
+
 		  //maybe dma if needed for now ok (2ms total for send )
 
 		  // USB_send();
@@ -304,10 +306,10 @@ int main(void)
 
 
 
- 				if (lcd_downcount) { lcd_message();lcd_downcount--; }
+			  if (lcd_downcount) { lcd_message();lcd_downcount--; }
 
  				 lcd_menu_vars();
- 				 lcd_mem();
+ 				lcd_mem();
  				//		printf(" %d ", midi_cue[3]);
  				//		printf(" %d\n ", midi_cue[6]);
 
@@ -787,7 +789,10 @@ void all_notes_off(void){
 	 //CDC_Transmit_FS(data+3, 45);
 
 }
-
+void HAL_I2C_MasterTxCpltCallback (I2C_HandleTypeDef * hi2c)
+{
+  I2C_transmit=1;
+}
 
 /* USER CODE END 4 */
 
