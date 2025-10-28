@@ -486,6 +486,8 @@ void buttons_store(void){    // incoming data from controller
 
 		}
 
+
+
 			scene_buttons[0]=scene_select;
 			 current_midi=midi_channel_list[scene_buttons[0]]+1;
 
@@ -597,6 +599,16 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 	}
 
+	  	  	  	  uint8_t scene_high=0;   // scene buttons off if no data in bar
+				  uint8_t d;
+				 // memset(button_states,1,8); //scene lights
+
+				  if(button_states[64]) scene_high=8; // if up arrow
+				  for (d = 0; d < 8; d++) {   // clears scene light if no data in bar , seems to kill blinky lights ?
+
+					if (bar_note_register[bar_selector]&(1<<(d+scene_high))) button_states[d]=1; else button_states[d]=0;
+
+				}
 
 //	if (pause && (!pc_set)) memset(button_states+8,2,8);  // green blink in pause if no data in current bar
 

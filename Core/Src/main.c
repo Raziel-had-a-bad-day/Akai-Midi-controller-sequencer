@@ -229,6 +229,13 @@ int main(void)
 
 		  // USB_send();
 
+		  if ((seq_pos&7)==5){
+				uint8_t sound_select=4;
+			  if(nrpn_gating_switch[sound_select]) nrpn_gating_switch[sound_select]=0; else nrpn_gating_switch[sound_select]=127;
+					  nrpn_gating_enable=sound_select+1;
+					 // cdc_send();
+				  }
+
 
 
 
@@ -247,6 +254,12 @@ int main(void)
 		  midi_extras();
 			  pattern_settings();
 			  led_full_clear();
+
+
+
+
+
+
 
 			  uint8_t current_scene=scene_buttons[0]; //  local
 			  seq_current_step=loop_lfo_out[current_scene+32];

@@ -51,7 +51,7 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	  uint8_t seq_step_mod=(seq_pos>>3)&31;
 	  uint8_t send_temp[100];  // need this for temp lights
 	  memcpy(send_temp,button_states,100);
-
+	  memcpy(send_temp,blink_light_list,8);
 	if (send_buffer_sent == 1) { // moving light send and button change , current
 
 		seq_step_mem = seq_step_mod;
@@ -97,7 +97,9 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			uint8_t cue_counter;
 
 			uint8_t note_midi [70] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};  // 3*16 ,   seems to get some garbage ?
-			uint8_t nrpn_temp[21]={185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0};  //  byte 9 is pitch
+			uint8_t nrpn_temp[36]={185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0};  //  9 bytes per nrpn send
+
+			nrpn_temp[30]=0;
 			uint8_t note_off_midi[50];
 
 			uint8_t nrpn_counter=0; //keeps track when sending more then one set of commands
@@ -128,9 +130,10 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 						uint8_t	pitch_seq;
 						//=pattern_scale_process(random_list[(pitch_counter)]);  // change pitch from pots , maybe run always and ignore original pitch
 
-						uint8_t button_states_temp[16]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+						uint8_t button_states_temp[16];
 						uint8_t high_row_enable=0; // select second sounds scene ,default on
-
+						memcpy(button_states_temp,button_states,8);
+						memcpy(button_states_temp+8,button_states,8);
 						uint8_t high_row=0;
 						// uint8_t first_step=0;  // to controll pitch sequence for notes
 					//	if ((!seq_step)&& (!bar_playing)) first_step=1; // resets on seq_pos and zero bar
@@ -239,7 +242,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 		//if (!pause)
 
-		{if (high_row_enable )  memcpy(button_states,button_states_temp+8,8); else memcpy(button_states,button_states_temp,8);}   //copy back blinky lights
+		{if (high_row_enable )  memcpy(blink_light_list,button_states_temp+8,8); else memcpy(blink_light_list,button_states_temp,8);}   //copy back blinky lights and mute
 
 
 		memcpy(last_note_end_count,note_timing,16);
@@ -254,7 +257,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					uint8_t counterb=pitch_change_flag-1;
 
 					nrpn_temp[5]=((counterb&7)*8)&127;  // select part pitch
-					nrpn_temp[20]=9;// length of send
+					nrpn_temp[30]=9;// length of send
 					//nrpn_temp[8]=(pitch_list_for_drums[(pitch_selected_for_drums[counterb&7])+(current_scene*8)])&127;  // sets pitch
 					nrpn_temp[8]=pitch_selected_drum_value[counterb];  //prepared elsewhere
 
@@ -273,12 +276,31 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 							uint8_t counterb=lfo_full_send_enable-1;
 
 							nrpn_temp[nrpn_counter+5]=((counterb*8)+2)&127;  // select part filter
-							nrpn_temp[20]=nrpn_counter+9; // length of send
+							nrpn_temp[30]=nrpn_counter+9; // length of send
 							nrpn_temp[nrpn_counter+8]=loop_lfo_out[counterb+32] &127;  // sets filter
 							if (lfo_full_send_enable<8) lfo_full_send_enable++; else lfo_full_send_enable=0; // cycle through until finish
-
+							nrpn_counter=17;
 
 						}
+
+		if (nrpn_gating_enable){   // sends level nrpn /volume/ gating  ,this might run any time but only for specific sounds for faster response, now 27 bytes plus notes
+
+
+								uint8_t counterb = nrpn_gating_enable-1;
+
+								nrpn_temp[nrpn_counter+5]=((counterb*8)+1)&127;  // select part filter
+								nrpn_temp[30]=nrpn_counter+9; // length of send, 9 bytes or about 30ms + else
+								nrpn_temp[nrpn_counter+8]=nrpn_gating_switch[counterb] &127;  // sets sample level
+								nrpn_gating_enable=0; // cycle through until finish
+
+
+							}
+
+
+////////////////////////////////////////////  NPRN section , might do a separate send as its a fair amount bytes each time
+
+
+
 
 
 				//if(note_midi[0])  memcpy(test_byte, note_midi, 20);
@@ -314,9 +336,11 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			 memcpy(serial_out + midi_extra_cue[28], send_temp, serial_len);
 			 serial_len = serial_len + midi_extra_cue[28];
 			 midi_extra_cue[28] = 0;  // reset
-			 memcpy(serial_out + serial_len, nrpn_temp, nrpn_temp[20]); // temp only !  add nrpn
-			 serial_len = serial_len + nrpn_temp[20];
-			 nrpn_temp[20] = 0;
+			 //nrpn_temp[30]=0;
+			 memcpy(serial_out + serial_len, nrpn_temp, nrpn_temp[30]); // temp only !  add nrpn
+
+			 serial_len = serial_len + nrpn_temp[30];
+			 nrpn_temp[30] = 0;
 			 if (pause)
 				 pause = 2;
 

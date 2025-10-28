@@ -217,7 +217,7 @@ uint8_t LFO_tracking_out[sound_set*4]; // LFO output
 
 uint8_t loop_length;
 
-uint8_t serial_out[50];
+uint8_t serial_out[96]; // holds midi out data
 uint8_t serial_len;
 uint8_t midi_channel_list[21]={9,9,9,9,9,9,9,9,9,9,9,9,3,3,3,3,3,3 };   //holds midi channel settings 0=1 (midi channels 1-16)
 uint8_t nrpn_cue[80]={186,99,5,186,98,16,186,6,32};  // stores message for nrpn on es1 only needs 1 initial c99=5  then only  2 bytes repeating  CC 98 =NRPN LSB and CC 6 =value , for now 9 bytes though  , initial normal 3 bytes then convrted to 9
@@ -240,7 +240,7 @@ uint8_t looper_list_mem[20];  // keeps track of previous values for ppq skip
 uint8_t loop_current_offset;
 uint8_t loop_current_length;
 uint8_t step_record; // works in stop mode
-uint8_t drum_store_one[1024]; // holds drum notes 2 bit , note one and accent
+uint8_t drum_store_one[1024]; // holds drum notes 2 bit , note one and accent , 4bytes per scene ,16 scenes in series (64bytes) , then bar 2
 
 uint8_t test_byte[64];
 uint8_t test_byteB[64];
@@ -329,3 +329,7 @@ uint8_t keyboard_buffer[32]; // store keyboard presses  with recorded time , may
 
 typedef struct { uint8_t *var; char *name;} LCD_item;    // creates lcd menu items to make it a bit easier
 LCD_item lcd_item[12];
+uint16_t bar_note_register[8];  //scans for data bars if none it keeps scene select light off    1 bit , 16bit-8bars
+uint8_t blink_light_list[8]; // just add blink light to scene buttons
+uint8_t nrpn_gating_enable;  // for gating audio effects on drum
+uint8_t nrpn_gating_switch[8]; //just the levels for gating or volume

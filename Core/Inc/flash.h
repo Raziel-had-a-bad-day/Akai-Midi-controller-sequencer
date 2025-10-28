@@ -187,7 +187,35 @@ void flash_read(void){     // 1kbyte for now
 	 for (d=0;d<32;d++) {
 					 rand_velocities[d]=(rand()&31)+95;
 				 } // write random velocites list
-	//midi_cue_fill();  // not needed anymore
+
+	 uint8_t selected_scene=0;
+	 uint16_t drum_byte_select=0;
+	 	uint8_t drum_byte=0; // get data
+
+	 uint8_t selected_bar=0;
+	 uint8_t note_register=0;
+
+while (selected_bar<8){				// this tests for data in bars ,if none leaves scene light off
+
+	 	for (d=0;d<16;d++) {  // notes test
+
+		 drum_byte_select= (d>>2)+(selected_scene*4)+(selected_bar*drum_store);
+	 	 drum_byte=drum_store_one[drum_byte_select];
+	 	if (drum_byte &(1<<((d&3)*2)))       note_register=1;
+
+
+	 }// end of notes test
+
+	 	if (note_register)    bar_note_register[selected_bar]|=1<<selected_scene;  // ok
+	 	//if (note_register)    bar_note_register[selected_bar]+=1<<selected_scene;
+
+
+	 	note_register=0;
+	 	if (selected_scene<15) selected_scene++ ; else {selected_scene=0;selected_bar++;}
+
+} // end of while loop
+
+
 
 
 	float tempo_hold=1;  // calculate tempo look up
