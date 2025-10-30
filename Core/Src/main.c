@@ -31,7 +31,8 @@
 extern USBD_HandleTypeDef hUsbDeviceFS;
 
 
-// change HID to MIDI in usb_device.c  and usbd_conf.c     !!!!
+// change HID to MIDI in usb_device.c  and usbd_conf.c     !!!! also modifiy files in USB_Device
+// device configurator can overwrite usb_device  files
 //#include "usbd_cdc.h"
 //#include "usbd_cdc_if.h"
 #include "midi.h"
@@ -322,7 +323,7 @@ int main(void)
 			  if (lcd_downcount) { lcd_message();lcd_downcount--; }
 
  				 lcd_menu_vars();
- 				lcd_mem();
+
  				//		printf(" %d ", midi_cue[3]);
  				//		printf(" %d\n ", midi_cue[6]);
 
@@ -340,7 +341,7 @@ int main(void)
  			}   // blink steps , end of s_temp
 
 
-
+		lcd_mem();
 
 
 /*
@@ -802,10 +803,10 @@ void all_notes_off(void){
 	 //CDC_Transmit_FS(data+3, 45);
 
 }
-void HAL_I2C_MasterTxCpltCallback (I2C_HandleTypeDef * hi2c)
+/*void HAL_I2C_MasterTxCpltCallback (I2C_HandleTypeDef * hi2c)
 {
   I2C_transmit=1;
-}
+}*/
 
 /* USER CODE END 4 */
 

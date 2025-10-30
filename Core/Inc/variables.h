@@ -313,6 +313,7 @@ uint8_t I2C_buffer[256]; // 4*32 , full page
 uint8_t I2C_transmit=1; // transmit flag
 uint8_t lcd_buffer_counter;// keeps track of lcd_buffer
 uint8_t last_solo_selected=0;  // saves last selected solo button
+uint8_t lcd_buffer_full; // check flag for being sent
 
 uint8_t pitch_list_for_drums[64];  // holds 8 pitches per (first page ) 8 notes for drums for automation , used with nrpn data ,separate from pitch data for now
 uint8_t pitch_selected_for_drums[8];  // current selected pitch on first page of drums 1-7 , not actual pitch but just selection, useless
