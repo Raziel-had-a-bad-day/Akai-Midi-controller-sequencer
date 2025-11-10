@@ -41,5 +41,7 @@ Stop all clips = stops and jumps to start
 clip_stop = enables all_pots to set pitch for 8 sequentual notes  on keys
 device =   shows current midi channel on top rows ,blinky yellow  
 pan =  ///pot 8 to set load/save position ,disabled/ 
+right arrow = different pot functions
+Pot 1 = sets number of steps in pitch as it's looping ie  1-4 '
  
  

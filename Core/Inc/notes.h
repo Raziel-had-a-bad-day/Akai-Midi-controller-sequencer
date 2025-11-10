@@ -172,22 +172,30 @@ void note_buttons(void){  // always running only on notes though
 											//uint8_t pattern=pattern_select;
 								memset(button_states+16, 0, 8);
 
-								pitch_selected_for_drums[selected_scene]=last_press-16; button_states[square_buttons_list[last_press-16]]=yellow_button; // controls lights
+								pitch_selected_for_drums[selected_scene]=last_press-16; button_states[last_press]=yellow_button; // controls lights
 							//	if(rec_arm | pause) {   // might just drop this
 									//uint8_t pitch_byte_select=(bar_playing)+((selected_scene&7)*8);	// 0-3 + 0-28
 									uint8_t pitch_select=(bar_playing&7)+((selected_scene&7)*8); // 0-63
 
 
-									pitch_change_store[pitch_select]=last_press-16;  // 0-7 , stores in on the timeline
-
+								//	pitch_change_store[pitch_select]=last_press-16;  // 0-7 , stores in on the timeline
+									pitch_change_loop_position[selected_scene]=last_press-16;
 									//pitch_byte=(pitch_byte & (~pitch_mask)) | ((last_press-15)&7);   //clears bits then or in the new ones
 									//pitch_change_store[pitch_byte_select]=pitch_byte ;
 							//	}
 
 
-								pitch_change_flag=1; //enable pitch nrpn send
-								punch_in[0]=last_press-15; // +1
+								pitch_change_flag=1+selected_scene; //enable pitch nrpn send , just count from current one maybe
+							//	punch_in[0]=last_press-15; // +1   doesnt do much
 
+								if(pause){
+
+								uint8_t pitch_byte=last_press-16;
+								uint8_t pitch_final=(pitch_list_for_drums[pitch_byte+(selected_scene*8)])&127; // there should always some data
+									pitch_selected_drum_value[selected_scene]=pitch_final;  // if missing data keep old value
+								}
+
+								//	button_states[punch_in[0]+16]=yellow_button;
 
 							}   // pitch change end
 //////////////////////////////////////////////
@@ -402,8 +410,8 @@ void buttons_store(void){    // incoming data from controller
 			patch_screen();
 		}
 
-
-		switch(incoming_data1){   // pots data selector
+		if (!right_arrow){     // right arrow disabled ,default screen
+		switch(incoming_data1){   // pots data selector ,default screen
 
 		case pot_1:
 
@@ -432,9 +440,12 @@ void buttons_store(void){    // incoming data from controller
 
 		case pot_2:LFO_high_list[current_scene]=((pot_states[1]>>4))&7;lcd_downcount=3;lcd_messages_select=6;break; // sets notes playing only on these bars
 
-		case pot_3:	if ((!select_bn) && (current_scene < 8))
-		{pitch_list_for_drums[(pitch_selected_for_drums[current_scene])+(current_scene*8)] =incoming_message[2];//pitch_change_flag=1;
+		case pot_3:	if ((!select_bn) && (current_scene < 8)&& pause )   // only under pause
+		{pitch_list_for_drums[(pitch_change_loop_position[current_scene])+(current_scene*8)] =incoming_message[2];//pitch_change_flag=1;
+		pitch_selected_drum_value[current_scene]=incoming_message[2];   // this actually sends data for nrpn
 		lcd_downcount=3;lcd_messages_select=7;
+		pitch_change_flag=1+current_scene;   // enable nrpn send
+
 		} ;break;// sets pitch for drums ,only first page
 
 		case pot_4:{pattern_scale_list[current_scene]=(pot_states[3]>>3)&15;lcd_downcount=3;lcd_messages_select=3;};break;
@@ -451,9 +462,37 @@ void buttons_store(void){    // incoming data from controller
 		;break;
 		default:break;
 
-
+		}
 
 		}
+
+		if (right_arrow){      // with right arrow enabled , change pot function
+			switch(incoming_data1){   // pots data selector ,default screen
+
+			case pot_1:pitch_change_loop[current_scene]=pot_states[0]>>4; break;
+
+			//if ((select_bn) && (current_scene>3))  //  cc function
+			//{midi_cc_cue[0] =midi_channel_list[current_scene]+176; midi_cc_cue[1] =incoming_message[2]; };break; // sets notes playing only on these bars
+
+			case pot_2:break; // sets notes playing only on these bars
+
+			case pot_3: break;// sets pitch for drums ,only first page
+
+			case pot_4:break;
+			case pot_5: break;  // lfo rate
+			case pot_6: break;  // lfo level
+
+			case pot_7:	break;   // sets midi channel on selected sound
+
+			case pot_8:break;
+			default:break;
+
+			}
+
+			}
+
+
+
 
 		//	if ((note_off_flag[0])&& (note_off_flag[1]<32))  scene_velocity[square_buttons_list[note_off_flag[1]]+(scene_buttons[0]*32)]=  pot_states[1];    // set velocity for now for held button , only for notes
 
@@ -470,7 +509,7 @@ void buttons_store(void){    // incoming data from controller
 
 		//if ((incoming_data1==pot_2) && (button_states[68]))   scene_velocity[seq_step_pointer]=  (((pot_states[1]>>5)<<5)+31)&112;  // update velocity in realtime if volume button pressed
 
-	} // end of CC (176, pots ) message
+	} // end of CC (176, pots ) control change message
 
 
 
@@ -573,29 +612,40 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 /////////////pitch section
 
-	if (((seq_pos==0) || pause  || punch_in[0] ) && (!select_bn)){     // apply pitch to drum notes on first step ,however buggy
+	if ((seq_pos==0) && (!select_bn)&& (!pause)){     // apply pitch to drum notes on first step or when pressed  ,however buggy ,also only send on change ?
+
+
+		uint8_t pitch_byte=pitch_change_loop_position[current_scene]; // current pitch selected
+		memset(button_states+16,0,8);
+		button_states[pitch_byte+16]=yellow_button;
+
 
 		for(i=0;i<8;i++){   // loads up pitch values
-		uint8_t pitch_byte_select=bar_playing+(i*8);	// 0-3 + 0-28
+		//uint8_t pitch_byte_select=pitch_change_loop_position[i]+(i*8);	// 0-3 + 0-28
 
-		uint8_t pitch_byte=pitch_change_store[pitch_byte_select]&7; //spits out selected pitch ,first byte seems to be changing ?
+
+		//uint8_t pitch_byte=pitch_change_store[pitch_byte_select]&7; //spits out selected pitch ,first byte seems to be changing ?
+
+		uint8_t pitch_byte=pitch_change_loop_position[i];
+	//	if (punch_in[0] && (i==current_scene)) pitch_byte=punch_in[0]-1;
 		uint8_t pitch_final=(pitch_list_for_drums[pitch_byte+(i*8)])&127; // there should always some data
 
 
 		if (pitch_final<10) pitch_final=64; // in case corrupt or missing
 		if (pitch_final) pitch_selected_drum_value[i]=pitch_final;  // if missing data keep old value
+		if(pitch_change_loop_position[i]<pitch_change_loop[i])         pitch_change_loop_position[i]=pitch_change_loop_position[i]+1; else pitch_change_loop_position[i]=0; // loop pitch change
 
 		}
 		pitch_change_flag=1;
-		uint8_t pitch_byte=pitch_change_store[bar_playing+((current_scene&7)*8)];
-		memset(button_states+16,0,8);
-		button_states[pitch_byte+16]=yellow_button;
+		//uint8_t pitch_byte=pitch_change_store[bar_playing+((current_scene&7)*8)];
+
+
 	/*	if (punch_in[0]) { punch_in[0]--; pitch_selected_drum_value[current_scene&7]=pitch_list_for_drums[((current_scene&7)*8)+punch_in[0]];
 		button_states[punch_in[0]+16]=red_button;
 
 		}// replace value with current selected only temp though*/
 
-		punch_in[0]=0;
+		//punch_in[0]=0;
 
 	}
 

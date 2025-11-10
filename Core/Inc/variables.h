@@ -320,6 +320,11 @@ uint8_t pitch_selected_for_drums[8];  // current selected pitch on first page of
 uint8_t pitch_change_flag; //enabled when pitch data needs to be sent
 uint8_t pitch_change_store[64];  //stores pitch changes 0-7 per bar ,per sound , 8bytes(per bar) *8 sounds ,holds presets for pitch_list_for drums for now
 uint8_t pitch_selected_drum_value[8]; // holds outgoing drum value
+uint8_t pitch_change_loop[8]={0,0,0,0,0,0,0,0}; //sets the looping length of pitch changes may default to pressed button as the first in step
+uint8_t pitch_change_loop_position[8]={0,0,0,0,0,0,0,0};  // keeps track of pitch change loop
+
+
+
 
 uint8_t lfo_settings_list[32]; //holds lfo settings 1 rate , 2 level , testing for now
 uint8_t lfo_full_send_enable=0; // lfo transmit flag
@@ -332,5 +337,13 @@ typedef struct { uint8_t *var; char *name;} LCD_item;    // creates lcd menu ite
 LCD_item lcd_item[12];
 uint16_t bar_note_register[8];  //scans for data bars if none it keeps scene select light off    1 bit , 16bit-8bars
 uint8_t blink_light_list[8]; // just add blink light to scene buttons
+
 uint8_t nrpn_gating_enable;  // for gating audio effects on drum
 uint8_t nrpn_gating_switch[8]; //just the levels for gating or volume
+uint8_t nrpn_gating_sequence[16]={127,0,127,0,120,0,100,0,127,0,127,0,120,0,100,0};   // just a gating sequence
+uint8_t controller_fx_enable; // controller data flag
+uint8_t controller_fx_select[2];  // selects which controller data
+uint8_t controller_fx_value[2]; // controller level
+
+
+

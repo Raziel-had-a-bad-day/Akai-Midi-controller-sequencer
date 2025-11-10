@@ -104,6 +104,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 			uint8_t nrpn_counter=0; //keeps track when sending more then one set of commands
 			uint8_t current_scene=scene_buttons[0];
+			uint8_t controller_temp[9]; // holds controller data
 
 			cue_counter=0;
 
@@ -298,6 +299,15 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 
 ////////////////////////////////////////////  NPRN section , might do a separate send as its a fair amount bytes each time
+
+////////////////////////////////////// controller data for fx
+
+		//if(controller_fx_enable){}
+
+
+
+
+
 
 
 

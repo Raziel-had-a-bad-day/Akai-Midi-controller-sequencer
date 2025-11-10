@@ -182,6 +182,11 @@ int main(void)
   //	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
   //	TIM2->CNT=32000;
 
+  	int __io_putchar(int ch)
+  	{
+  	    ITM_SendChar(ch);
+  	    return (ch);
+  	}
 
 
     HAL_TIM_Base_Start_IT(&htim2);
@@ -231,9 +236,14 @@ int main(void)
 		  // USB_send();
 
 		  if ((seq_pos&7)==5){
-				uint8_t sound_select=4;
-			  if(nrpn_gating_switch[sound_select]) nrpn_gating_switch[sound_select]=0; else nrpn_gating_switch[sound_select]=127;
-					  nrpn_gating_enable=sound_select+1;
+				uint8_t sound_select=4;  // select sound to gate
+
+				nrpn_gating_switch[sound_select]=nrpn_gating_sequence[seq_step];
+				nrpn_gating_enable=sound_select+1;
+
+
+				//if(nrpn_gating_switch[sound_select]) nrpn_gating_switch[sound_select]=0; else nrpn_gating_switch[sound_select]=127;    // might enable some presets here
+
 					 // cdc_send();
 				  }
 
