@@ -46,7 +46,10 @@ void Error_Handler(void);
 void SystemClock_Config(void);
 
 /* USER CODE BEGIN 0 */
-
+/* USER CODE BEGIN EndPoint_Configuration_HID */ // You may replace HID with MIDI for more convenience, but code generator will not keep it on next code generate
+HAL_PCDEx_PMAConfig((PCD_HandleTypeDef*)pdev->pData , 0x01 , PCD_SNG_BUF, 0xC0); // add this line
+HAL_PCDEx_PMAConfig((PCD_HandleTypeDef*)pdev->pData , 0x81 , PCD_SNG_BUF, 0x100); // leave this line as is
+/* USER CODE END EndPoint_Configuration_HID */
 /* USER CODE END 0 */
 
 /* USER CODE BEGIN PFP */
@@ -357,9 +360,6 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *pdev)
   HAL_PCDEx_SetRxFiFo(&hpcd_USB_OTG_FS, 0x80);
   HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 0, 0x40);
   HAL_PCDEx_SetTxFiFo(&hpcd_USB_OTG_FS, 1, 0x80);
-
-
-
   }
   return USBD_OK;
 }

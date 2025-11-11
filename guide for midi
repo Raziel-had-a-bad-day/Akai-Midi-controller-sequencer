@@ -1,0 +1,4 @@
+ttymidi -s /dev/ttyACM2 -v
+
+
+use cutecom to find usb midi

@@ -33,8 +33,8 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 
 // change HID to MIDI in usb_device.c  and usbd_conf.c     !!!! also modifiy files in USB_Device
 // device configurator can overwrite usb_device  files
-//#include "usbd_cdc.h"
-//#include "usbd_cdc_if.h"
+#include "usbd_cdc.h"
+#include "usbd_cdc_if.h"
 #include "midi.h"
 #include "notes.h"
 #include "lcd.h"
@@ -334,6 +334,7 @@ int main(void)
 
  				 lcd_menu_vars();
 
+
  				//		printf(" %d ", midi_cue[3]);
  				//		printf(" %d\n ", midi_cue[6]);
 
@@ -345,13 +346,17 @@ int main(void)
  				//  arrows();
  				  if (!pause) seq_step = seq_pos>> 3; else seq_step=seq_step;
 
+ 				//  if( (USBD_MIDI_GetState(&hUsbDeviceFS) == MIDI_IDLE) )  USB_send();  // fast     	//temp disable
+
+
+
 
  				  s_temp = seq_pos>>3;
 
  			}   // blink steps , end of s_temp
 
-
-		lcd_mem();
+	  lcd_mem(); // this sends too fast when run constant
+	  USB_send();
 
 
 /*
@@ -394,76 +399,76 @@ int main(void)
 
 
 
- 		//  note_handling(serial1_hold[0]);note_replace(note_replace_enable);    // notes generate after each !!!
- 		 // 	note_handling(serial1_hold[1]);note_replace(note_replace_enable);
- 		 // 	note_handling(serial1_hold[2]);note_replace(note_replace_enable);
+			//  note_handling(serial1_hold[0]);note_replace(note_replace_enable);    // notes generate after each !!!
+			 // 	note_handling(serial1_hold[1]);note_replace(note_replace_enable);
+			 // 	note_handling(serial1_hold[2]);note_replace(note_replace_enable);
 
- 	  serial1_hold[5]=0;serial1_hold[0]=0;
- 	  //HAL_UART_Receive_IT(&huart1,&serial1_temp,1); // finish 4 bytes and blink , reset irq
-
-
-
- 	  }  // end of midi in
-*/
-
-
-		  if( (USBD_MIDI_GetState(&hUsbDeviceFS) == MIDI_IDLE) )  USB_send();  // fast
-
-
-		  if (cdc_buffer[0] | cdc_buffer[3] |   cdc_buffer[6]                   ) {      //  when cdc buffer incoming, need change
-			  if (cdc_buffer[6] )cdc_start=6;
-			  if (cdc_buffer[3] )cdc_start=3;
-			  if (cdc_buffer[0] )cdc_start=0;
-			//  if (first_message) {first_message=0;  memset(other_buttons_hold,9,70);} // only runs after getting a midi message from usb
-
-
-			  if ((cdc_buffer[0]==145)) {keyboard[0]=cdc_buffer[1]-47;keyboard[1]=127;memset(cdc_buffer,0,9); } // works ,keyboard send ,quick
-			  if ((cdc_buffer[0]==129)) {keyboard[0]=cdc_buffer[1]-47;keyboard[1]=0;memset(cdc_buffer,0,9); }
-
-			  // sends straight to keyboard on receive
- 		 // printf(" 1=%d ",cdc_buffer[0] ); printf(" 2=%d ",cdc_buffer[1] ); printf(" 3=%d \n ",cdc_buffer[2] );
+		  serial1_hold[5]=0;serial1_hold[0]=0;
+		  //HAL_UART_Receive_IT(&huart1,&serial1_temp,1); // finish 4 bytes and blink , reset irq
 
 
 
- 		  if (pause==5)  { all_notes_off();}    // runs only once during pause
+		  }  // end of midi in
+	*/
 
 
- 	  }  // end of cdc message
-
-		  	  if (keyboard[0])  {    // keyboard play live
-
-					  uint8_t note_flag=144; // just use vel 0 for off
-					  uint8_t incoming=keyboard[0];
-					  uint8_t velocity=keyboard[1];
-					  uint8_t buffer_pos=keyboard_buffer[31];
-					  uint8_t current_seq_pos=seq_pos&255;
-					//  if (incoming>>7)  {note_flag=128;velocity=0;}
-					  if (buffer_pos>23) buffer_pos=0;   // reset buffer in case
+			 // if( (USBD_MIDI_GetState(&hUsbDeviceFS) == MIDI_IDLE) )  USB_send();  // fast     	//temp disable
 
 
-					  if (midi_channel_list[selected_scene]==9)   // drums send
-					  {  midi_extra_cue[0]=(note_flag+9);         // use drumlist for now
+			  if (cdc_buffer[0] | cdc_buffer[3] |   cdc_buffer[6]                   ) {      //  when cdc buffer incoming, need change
+				  if (cdc_buffer[6] )cdc_start=6;
+				  if (cdc_buffer[3] )cdc_start=3;
+				  if (cdc_buffer[0] )cdc_start=0;
+				//  if (first_message) {first_message=0;  memset(other_buttons_hold,9,70);} // only runs after getting a midi message from usb
 
-					  midi_extra_cue[1]=(drum_list[selected_scene]);midi_extra_cue[2]=velocity; midi_extra_cue[28]=midi_extra_cue[28]+3;   // send midi
 
-					  incoming=0;}
-					  else  {midi_extra_cue[0]=note_flag+midi_channel_list[selected_scene];  midi_extra_cue[1]=((incoming+32))&127 ;
-					  midi_extra_cue[2]=velocity; midi_extra_cue[28]=midi_extra_cue[28]+3;incoming=0;}  // send normal then keyboard off
-					  keyboard[0]=incoming;
+				  if ((cdc_buffer[0]==145)) {keyboard[0]=cdc_buffer[1]-47;keyboard[1]=127;memset(cdc_buffer,0,9); } // works ,keyboard send ,quick
+				  if ((cdc_buffer[0]==129)) {keyboard[0]=cdc_buffer[1]-47;keyboard[1]=0;memset(cdc_buffer,0,9); }
 
-					  memcpy(keyboard_buffer+buffer_pos,midi_extra_cue+1,2); keyboard_buffer[buffer_pos+2]=current_seq_pos; keyboard_buffer[31]=buffer_pos+3;  // store in buffer
+				  // sends straight to keyboard on receive
+			 // printf(" 1=%d ",cdc_buffer[0] ); printf(" 2=%d ",cdc_buffer[1] ); printf(" 3=%d \n ",cdc_buffer[2] );
 
 
 
-		  	  }//end of keyboard
+			  if (pause==5)  { all_notes_off();}    // runs only once during pause
 
-		  	  	  if(((seq_pos&7)>3) && (cdc_buffer[0]))   buttons_store();   // only runs after receive , might delay a bit
+
+		  }  // end of cdc message
+
+				  if (keyboard[0])  {    // keyboard play live
+
+						  uint8_t note_flag=144; // just use vel 0 for off
+						  uint8_t incoming=keyboard[0];
+						  uint8_t velocity=keyboard[1];
+						  uint8_t buffer_pos=keyboard_buffer[31];
+						  uint8_t current_seq_pos=seq_pos&255;
+						//  if (incoming>>7)  {note_flag=128;velocity=0;}
+						  if (buffer_pos>23) buffer_pos=0;   // reset buffer in case
+
+
+						  if (midi_channel_list[selected_scene]==9)   // drums send
+						  {  midi_extra_cue[0]=(note_flag+9);         // use drumlist for now
+
+						  midi_extra_cue[1]=(drum_list[selected_scene]);midi_extra_cue[2]=velocity; midi_extra_cue[28]=midi_extra_cue[28]+3;   // send midi
+
+						  incoming=0;}
+						  else  {midi_extra_cue[0]=note_flag+midi_channel_list[selected_scene];  midi_extra_cue[1]=((incoming+32))&127 ;
+						  midi_extra_cue[2]=velocity; midi_extra_cue[28]=midi_extra_cue[28]+3;incoming=0;}  // send normal then keyboard off
+						  keyboard[0]=incoming;
+
+						  memcpy(keyboard_buffer+buffer_pos,midi_extra_cue+1,2); keyboard_buffer[buffer_pos+2]=current_seq_pos; keyboard_buffer[31]=buffer_pos+3;  // store in buffer
+
+
+
+				  }//end of keyboard
+
+					  if(((seq_pos&7)>3) && (cdc_buffer[0]))   buttons_store();   // only runs after receive , might delay a bit
 
 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  } // while loop
+	  } // while loop
   /* USER CODE END 3 */
 }
 
@@ -730,93 +735,104 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	if (huart->Instance == USART1) { 	// midi irq
-
-//		if (serial1_hold2[0]==248)  {	memcpy(serial1_hold,serial1_hold2,4)  ;   // copy mem
-
-	//	serial1_hold[5]=1;seq_pos++;   HAL_UART_Receive_DMA(&huart1, serial1_hold2,1); }
-
-
-//		else
-
-		memcpy(serial1_hold,serial1_hold2,1)  ;   // copy mem
-
-		serial1_hold[5]=1;   HAL_UART_Receive_DMA(&huart1, serial1_hold2,1);
-		//HAL_UART_Receive_IT(&huart1,&serial1_temp,1);}  //enable read  or reset irq
-
-	}
-
-
-
-
-	//memcpy((serial_hold+8),(serial_hold2+8),8);
-}
-
-
-
-
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)    // unreliable
+	void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	{
-		if(TIM2==htim->Instance){     // send spi to display , ok
+		if (huart->Instance == USART1) { 	// midi irq
 
-			//button_send_trigger=(button_send_trigger+1)&255; // sets interval for buttons
+	//		if (serial1_hold2[0]==248)  {	memcpy(serial1_hold,serial1_hold2,4)  ;   // copy mem
 
-			if (!skip_enable)HAL_GPIO_TogglePin(GPIOA,PPQ_Pin);
+		//	serial1_hold[5]=1;seq_pos++;   HAL_UART_Receive_DMA(&huart1, serial1_hold2,1); }
 
-			if (!skip_enable) skip_enable=skip_setting; else {skip_enable--;} // 48 ppq here
 
-			if (ppq_count>5) {ppq_count=0; seq_pos=(seq_pos+1)&127;}   // 32 ppq
-			 ppq_count++;
-			 if (ppq_send>95) ppq_send=0;  else ppq_send++;   // 96 ppq
+	//		else
 
+			memcpy(serial1_hold,serial1_hold2,1)  ;   // copy mem
+
+			serial1_hold[5]=1;   HAL_UART_Receive_DMA(&huart1, serial1_hold2,1);
+			//HAL_UART_Receive_IT(&huart1,&serial1_temp,1);}  //enable read  or reset irq
 
 		}
+
+
+
+
+		//memcpy((serial_hold+8),(serial_hold2+8),8);
 	}
-void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi)   // when finished sending
+
+
+
+
+
+	void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)    // unreliable
+		{
+			if(TIM2==htim->Instance){     // send spi to display , ok
+
+				//button_send_trigger=(button_send_trigger+1)&255; // sets interval for buttons
+
+				if (!skip_enable)HAL_GPIO_TogglePin(GPIOA,PPQ_Pin);
+
+				if (!skip_enable) skip_enable=skip_setting; else {skip_enable--;} // 48 ppq here
+
+				if (ppq_count>5) {ppq_count=0; seq_pos=(seq_pos+1)&127;}   // 32 ppq
+				 ppq_count++;
+				 if (ppq_send>95) ppq_send=0;  else ppq_send++;   // 96 ppq
+
+
+			}
+		}
+	void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi)   // when finished sending
+		{
+
+		   if (SPI1==hspi->Instance) {				// keep it short if possible
+
+			   HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);  //  end
+			   flash_flag=2;
+
+
+			   //    if (sample_dma_counter==0)		{  memcpy(flash_read_block3,flash_read_block2+4,1024);  flash_flag=2;  }
+			//   if (sample_dma_counter==1) sample_dma_counter=3;
+					   //			      if (sample_dma_counter==2) sample_dma_counter=4;
+		  //     if (sample_dma_counter==3)   {memcpy(flash_read_block,flash_read_block2+4,1024);sampler_1k_load(sample_flash_address[0]);sample_dma_counter=2;return;}
+		  //     if (sample_dma_counter==4)			{  memcpy(flash_read_block3,flash_read_block2+4,1024); sampler_1k_load(sample_flash_address[1]); sample_dma_counter=1; }
+		//	if (sample_dma_counter)   {memcpy(flash_read_block,flash_read_block2+4,1024); sampler_1k_load(sample_flash_address[1]); sample_dma_counter=0;flash_flag=2; }
+
+		   }
+		}
+
+//	HAL_I2C_SlaveRxCpltCallback(){}
+
+
+
+
+
+
+
+
+
+
+	void stop_start(void)             {
+	  //  if (TIM10==htim ->Instance)
+		if  (stop_toggle ==1) {HAL_TIM_Base_Stop_IT(&htim2);stop_toggle =2;}
+		if  (stop_toggle ==4) {HAL_TIM_Base_Start_IT(&htim2);stop_toggle=0;}
+
+	}
+	void all_notes_off(void){
+		uint8_t data[48];
+		for (i=0;i<16;i++){
+			data[i*3]=176+i;
+			data[(i*3)+1]=123;
+			data[(i*3)+2]=0;
+		}
+		 HAL_UART_Transmit(&huart1,data,48,100); //   send all notes off on serial
+		 HAL_Delay(100);
+		 pause=1;
+		 //CDC_Transmit_FS(data+3, 45);
+
+	}
+	/*void HAL_I2C_MasterTxCpltCallback (I2C_HandleTypeDef * hi2c)
 	{
-
-	   if (SPI1==hspi->Instance) {				// keep it short if possible
-
-	       HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);  //  end
-	       flash_flag=2;
-
-
-	       //    if (sample_dma_counter==0)		{  memcpy(flash_read_block3,flash_read_block2+4,1024);  flash_flag=2;  }
-	    //   if (sample_dma_counter==1) sample_dma_counter=3;
-	 			   //			      if (sample_dma_counter==2) sample_dma_counter=4;
-	  //     if (sample_dma_counter==3)   {memcpy(flash_read_block,flash_read_block2+4,1024);sampler_1k_load(sample_flash_address[0]);sample_dma_counter=2;return;}
-	  //     if (sample_dma_counter==4)			{  memcpy(flash_read_block3,flash_read_block2+4,1024); sampler_1k_load(sample_flash_address[1]); sample_dma_counter=1; }
-	//	if (sample_dma_counter)   {memcpy(flash_read_block,flash_read_block2+4,1024); sampler_1k_load(sample_flash_address[1]); sample_dma_counter=0;flash_flag=2; }
-
-	   }
-	}
-
-void stop_start(void)             {
-  //  if (TIM10==htim ->Instance)
-    if  (stop_toggle ==1) {HAL_TIM_Base_Stop_IT(&htim2);stop_toggle =2;}
-    if  (stop_toggle ==4) {HAL_TIM_Base_Start_IT(&htim2);stop_toggle=0;}
-
-}
-void all_notes_off(void){
-	uint8_t data[48];
-	for (i=0;i<16;i++){
-		data[i*3]=176+i;
-		data[(i*3)+1]=123;
-		data[(i*3)+2]=0;
-	}
-	 HAL_UART_Transmit(&huart1,data,48,100); //   send all notes off on serial
-	 HAL_Delay(100);
-	 pause=1;
-	 //CDC_Transmit_FS(data+3, 45);
-
-}
-/*void HAL_I2C_MasterTxCpltCallback (I2C_HandleTypeDef * hi2c)
-{
-  I2C_transmit=1;
-}*/
+	  I2C_transmit=1;
+	}*/
 
 /* USER CODE END 4 */
 
@@ -827,11 +843,11 @@ void all_notes_off(void){
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	  /* User can add his own implementation to report the HAL error return state */
+	  __disable_irq();
+	  while (1)
+	  {
+	  }
   /* USER CODE END Error_Handler_Debug */
 }
 
@@ -846,8 +862,8 @@ void Error_Handler(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+	  /* User can add his own implementation to report the file name and line number,
+		 ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

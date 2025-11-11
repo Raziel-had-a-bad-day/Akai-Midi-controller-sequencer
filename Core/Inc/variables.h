@@ -109,7 +109,7 @@ uint8_t realtime;
 
 volatile uint16_t timer_value=512; // sets timer ccr  def is 1100 for now
 uint16_t seq_tmp;
-uint8_t cdc_buffer[12];  // receive buffer on sub , check usbd_cdc_if.c and h for more
+uint8_t cdc_buffer[64];  // receive buffer on sub , check usbd_cdc_if.c and h for more
 uint8_t cdc_send_cue[260];   //hold from cdc
 uint8_t cdc_len=1;
 uint32_t Len;

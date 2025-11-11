@@ -39,11 +39,13 @@ int8_t var_size; // track size of variables for lcd
 			if (i==14)  lcd_tx=lcd_tx-8;
 		//	if (i>11)  lcd_tx=lcd_tx+1;  // rs data
 
-			HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , &lcd_tx, 1, 100);  // enable high
-
+		//	HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , &lcd_tx, 1, 100);  // enable high
+			HAL_I2C_Master_Transmit_IT( &hi2c1, (uint16_t) 0x4E , &lcd_tx, 1);
 			HAL_Delay(lcd_delay[i]);
 			lcd_tx=8; // turn off enable always !!!
-			HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , &lcd_tx, 1, 100);  // enable low
+		//	HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , &lcd_tx, 1, 100);  // enable low
+			HAL_I2C_Master_Transmit_IT ( &hi2c1, (uint16_t) 0x4E , &lcd_tx, 1);  // enable low
+
 			HAL_Delay(1);
 			memset(lcd_buffer,48,32);
 			memset(lcd_buffer_mem,32,32);
@@ -86,23 +88,27 @@ int8_t var_size; // track size of variables for lcd
 	}
 
 
-void lcd_mem(void){   // updates lcd buffer , very slow and blocking
+void lcd_mem(void){   // updates lcd buffer , very slow and blocking  ,,
 	lcd_buffer_counter=0;
 
-	for (lcd_pos=0;lcd_pos<32;lcd_pos++){
+	for (lcd_pos=0;lcd_pos<32;lcd_pos++){   // one character at a time
 		if ((lcd_buffer[lcd_pos]!=lcd_buffer_mem[lcd_pos]) && (!lcd_buffer_full))             {
 
 			lcd_print(lcd_pos,lcd_buffer[lcd_pos]);
 			lcd_buffer_mem[lcd_pos]=lcd_buffer[lcd_pos];
-			lcd_buffer_full=1;
+
 		//	HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, lcd_buffer_counter, 100);lcd_buffer_counter=0;
 		}
-	}
-		//	if (I2C_transmit) HAL_I2C_Master_Transmit_IT ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, 256);   // , stick with blocking
-//	if( (USBD_MIDI_GetState(&hUsbDeviceFS) == MIDI_IDLE) )
 
-		{HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, lcd_buffer_counter, 100); lcd_buffer_full=0;}// keep it short or eventually it breaks
-	// randomly kills usb , updating continually causes flickering ,also strange bugs with swo in programmer
+
+	}
+	lcd_buffer_full=1;
+
+//	{HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, lcd_buffer_counter, 100); lcd_buffer_full=0;}// keep it short or eventually it breaks
+	  if (HAL_I2C_GetState(&hi2c1))		{HAL_I2C_Master_Transmit_IT ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, lcd_buffer_counter); lcd_buffer_full=0;}     // works ok with normal cdc running
+
+
+	  // can randomly kill usb
 }
 
 

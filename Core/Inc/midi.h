@@ -27,6 +27,7 @@ uint8_t pattern_scale_process(uint8_t value, uint8_t selected_sound ) {    // sc
 }
 
 
+/*
 void USBD_MIDI_DataInHandler(uint8_t *usb_rx_buffer, uint8_t usb_rx_buffer_length)   // first byte is extra info then normal midi bytes
 {
 
@@ -45,6 +46,7 @@ void USBD_MIDI_DataInHandler(uint8_t *usb_rx_buffer, uint8_t usb_rx_buffer_lengt
 
 
 }
+*/
 
 void USB_send(void){    // send to midi controller, clean atm , maybe do a full send including led off as well every 8 bars
 
@@ -84,8 +86,11 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	send_buffer[5]=9;
 		// if ((cdc_len>2)   )
 	  			// {  memcpy (send_temp+1,cdc_send_cue+(cdc_len-3),3); USBD_MIDI_SendReport(&hUsbDeviceFS,send_temp,4); cdc_len=cdc_len-3;}  else cdc_len=0;  // usb send
-	if (send_buffer[6]) {USBD_MIDI_SendReport(&hUsbDeviceFS,send_buffer+5,4);send_buffer[6]=0;} // only data for controller
-		}
+	//if (send_buffer[6]) {USBD_MIDI_SendReport(&hUsbDeviceFS,send_buffer+5,4);send_buffer[6]=0;} // only data for controller
+
+	if (send_buffer[6]) CDC_Transmit_FS(send_buffer+5, 4);
+
+}
 
 
 void cdc_send(void){     // all midi runs often , need to separate  , will go back to the old way ,less confusing
