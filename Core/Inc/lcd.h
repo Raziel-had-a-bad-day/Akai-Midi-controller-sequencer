@@ -97,7 +97,7 @@ void lcd_mem(void){   // updates lcd buffer , very slow and blocking  ,,
 			lcd_print(lcd_pos,lcd_buffer[lcd_pos]);
 			lcd_buffer_mem[lcd_pos]=lcd_buffer[lcd_pos];
 
-		//	HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, lcd_buffer_counter, 100);lcd_buffer_counter=0;
+		//	HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, lcd_buffer_counter, 100);lcd_buffer_counter=0;`
 		}
 
 

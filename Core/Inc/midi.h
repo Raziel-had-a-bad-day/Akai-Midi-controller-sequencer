@@ -83,13 +83,13 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 
 	}
 
-	send_buffer[5]=9;
+	send_buffer[5]=9;   // usb extra
 		// if ((cdc_len>2)   )
 	  			// {  memcpy (send_temp+1,cdc_send_cue+(cdc_len-3),3); USBD_MIDI_SendReport(&hUsbDeviceFS,send_temp,4); cdc_len=cdc_len-3;}  else cdc_len=0;  // usb send
 	//if (send_buffer[6]) {USBD_MIDI_SendReport(&hUsbDeviceFS,send_buffer+5,4);send_buffer[6]=0;} // only data for controller
 
+	//if (send_buffer[6]){ while (CDC_Transmit_FS(send_buffer+5, 3)== USBD_BUSY){HAL_Delay(1);}}//bad
 	if (send_buffer[6]) CDC_Transmit_FS(send_buffer+5, 4);
-
 }
 
 
@@ -109,7 +109,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 			uint8_t nrpn_counter=0; //keeps track when sending more then one set of commands
 			uint8_t current_scene=scene_buttons[0];
-			uint8_t controller_temp[9]; // holds controller data
+			//uint8_t controller_temp[9]; // holds controller data
 
 			cue_counter=0;
 
@@ -200,7 +200,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 				}
 			}
 			if ((midi_channel_select != 9)&&(current_velocity)) {			// not drums playing
-				if (!seq_step)last_pitch_count[i]=0;
+				if ((!seq_step )&&(pitch_change_rate[i]==8))last_pitch_count[i]=0;
 
 				if (drum_byte & (1 << (((offset_pitch) & 3) * 2))) { // ok , notes
 
@@ -208,8 +208,9 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					pitch_counter=last_pitch_count[i];
 					current_velocity=(loop_lfo_out[i+32]+current_velocity)&127; //modify velocity with lfo , only temp
 
-				  pitch_seq=pattern_scale_process(random_list[(pitch_counter)],i);  // note from alt_pots+scale
-
+				  //pitch_seq=pattern_scale_process(random_list[(pitch_counter)],i);  // note from alt_pots+scale ,disabled
+				  pitch_seq=random_list[(pitch_counter>>3)];
+				  if (pitch_seq>91) current_velocity=0; // turn off note at full pitch
 					if (high_row)
 						button_states_temp[i] = 0; // button dark
 					note_midi[cue_counter] = midi_channel_select + MIDI_NOTE_ON; // add Note_on
@@ -226,7 +227,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					}
 					last_note_on_channel[i] = pitch_seq; // saves last pitch step
 
-					pitch_counter=(pitch_counter+1)&7;
+					pitch_counter=(pitch_counter+pitch_change_rate[i])&63;   // pitch change up count 8-1 for now
 
 
 

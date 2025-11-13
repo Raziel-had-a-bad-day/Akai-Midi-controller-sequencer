@@ -30,7 +30,7 @@
 #define red_blink_button 4
 #define yellow_button 5
 #define yellow_blink_button 6
-#define variable_count 14   // for flash mem
+#define variable_count 15   // for flash mem
 
 #define pot_1 48
 #define pot_2 49
@@ -154,6 +154,7 @@ uint8_t status_reg[2];
 uint8_t first_message=0; // flag to clear once a button is pressed
 uint8_t rec_arm=0;
 uint8_t last_note_played[16]; // stores note for note off
+uint8_t ppq_temp;
 
 uint8_t flash_flag=0;
 uint8_t flash_read_block2[260] ={1,1,1,1,1,1,1,0}; // this should clearif flash read works
@@ -322,8 +323,7 @@ uint8_t pitch_change_store[64];  //stores pitch changes 0-7 per bar ,per sound ,
 uint8_t pitch_selected_drum_value[8]; // holds outgoing drum value
 uint8_t pitch_change_loop[8]={0,0,0,0,0,0,0,0}; //sets the looping length of pitch changes may default to pressed button as the first in step
 uint8_t pitch_change_loop_position[8]={0,0,0,0,0,0,0,0};  // keeps track of pitch change loop
-
-
+uint8_t pitch_change_rate[16]; // sets alt_pots playback rate ie every note or change every bar etc , set with pot 3 on second screen , might need presets eventually
 
 
 uint8_t lfo_settings_list[32]; //holds lfo settings 1 rate , 2 level , testing for now
@@ -345,5 +345,7 @@ uint8_t controller_fx_enable; // controller data flag
 uint8_t controller_fx_select[2];  // selects which controller data
 uint8_t controller_fx_value[2]; // controller level
 
+uint8_t keyboard_step_record;   // keeps count of keys pressed once rec_arm and pause is on
+uint8_t loop_screen_disable=0;
 
 

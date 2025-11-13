@@ -1,9 +1,34 @@
+
+UART_HandleTypeDef huart1;
+void all_notes_off(void){
+	uint8_t data[48];
+	for (i=0;i<16;i++){
+		data[i*3]=176+i;
+		data[(i*3)+1]=123;
+		data[(i*3)+2]=0;
+	}
+	 HAL_UART_Transmit(&huart1,data,48,100); //   send all notes off on serial port
+	 HAL_Delay(100);
+	 pause=1;
+
+}
+
+void alt_pots_playing(void){    // shows currently playing related to alt notes selected, for visual feedback, only when clip_stop
+
+
+	uint8_t note_played=last_pitch_count[scene_buttons[0]]>>3;  // grab last pitch count
+	if(note_played<4) note_played+=12;
+
+
+	memset(button_states+12,0,4);memset(button_states+20,0,4); // clear area
+	button_states[8+note_played]=3;
+
+
+
+}
+
+
 void record_overdub(void){ // runs only when triggered by keyboard , wipes old data but only when triggered
-
-
-
-
-
 
 	uint16_t drum_byte_select;
 	uint16_t clear_select;
@@ -24,7 +49,25 @@ void record_overdub(void){ // runs only when triggered by keyboard , wipes old d
 				 drum_store_one[drum_byte_select]=drum_byte;
 
 }
+void top_bar(uint8_t input){ // red bar function for top row
 
+	if (input>7){
+	memset(button_states+32,0,8);loop_screen_disable=0;}
+	else button_states[32+input]=3;
+
+
+
+}
+
+void step_recording(void)  {    // write keyboard notes to alt_pots  , but only during pause and arm_rec
+
+	top_bar(keyboard_step_record);
+	if (keyboard_step_record>7) { keyboard_step_record=0;  button_states[rec_arm_button]=0;rec_arm=0;
+	} //reset rec_arm
+	else{		alt_pots[(alt_pots_selector*8)+keyboard_step_record]=(keyboard[0])+32;
+				keyboard_step_record++;}
+
+	}
 void midi_cue_fill(void){
 
 
@@ -75,6 +118,8 @@ void loop_screen(void){  // always on now ,produces lights for notes,  16 notes 
 	uint8_t drum_byte;
 
 	drums=1;    //always
+	if (loop_screen_disable) drums=0; //disable for rec arm
+
 	if(device) drums=0;  // disables loop screen
 
 		if (drums){  // for all sounds now
@@ -175,7 +220,7 @@ void note_buttons(void){  // always running only on notes though
 								pitch_selected_for_drums[selected_scene]=last_press-16; button_states[last_press]=yellow_button; // controls lights
 							//	if(rec_arm | pause) {   // might just drop this
 									//uint8_t pitch_byte_select=(bar_playing)+((selected_scene&7)*8);	// 0-3 + 0-28
-									uint8_t pitch_select=(bar_playing&7)+((selected_scene&7)*8); // 0-63
+								//	uint8_t pitch_select=(bar_playing&7)+((selected_scene&7)*8); // 0-63
 
 
 								//	pitch_change_store[pitch_select]=last_press-16;  // 0-7 , stores in on the timeline
@@ -323,10 +368,10 @@ void buttons_store(void){    // incoming data from controller
 		case volume_button:volume=1;break;
 		case pan_button:pan=1;patch_screen();break;
 		case send_button:send=1;break;
-		case rec_arm_button:rec_arm=1;break;
+		case rec_arm_button:rec_arm=1;break; // set up for step record
 		case device_button:{device=1;memset(button_states+24,0,16);button_states[31+(current_midi&7)-((current_midi>>3)<<3)]=yellow_blink_button;}break;// shows midi channel , for now
-		case stop_all_clips:  {button_states[play_pause_button]=3;pause=5; seq_step=0;seq_step_long=0;play_position=0;bar_selector=0;button_states[stop_all_clips]=0;
-		memset(LFO_tracking_counter,0,64);memset(last_pitch_count,0,16);  }// stop all clips, pause and reset to start
+		case stop_all_clips:  {button_states[play_pause_button]=3;pause=5; seq_step=0;seq_step_long=0;play_position=0;bar_selector=0;button_states[stop_all_clips]=0; all_notes_off();
+		memset(LFO_tracking_counter,0,64);memset(last_pitch_count,0,16); memset(last_note_on_channel,0,16);  }// stop all clips, pause and reset to start
 		break;
 
 		case play_pause_button:pause=5;break;
@@ -362,9 +407,9 @@ void buttons_store(void){    // incoming data from controller
 			}
 			}
 
-		if (shift && pause && clip_stop) { 			// clear all program change info on drums , needs to be saved though
-			memset(program_change_automation,0,32);
-			memcpy(alt_pots+128,program_change_automation,32);clip_stop=0;button_states[82]=0;
+		if (shift && pause && clip_stop) { 			// clear all program change info on drums , needs to be saved though ,disabled
+			//memset(program_change_automation,0,32);
+			//memcpy(alt_pots+128,program_change_automation,32);clip_stop=0;button_states[82]=0;
 		}
 
 
@@ -382,8 +427,8 @@ void buttons_store(void){    // incoming data from controller
 	if ((status == 176) && (clip_stop)){   // with clip stop on
 
 
-	alt_pots[(incoming_data1  - 48)+(alt_pots_selector*8)] =((incoming_message[2])); // sounds 0-7
-
+	//alt_pots[(incoming_data1  - 48)+(alt_pots_selector*8)] =((incoming_message[2])); // sounds 0-7   , allow a off  setting, like full low or high that is played but zero volume
+	alt_pots[(incoming_data1  - 48)+(alt_pots_selector*8)] =((incoming_message[2])>>1)+32;   // at full setting velocity is off
 	// maybe 16 values or about 2 octaves in scales
 
 		status=0; // clear
@@ -444,9 +489,9 @@ void buttons_store(void){    // incoming data from controller
 		{pitch_list_for_drums[(pitch_change_loop_position[current_scene])+(current_scene*8)] =incoming_message[2];//pitch_change_flag=1;
 		pitch_selected_drum_value[current_scene]=incoming_message[2];   // this actually sends data for nrpn
 		lcd_downcount=3;lcd_messages_select=7;
-		pitch_change_flag=1+current_scene;   // enable nrpn send
-
-		} ;break;// sets pitch for drums ,only first page
+		pitch_change_flag=1+current_scene; }  // enable nrpn send
+		if ((current_scene>11) && (!clip_stop)) pitch_change_rate[current_scene]=8-(incoming_message[2]>>4);
+		 ;break;// sets pitch for drums ,only first page
 
 		case pot_4:{pattern_scale_list[current_scene]=(pot_states[3]>>3)&15;lcd_downcount=3;lcd_messages_select=3;};break;
 		case pot_5: 	if ((!device)&& (!clip_stop)) {lfo_settings_list[(current_scene*2)]=incoming_message[2];lcd_downcount=3;lcd_messages_select=9;} ;break;  // lfo rate
@@ -536,7 +581,7 @@ void buttons_store(void){    // incoming data from controller
 
 	}// end of scene select
 	buffer_clear = 1;
-	loop_screen();  // always run except when device on
+	loop_screen();  // always run except when device on ,except when keyboard step
 	if (buffer_clear)
 		memcpy(cdc_buffer+cdc_start, clear, 3);
 
@@ -616,7 +661,7 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 
 		uint8_t pitch_byte=pitch_change_loop_position[current_scene]; // current pitch selected
-		memset(button_states+16,0,8);
+		if (clip_stop) memset(button_states+16,0,4);  else memset(button_states+16,0,8);
 		button_states[pitch_byte+16]=yellow_button;
 
 
@@ -670,8 +715,6 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 
 	}
-
-
 
 
 

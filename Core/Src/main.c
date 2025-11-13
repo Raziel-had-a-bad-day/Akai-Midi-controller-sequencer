@@ -182,11 +182,13 @@ int main(void)
   //	HAL_TIM_PWM_Start(&htim2,TIM_CHANNEL_1);
   //	TIM2->CNT=32000;
 
+/*
   	int __io_putchar(int ch)
   	{
   	    ITM_SendChar(ch);
   	    return (ch);
   	}
+*/
 
 
     HAL_TIM_Base_Start_IT(&htim2);
@@ -231,6 +233,7 @@ int main(void)
 		  if (serial_len)   HAL_UART_Transmit(&huart1,serial_out,serial_len,100); // uart send disable if no info, sent seq_pos,
 
 
+
 		  //maybe dma if needed for now ok (2ms total for send )
 
 		  // USB_send();
@@ -266,11 +269,7 @@ int main(void)
 			  pattern_settings();
 			  led_full_clear();
 
-
-
-
-
-
+			  if (clip_stop) alt_pots_playing(); // lights for alt pots during play
 
 			  uint8_t current_scene=scene_buttons[0]; //  local
 			  seq_current_step=loop_lfo_out[current_scene+32];
@@ -355,8 +354,14 @@ int main(void)
 
  			}   // blink steps , end of s_temp
 
+
+	 if (ppq_temp!=ppq_send) { USB_send(); ppq_temp=ppq_send;// need to limit rate or it crashes the controlled/midi stack
+
+
+		  }
+
+	  //USB_send();
 	  lcd_mem(); // this sends too fast when run constant
-	  USB_send();
 
 
 /*
@@ -436,7 +441,7 @@ int main(void)
 		  }  // end of cdc message
 
 				  if (keyboard[0])  {    // keyboard play live
-
+					  if (rec_arm && pause && (keyboard[1]>48)) {loop_screen_disable=1;step_recording();}
 						  uint8_t note_flag=144; // just use vel 0 for off
 						  uint8_t incoming=keyboard[0];
 						  uint8_t velocity=keyboard[1];
@@ -816,19 +821,7 @@ static void MX_GPIO_Init(void)
 		if  (stop_toggle ==4) {HAL_TIM_Base_Start_IT(&htim2);stop_toggle=0;}
 
 	}
-	void all_notes_off(void){
-		uint8_t data[48];
-		for (i=0;i<16;i++){
-			data[i*3]=176+i;
-			data[(i*3)+1]=123;
-			data[(i*3)+2]=0;
-		}
-		 HAL_UART_Transmit(&huart1,data,48,100); //   send all notes off on serial
-		 HAL_Delay(100);
-		 pause=1;
-		 //CDC_Transmit_FS(data+3, 45);
 
-	}
 	/*void HAL_I2C_MasterTxCpltCallback (I2C_HandleTypeDef * hi2c)
 	{
 	  I2C_transmit=1;
