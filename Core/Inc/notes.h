@@ -64,7 +64,7 @@ void step_recording(void)  {    // write keyboard notes to alt_pots  , but only 
 	top_bar(keyboard_step_record);
 	if (keyboard_step_record>7) { keyboard_step_record=0;  button_states[rec_arm_button]=0;rec_arm=0;
 	} //reset rec_arm
-	else{		alt_pots[(alt_pots_selector*8)+keyboard_step_record]=(keyboard[0])+32;
+	else{		alt_pots[(alt_pots_selector*8)+keyboard_step_record]=(keyboard[0]);
 				keyboard_step_record++;}
 
 	}

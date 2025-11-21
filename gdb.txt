@@ -31762,3 +31762,2706 @@
 75^done,threads=[]
 (gdb) 
 76^exit
+=cmd-param-changed,param="logging enabled",value="on"
+23^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+24^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+25^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+26^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.62V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F411 M4\n"
+27^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+28^done
+~"SystemInit () at ../Core/Src/system_stm32f4xx.c:182\n"
+~"182\t}\n"
+*stopped,frame={addr="0x08005374",func="SystemInit",args=[],file="../Core/Src/system_stm32f4xx.c",fullname="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Core/Src/system_stm32f4xx.c",line="182",arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+29+download,{section=".isr_vector",section-size="408",total-size="1054486"}
+29+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1054486"}
+~"Loading section .text, size 0x110f0 lma 0x80001a0\n"
+29+download,{section=".text",section-size="69872",total-size="1054486"}
+29+download,{section=".text",section-sent="43008",section-size="69872",total-sent="43416",total-size="1054486"}
+~"Loading section .rodata, size 0x304 lma 0x8011290\n"
+29+download,{section=".rodata",section-size="772",total-size="1054486"}
+~"Loading section .ARM, size 0x8 lma 0x8011594\n"
+29+download,{section=".ARM",section-size="8",total-size="1054486"}
+~"Loading section .init_array, size 0x4 lma 0x801159c\n"
+29+download,{section=".init_array",section-size="4",total-size="1054486"}
+~"Loading section .fini_array, size 0x4 lma 0x80115a0\n"
+29+download,{section=".fini_array",section-size="4",total-size="1054486"}
+~"Loading section .data, size 0x26c lma 0x80115a4\n"
+29+download,{section=".data",section-size="620",total-size="1054486"}
+~"Start address 0x08005384, load size 71688\n"
+~"Transfer rate: 29 KB/sec, 907 bytes/write.\n"
+29^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+30^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+31^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+32^done,depth="1"
+(gdb) 
+33^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+34^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+35^done
+(gdb) 
+36^done,stack=[frame={level="0",addr="0x08005384",func="Reset_Handler",arch="armv7e-m"}]
+(gdb) 
+37^error,msg="Can not fetch data now."
+(gdb) 
+38^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+39^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+40^done,name="var1",numchild="0",value="176 '\260'",type="uint8_t",has_more="0"
+(gdb) 
+41^done,name="var2",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+42^done,name="var3",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+43^done,name="var4",numchild="0",value="0 '\\000'",type="uint8_t",has_more="0"
+(gdb) 
+44^done,name="var5",numchild="0",value="7 '\\a'",type="uint8_t",has_more="0"
+(gdb) 
+45^done
+(gdb) 
+46^done,name="var6",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+47^done,name="var7",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+48^running
+*running,thread-id="all"
+(gdb) 
+49^error,msg="Cannot execute this command while the target is running.\nUse the \"interrupt\" command to stop the target\nand then try again."
+(gdb) 
+50^done
+(gdb) 
+~"\nProgram"
+~" received signal SIGINT, Interrupt.\n"
+~"0x080033bc in lcd_mem () at ../Core/Inc/lcd.h:95\n"
+~"95\t\t\tif ((lcd_buffer[lcd_pos]!=lcd_buffer_mem[lcd_pos]) && (!lcd_buffer_full))             {\n"
+*stopped,reason="signal-received",signal-name="SIGINT",signal-meaning="Interrupt",frame={addr="0x080033bc",func="lcd_mem",args=[],file="../Core/Inc/lcd.h",fullname="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Core/Inc/lcd.h",line="95",arch="armv7e-m"},thread-id="1",stopped-threads="all"
+~"Kill the program being debugged? (y or n) [answered Y; input not from terminal]\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) killed]\n"
+51^done
+(gdb) 
+52^error,msg="Invalid thread id: 1"
+(gdb) 
+53^error,msg="Invalid thread id: 1"
+(gdb) 
+54^error,msg="Invalid thread id: 1"
+(gdb) 
+55^error,msg="Invalid thread id: 1"
+(gdb) 
+56^error,msg="Invalid thread id: 1"
+(gdb) 
+57^error,msg="Invalid thread id: 1"
+(gdb) 
+58^error,msg="Invalid thread id: 1"
+(gdb) 
+59^error,msg="Invalid thread id: 1"
+(gdb) 
+60^error,msg="Invalid thread id: 1"
+(gdb) 
+61^error,msg="Invalid thread id: 1"
+(gdb) 
+62^error,msg="Invalid thread id: 1"
+(gdb) 
+63^error,msg="Invalid thread id: 1"
+(gdb) 
+64^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+65^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+66^done,threads=[]
+(gdb) 
+67^exit
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+26^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.56V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F411 M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"0x08005384 in NVIC_EncodePriority (PriorityGroup=134238525, PreemptPriority=134238517, SubPriority=134239109) at ../Drivers/CMSIS/Include/core_cm4.h:1872\n"
+~"1872\t           ((SubPriority     & (uint32_t)((1UL << (SubPriorityBits    )) - 1UL)))\n"
+*stopped,frame={addr="0x08005384",func="NVIC_EncodePriority",args=[{name="PriorityGroup",value="134238525"},{name="PreemptPriority",value="134238517"},{name="SubPriority",value="134239109"}],file="../Drivers/CMSIS/Include/core_cm4.h",fullname="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Drivers/CMSIS/Include/core_cm4.h",line="1872",arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+30+download,{section=".isr_vector",section-size="408",total-size="1052613"}
+30+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1052613"}
+~"Loading section .text, size 0x10a98 lma 0x80001a0\n"
+30+download,{section=".text",section-size="68248",total-size="1052613"}
+30+download,{section=".text",section-sent="42976",section-size="68248",total-sent="43384",total-size="1052613"}
+~"Loading section .rodata, size 0x2f4 lma 0x8010c38\n"
+30+download,{section=".rodata",section-size="756",total-size="1052613"}
+~"Loading section .ARM, size 0x8 lma 0x8010f2c\n"
+30+download,{section=".ARM",section-size="8",total-size="1052613"}
+~"Loading section .init_array, size 0x4 lma 0x8010f34\n"
+30+download,{section=".init_array",section-size="4",total-size="1052613"}
+~"Loading section .fini_array, size 0x4 lma 0x8010f38\n"
+30+download,{section=".fini_array",section-size="4",total-size="1052613"}
+~"Loading section .data, size 0x26c lma 0x8010f3c\n"
+30+download,{section=".data",section-size="620",total-size="1052613"}
+~"Start address 0x080050c0, load size 70048\n"
+~"Transfer rate: 28 KB/sec, 898 bytes/write.\n"
+30^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+31^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+32^error,msg="Can not fetch data now."
+(gdb) 
+33^done,name="var1",numchild="0",value="178 '\262'",type="uint8_t",has_more="0"
+(gdb) 
+34^done,name="var2",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+35^done,name="var3",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+36^done,name="var4",numchild="0",value="0 '\\000'",type="uint8_t",has_more="0"
+(gdb) 
+37^done,name="var5",numchild="0",value="7 '\\a'",type="uint8_t",has_more="0"
+(gdb) 
+38^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+39^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+40^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+41^done,depth="1"
+(gdb) 
+42^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+43^done,name="var6",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+44^done,name="var7",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+45^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x080050c0",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+46^done
+(gdb) 
+47^done,stack=[frame={level="0",addr="0x080050c0",func="Reset_Handler",arch="armv7e-m"}]
+(gdb) 
+48^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x080050c0",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+49^done
+(gdb) 
+50^done,name="var8",numchild="0",value="178 '\262'",type="uint8_t",has_more="0"
+(gdb) 
+51^done,name="var9",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+52^done,name="var10",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+53^done,name="var11",numchild="0",value="0 '\\000'",type="uint8_t",has_more="0"
+(gdb) 
+54^done,name="var12",numchild="0",value="7 '\\a'",type="uint8_t",has_more="0"
+(gdb) 
+55^done,name="var13",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+56^done,name="var14",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+57^running
+*running,thread-id="all"
+(gdb) 
+58^error,msg="Cannot execute this command while the target is running.\nUse the \"interrupt\" command to stop the target\nand then try again."
+(gdb) 
+59^done
+(gdb) 
+~"\nProgram"
+~" received signal SIGINT, Interrupt.\n"
+~"0x0800340a in lcd_mem () at ../Core/Inc/lcd.h:94\n"
+~"94\t\tfor (lcd_pos=0;lcd_pos<32;lcd_pos++){   // one character at a time\n"
+*stopped,reason="signal-received",signal-name="SIGINT",signal-meaning="Interrupt",frame={addr="0x0800340a",func="lcd_mem",args=[],file="../Core/Inc/lcd.h",fullname="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Core/Inc/lcd.h",line="94",arch="armv7e-m"},thread-id="1",stopped-threads="all"
+~"Kill the program being debugged? (y or n) [answered Y; input not from terminal]\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) killed]\n"
+60^done
+(gdb) 
+61^error,msg="Invalid thread id: 1"
+(gdb) 
+62^error,msg="Invalid thread id: 1"
+(gdb) 
+63^error,msg="Invalid thread id: 1"
+(gdb) 
+64^error,msg="Invalid thread id: 1"
+(gdb) 
+65^error,msg="Invalid thread id: 1"
+(gdb) 
+66^error,msg="Invalid thread id: 1"
+(gdb) 
+67^error,msg="Invalid thread id: 1"
+(gdb) 
+68^error,msg="Invalid thread id: 1"
+(gdb) 
+69^error,msg="Invalid thread id: 1"
+(gdb) 
+70^error,msg="Invalid thread id: 1"
+(gdb) 
+71^error,msg="Invalid thread id: 1"
+(gdb) 
+72^error,msg="Invalid thread id: 1"
+(gdb) 
+73^done,threads=[]
+(gdb) 
+74^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+75^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+76^exit
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+26^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.55V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F411 M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"0x080050c0 in HAL_UART_MspInit (huart=0x80050c1 <HAL_UART_MspInit+64>) at ../Core/Src/stm32f4xx_hal_msp.c:336\n"
+~"336\t    __HAL_RCC_GPIOA_CLK_ENABLE();\n"
+*stopped,frame={addr="0x080050c0",func="HAL_UART_MspInit",args=[{name="huart",value="0x80050c1 <HAL_UART_MspInit+64>"}],file="../Core/Src/stm32f4xx_hal_msp.c",fullname="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Core/Src/stm32f4xx_hal_msp.c",line="336",arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+30+download,{section=".isr_vector",section-size="408",total-size="1054632"}
+30+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1054632"}
+~"Loading section .text, size 0x110f0 lma 0x80001a0\n"
+30+download,{section=".text",section-size="69872",total-size="1054632"}
+30+download,{section=".text",section-sent="42960",section-size="69872",total-sent="43368",total-size="1054632"}
+~"Loading section .rodata, size 0x2f4 lma 0x8011290\n"
+30+download,{section=".rodata",section-size="756",total-size="1054632"}
+~"Loading section .ARM, size 0x8 lma 0x8011584\n"
+30+download,{section=".ARM",section-size="8",total-size="1054632"}
+~"Loading section .init_array, size 0x4 lma 0x801158c\n"
+30+download,{section=".init_array",section-size="4",total-size="1054632"}
+~"Loading section .fini_array, size 0x4 lma 0x8011590\n"
+30+download,{section=".fini_array",section-size="4",total-size="1054632"}
+~"Loading section .data, size 0x26c lma 0x8011594\n"
+30+download,{section=".data",section-size="620",total-size="1054632"}
+~"Start address 0x08005384, load size 71672\n"
+~"Transfer rate: 29 KB/sec, 907 bytes/write.\n"
+30^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+31^error,msg="Can not fetch data now."
+(gdb) 
+32^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+33^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+34^done,name="var1",numchild="0",value="178 '\262'",type="uint8_t",has_more="0"
+(gdb) 
+35^done,name="var2",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+36^done,name="var3",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+37^done,name="var4",numchild="0",value="0 '\\000'",type="uint8_t",has_more="0"
+(gdb) 
+38^done,name="var5",numchild="0",value="7 '\\a'",type="uint8_t",has_more="0"
+(gdb) 
+39^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+40^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+41^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+42^done,depth="1"
+(gdb) 
+43^done,depth="1"
+(gdb) 
+44^done,name="var6",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+45^done,name="var7",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+46^done
+(gdb) 
+47^done,stack=[frame={level="0",addr="0x08005384",func="Reset_Handler",arch="armv7e-m"}]
+(gdb) 
+48^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+49^done
+(gdb) 
+50^done,name="var8",numchild="0",value="178 '\262'",type="uint8_t",has_more="0"
+(gdb) 
+51^done,name="var9",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+52^done,name="var10",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+53^done,name="var11",numchild="0",value="0 '\\000'",type="uint8_t",has_more="0"
+(gdb) 
+54^done,name="var12",numchild="0",value="7 '\\a'",type="uint8_t",has_more="0"
+(gdb) 
+55^done,name="var13",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+56^done,name="var14",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+57^running
+*running,thread-id="all"
+(gdb) 
+58^error,msg="Cannot execute this command while the target is running.\nUse the \"interrupt\" command to stop the target\nand then try again."
+(gdb) 
+59^done
+(gdb) 
+~"\nProgram"
+~" received signal SIGINT, Interrupt.\n"
+~"0x0800b612 in UART_WaitOnFlagUntilTimeout ()\n"
+*stopped,reason="signal-received",signal-name="SIGINT",signal-meaning="Interrupt",frame={addr="0x0800b612",func="UART_WaitOnFlagUntilTimeout",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+~"Kill the program being debugged? (y or n) [answered Y; input not from terminal]\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) killed]\n"
+60^done
+(gdb) 
+61^error,msg="Invalid thread id: 1"
+(gdb) 
+62^error,msg="Invalid thread id: 1"
+(gdb) 
+63^error,msg="Invalid thread id: 1"
+(gdb) 
+64^error,msg="Invalid thread id: 1"
+(gdb) 
+65^error,msg="Invalid thread id: 1"
+(gdb) 
+66^error,msg="Invalid thread id: 1"
+(gdb) 
+67^error,msg="Invalid thread id: 1"
+(gdb) 
+68^error,msg="Invalid thread id: 1"
+(gdb) 
+69^error,msg="Invalid thread id: 1"
+(gdb) 
+70^error,msg="Invalid thread id: 1"
+(gdb) 
+71^error,msg="Invalid thread id: 1"
+(gdb) 
+72^error,msg="Invalid thread id: 1"
+(gdb) 
+73^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+74^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+75^done,threads=[]
+(gdb) 
+76^exit
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+26^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.55V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F411 M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"SystemInit () at ../Core/Src/system_stm32f4xx.c:182\n"
+~"182\t}\n"
+*stopped,frame={addr="0x08005384",func="SystemInit",args=[],file="../Core/Src/system_stm32f4xx.c",fullname="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Core/Src/system_stm32f4xx.c",line="182",arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+30+download,{section=".isr_vector",section-size="408",total-size="1054649"}
+30+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1054649"}
+~"Loading section .text, size 0x11100 lma 0x80001a0\n"
+30+download,{section=".text",section-size="69888",total-size="1054649"}
+30+download,{section=".text",section-sent="42976",section-size="69888",total-sent="43384",total-size="1054649"}
+~"Loading section .rodata, size 0x2f4 lma 0x80112a0\n"
+30+download,{section=".rodata",section-size="756",total-size="1054649"}
+~"Loading section .ARM, size 0x8 lma 0x8011594\n"
+30+download,{section=".ARM",section-size="8",total-size="1054649"}
+~"Loading section .init_array, size 0x4 lma 0x801159c\n"
+30+download,{section=".init_array",section-size="4",total-size="1054649"}
+~"Loading section .fini_array, size 0x4 lma 0x80115a0\n"
+30+download,{section=".fini_array",section-size="4",total-size="1054649"}
+~"Loading section .data, size 0x26c lma 0x80115a4\n"
+30+download,{section=".data",section-size="620",total-size="1054649"}
+~"Start address 0x08005394, load size 71688\n"
+~"Transfer rate: 29 KB/sec, 907 bytes/write.\n"
+30^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+31^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005394",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+32^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+33^error,msg="Can not fetch data now."
+(gdb) 
+34^done,name="var1",numchild="0",value="178 '\262'",type="uint8_t",has_more="0"
+(gdb) 
+35^done,name="var2",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+36^done,name="var3",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+37^done,name="var4",numchild="0",value="0 '\\000'",type="uint8_t",has_more="0"
+(gdb) 
+38^done,name="var5",numchild="0",value="7 '\\a'",type="uint8_t",has_more="0"
+(gdb) 
+39^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+40^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+41^done,depth="1"
+(gdb) 
+42^error,msg="Thread ID 1 has terminated."
+(gdb) 
+43^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+44^done,name="var6",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+45^done,name="var7",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+46^done
+(gdb) 
+47^done,stack=[frame={level="0",addr="0x08005394",func="Reset_Handler",arch="armv7e-m"}]
+(gdb) 
+48^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005394",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+49^done,name="var8",numchild="0",value="178 '\262'",type="uint8_t",has_more="0"
+(gdb) 
+50^done,name="var9",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+51^done,name="var10",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+52^done,name="var11",numchild="0",value="0 '\\000'",type="uint8_t",has_more="0"
+(gdb) 
+53^done,name="var12",numchild="0",value="7 '\\a'",type="uint8_t",has_more="0"
+(gdb) 
+54^done,name="var13",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+55^done,name="var14",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+56^done
+(gdb) 
+57^running
+*running,thread-id="all"
+(gdb) 
+58^error,msg="Cannot execute this command while the target is running.\nUse the \"interrupt\" command to stop the target\nand then try again."
+(gdb) 
+59^done
+(gdb) 
+~"\nProgram"
+~" received signal SIGINT, Interrupt.\n"
+~"0x080033ca in lcd_mem () at ../Core/Inc/lcd.h:95\n"
+~"95\t\t\tif ((lcd_buffer[lcd_pos]!=lcd_buffer_mem[lcd_pos]) && (!lcd_buffer_full))             {\n"
+*stopped,reason="signal-received",signal-name="SIGINT",signal-meaning="Interrupt",frame={addr="0x080033ca",func="lcd_mem",args=[],file="../Core/Inc/lcd.h",fullname="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Core/Inc/lcd.h",line="95",arch="armv7e-m"},thread-id="1",stopped-threads="all"
+~"Kill the program being debugged? (y or n) [answered Y; input not from terminal]\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) killed]\n"
+60^done
+(gdb) 
+61^error,msg="Invalid thread id: 1"
+(gdb) 
+62^error,msg="Invalid thread id: 1"
+(gdb) 
+63^error,msg="Invalid thread id: 1"
+(gdb) 
+64^error,msg="Invalid thread id: 1"
+(gdb) 
+65^error,msg="Invalid thread id: 1"
+(gdb) 
+66^error,msg="Invalid thread id: 1"
+(gdb) 
+67^error,msg="Invalid thread id: 1"
+(gdb) 
+68^error,msg="Invalid thread id: 1"
+(gdb) 
+69^error,msg="Invalid thread id: 1"
+(gdb) 
+70^error,msg="Invalid thread id: 1"
+(gdb) 
+71^error,msg="Invalid thread id: 1"
+(gdb) 
+72^error,msg="Invalid thread id: 1"
+(gdb) 
+73^done,threads=[]
+(gdb) 
+74^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+75^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+76^exit
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+26^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.56V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F411 M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"0x08005394 in Reset_Handler ()\n"
+*stopped,frame={addr="0x08005394",func="Reset_Handler",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+30+download,{section=".isr_vector",section-size="408",total-size="1054649"}
+30+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1054649"}
+~"Loading section .text, size 0x11100 lma 0x80001a0\n"
+30+download,{section=".text",section-size="69888",total-size="1054649"}
+30+download,{section=".text",section-sent="42976",section-size="69888",total-sent="43384",total-size="1054649"}
+~"Loading section .rodata, size 0x2f4 lma 0x80112a0\n"
+30+download,{section=".rodata",section-size="756",total-size="1054649"}
+~"Loading section .ARM, size 0x8 lma 0x8011594\n"
+30+download,{section=".ARM",section-size="8",total-size="1054649"}
+~"Loading section .init_array, size 0x4 lma 0x801159c\n"
+30+download,{section=".init_array",section-size="4",total-size="1054649"}
+~"Loading section .fini_array, size 0x4 lma 0x80115a0\n"
+30+download,{section=".fini_array",section-size="4",total-size="1054649"}
+~"Loading section .data, size 0x26c lma 0x80115a4\n"
+30+download,{section=".data",section-size="620",total-size="1054649"}
+~"Start address 0x08005394, load size 71688\n"
+~"Transfer rate: 29 KB/sec, 907 bytes/write.\n"
+30^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+31^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005394",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+32^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+33^error,msg="Can not fetch data now."
+(gdb) 
+34^done,name="var1",numchild="0",value="178 '\262'",type="uint8_t",has_more="0"
+(gdb) 
+35^done,name="var2",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+36^done,name="var3",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+37^done,name="var4",numchild="0",value="0 '\\000'",type="uint8_t",has_more="0"
+(gdb) 
+38^done,name="var5",numchild="0",value="7 '\\a'",type="uint8_t",has_more="0"
+(gdb) 
+39^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+40^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+41^done,depth="1"
+(gdb) 
+42^error,msg="Thread ID 1 has terminated."
+(gdb) 
+43^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+44^done,name="var6",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+45^done,name="var7",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+46^done
+(gdb) 
+47^done,stack=[frame={level="0",addr="0x08005394",func="Reset_Handler",arch="armv7e-m"}]
+(gdb) 
+48^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005394",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+49^done,name="var8",numchild="0",value="178 '\262'",type="uint8_t",has_more="0"
+(gdb) 
+50^done,name="var9",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+51^done,name="var10",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+52^done,name="var11",numchild="0",value="0 '\\000'",type="uint8_t",has_more="0"
+(gdb) 
+53^done,name="var12",numchild="0",value="7 '\\a'",type="uint8_t",has_more="0"
+(gdb) 
+54^done,name="var13",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+55^done,name="var14",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+56^done
+(gdb) 
+57^running
+*running,thread-id="all"
+(gdb) 
+58^error,msg="Cannot execute this command while the target is running.\nUse the \"interrupt\" command to stop the target\nand then try again."
+(gdb) 
+59^done
+(gdb) 
+~"\nProgram"
+~" received signal SIGINT, Interrupt.\n"
+~"0x0800683e in HAL_I2C_EV_IRQHandler ()\n"
+*stopped,reason="signal-received",signal-name="SIGINT",signal-meaning="Interrupt",frame={addr="0x0800683e",func="HAL_I2C_EV_IRQHandler",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+~"Kill the program being debugged? (y or n) [answered Y; input not from terminal]\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) killed]\n"
+60^done
+(gdb) 
+61^error,msg="Invalid thread id: 1"
+(gdb) 
+62^error,msg="Invalid thread id: 1"
+(gdb) 
+63^error,msg="Invalid thread id: 1"
+(gdb) 
+64^error,msg="Invalid thread id: 1"
+(gdb) 
+65^error,msg="Invalid thread id: 1"
+(gdb) 
+66^error,msg="Invalid thread id: 1"
+(gdb) 
+67^error,msg="Invalid thread id: 1"
+(gdb) 
+68^error,msg="Invalid thread id: 1"
+(gdb) 
+69^error,msg="Invalid thread id: 1"
+(gdb) 
+70^error,msg="Invalid thread id: 1"
+(gdb) 
+71^error,msg="Invalid thread id: 1"
+(gdb) 
+72^error,msg="Invalid thread id: 1"
+(gdb) 
+73^done,threads=[]
+(gdb) 
+74^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+75^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+76^exit
+=cmd-param-changed,param="logging enabled",value="on"
+23^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+24^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+25^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+26^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.60V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F401C M4\n"
+27^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+28^done
+~"0x08004fc4 in HAL_SPI_MspInit (hspi=0x0) at ../Core/Src/stm32f4xx_hal_msp.c:210\n"
+~"210\t    hdma_spi1_tx.Instance = DMA2_Stream2;\n"
+*stopped,frame={addr="0x08004fc4",func="HAL_SPI_MspInit",args=[{name="hspi",value="0x0"}],file="../Core/Src/stm32f4xx_hal_msp.c",fullname="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Core/Src/stm32f4xx_hal_msp.c",line="210",arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+29+download,{section=".isr_vector",section-size="408",total-size="1054649"}
+29+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1054649"}
+~"Loading section .text, size 0x11100 lma 0x80001a0\n"
+29+download,{section=".text",section-size="69888",total-size="1054649"}
+29+download,{section=".text",section-sent="42976",section-size="69888",total-sent="43384",total-size="1054649"}
+~"Loading section .rodata, size 0x2f4 lma 0x80112a0\n"
+29+download,{section=".rodata",section-size="756",total-size="1054649"}
+~"Loading section .ARM, size 0x8 lma 0x8011594\n"
+29+download,{section=".ARM",section-size="8",total-size="1054649"}
+~"Loading section .init_array, size 0x4 lma 0x801159c\n"
+29+download,{section=".init_array",section-size="4",total-size="1054649"}
+~"Loading section .fini_array, size 0x4 lma 0x80115a0\n"
+29+download,{section=".fini_array",section-size="4",total-size="1054649"}
+~"Loading section .data, size 0x26c lma 0x80115a4\n"
+29+download,{section=".data",section-size="620",total-size="1054649"}
+~"Start address 0x08005394, load size 71688\n"
+~"Transfer rate: 31 KB/sec, 907 bytes/write.\n"
+29^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+30^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+31^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+32^done,depth="1"
+(gdb) 
+33^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+34^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005394",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+35^done
+(gdb) 
+36^done,stack=[frame={level="0",addr="0x08005394",func="Reset_Handler",arch="armv7e-m"}]
+(gdb) 
+37^error,msg="Can not fetch data now."
+(gdb) 
+38^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005394",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+39^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+40^done,name="var1",numchild="0",value="215 '\327'",type="uint8_t",has_more="0"
+(gdb) 
+41^done,name="var2",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+42^done,name="var3",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+43^done,name="var4",numchild="0",value="20 '\\024'",type="uint8_t",has_more="0"
+(gdb) 
+44^done,name="var5",numchild="0",value="0 '\\000'",type="uint8_t",has_more="0"
+(gdb) 
+45^done
+(gdb) 
+46^done,name="var6",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+47^done,name="var7",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+48^running
+*running,thread-id="all"
+(gdb) 
+~"\nProgram"
+~" received signal SIGSEGV, Segmentation fault.\n"
+~"0x00000000 in ?? ()\n"
+*stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x00000000",func="??",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+49^error,msg="Thread ID 1 has terminated."
+(gdb) 
+50^done,depth="1"
+(gdb) 
+51^done,depth="1"
+(gdb) 
+52^done,changelist=[]
+(gdb) 
+53^done,changelist=[]
+(gdb) 
+54^done,changelist=[]
+(gdb) 
+55^done,changelist=[]
+(gdb) 
+56^done,changelist=[]
+(gdb) 
+57^done,changelist=[]
+(gdb) 
+58^done,changelist=[]
+(gdb) 
+59^done
+(gdb) 
+60^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+61^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x00000000",func="??",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+~"Kill the program being debugged? (y or n) [answered Y; input not from terminal]\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) killed]\n"
+62^done
+(gdb) 
+63^done,threads=[]
+(gdb) 
+64^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+65^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+66^exit
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+26^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.55V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F401C M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"BusFault_Handler () at ../Core/Src/stm32f4xx_it.c:123\n"
+~"123\t  while (1)\n"
+*stopped,frame={addr="0x08005150",func="BusFault_Handler",args=[],file="../Core/Src/stm32f4xx_it.c",fullname="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Core/Src/stm32f4xx_it.c",line="123",arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+30+download,{section=".isr_vector",section-size="408",total-size="1054635"}
+30+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1054635"}
+~"Loading section .text, size 0x110f0 lma 0x80001a0\n"
+30+download,{section=".text",section-size="69872",total-size="1054635"}
+30+download,{section=".text",section-sent="42960",section-size="69872",total-sent="43368",total-size="1054635"}
+~"Loading section .rodata, size 0x2f4 lma 0x8011290\n"
+30+download,{section=".rodata",section-size="756",total-size="1054635"}
+~"Loading section .ARM, size 0x8 lma 0x8011584\n"
+30+download,{section=".ARM",section-size="8",total-size="1054635"}
+~"Loading section .init_array, size 0x4 lma 0x801158c\n"
+30+download,{section=".init_array",section-size="4",total-size="1054635"}
+~"Loading section .fini_array, size 0x4 lma 0x8011590\n"
+30+download,{section=".fini_array",section-size="4",total-size="1054635"}
+~"Loading section .data, size 0x26c lma 0x8011594\n"
+30+download,{section=".data",section-size="620",total-size="1054635"}
+~"Start address 0x08005384, load size 71672\n"
+~"Transfer rate: 31 KB/sec, 907 bytes/write.\n"
+30^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+31^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+32^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+33^error,msg="Can not fetch data now."
+(gdb) 
+34^done,name="var1",numchild="0",value="215 '\327'",type="uint8_t",has_more="0"
+(gdb) 
+35^done,name="var2",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+36^done,name="var3",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+37^done,name="var4",numchild="0",value="20 '\\024'",type="uint8_t",has_more="0"
+(gdb) 
+38^done,name="var5",numchild="0",value="0 '\\000'",type="uint8_t",has_more="0"
+(gdb) 
+39^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+40^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+41^done,depth="1"
+(gdb) 
+42^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+43^error,msg="Thread ID 1 has terminated."
+(gdb) 
+44^done,name="var6",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+45^done,name="var7",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+46^done
+(gdb) 
+47^done,stack=[frame={level="0",addr="0x08005384",func="Reset_Handler",arch="armv7e-m"}]
+(gdb) 
+48^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+49^done,name="var8",numchild="0",value="215 '\327'",type="uint8_t",has_more="0"
+(gdb) 
+50^done,name="var9",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+51^done,name="var10",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+52^done,name="var11",numchild="0",value="20 '\\024'",type="uint8_t",has_more="0"
+(gdb) 
+53^done,name="var12",numchild="0",value="0 '\\000'",type="uint8_t",has_more="0"
+(gdb) 
+54^done,name="var13",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+55^done,name="var14",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+56^done
+(gdb) 
+57^running
+*running,thread-id="all"
+(gdb) 
+~"\nProgram"
+~" received signal SIGSEGV, Segmentation fault.\n"
+~"0x00000000 in ?? ()\n"
+*stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x00000000",func="??",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+58^done,depth="1"
+(gdb) 
+59^done
+(gdb) 
+60^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+61^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x00000000",func="??",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+62^done,changelist=[]
+(gdb) 
+63^done,changelist=[]
+(gdb) 
+64^done,changelist=[]
+(gdb) 
+65^done,changelist=[]
+(gdb) 
+66^done,changelist=[]
+(gdb) 
+67^done,changelist=[]
+(gdb) 
+68^done,changelist=[]
+(gdb) 
+69^running
+*running,thread-id="all"
+(gdb) 
+~"\nProgram"
+~" received signal SIGSEGV, Segmentation fault.\n"
+~"0x00000000 in ?? ()\n"
+*stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x00000000",func="??",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+70^done,depth="1"
+(gdb) 
+71^done
+(gdb) 
+72^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+73^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x00000000",func="??",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+74^done,changelist=[]
+(gdb) 
+75^done,changelist=[]
+(gdb) 
+76^done,changelist=[]
+(gdb) 
+77^done,changelist=[]
+(gdb) 
+78^done,changelist=[]
+(gdb) 
+79^done,changelist=[]
+(gdb) 
+80^done,changelist=[]
+(gdb) 
+81^error,msg="Thread ID 1 has terminated."
+(gdb) 
+82^done
+(gdb) 
+83^running
+*running,thread-id="all"
+(gdb) 
+~"\nProgram"
+~" received signal SIGSEGV, Segmentation fault.\n"
+~"0x00000000 in ?? ()\n"
+*stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x00000000",func="??",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+84^done,depth="1"
+(gdb) 
+85^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+86^done
+(gdb) 
+87^done,changelist=[]
+(gdb) 
+88^done,changelist=[]
+(gdb) 
+89^done,changelist=[]
+(gdb) 
+90^done,changelist=[]
+(gdb) 
+91^done,changelist=[]
+(gdb) 
+92^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x00000000",func="??",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+93^done,changelist=[]
+(gdb) 
+94^done,changelist=[]
+(gdb) 
+~"Kill the program being debugged? (y or n) [answered Y; input not from terminal]\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) killed]\n"
+95^done
+(gdb) 
+96^done,threads=[]
+(gdb) 
+97^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+98^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+99^exit
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+26^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.54V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F401C M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"HardFault_Handler () at ../Core/Src/stm32f4xx_it.c:93\n"
+~"93\t  while (1)\n"
+*stopped,frame={addr="0x08005140",func="HardFault_Handler",args=[],file="../Core/Src/stm32f4xx_it.c",fullname="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Core/Src/stm32f4xx_it.c",line="93",arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+30+download,{section=".isr_vector",section-size="408",total-size="1054635"}
+30+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1054635"}
+~"Loading section .text, size 0x110f0 lma 0x80001a0\n"
+30+download,{section=".text",section-size="69872",total-size="1054635"}
+30+download,{section=".text",section-sent="42960",section-size="69872",total-sent="43368",total-size="1054635"}
+~"Loading section .rodata, size 0x2f4 lma 0x8011290\n"
+30+download,{section=".rodata",section-size="756",total-size="1054635"}
+~"Loading section .ARM, size 0x8 lma 0x8011584\n"
+30+download,{section=".ARM",section-size="8",total-size="1054635"}
+~"Loading section .init_array, size 0x4 lma 0x801158c\n"
+30+download,{section=".init_array",section-size="4",total-size="1054635"}
+~"Loading section .fini_array, size 0x4 lma 0x8011590\n"
+30+download,{section=".fini_array",section-size="4",total-size="1054635"}
+~"Loading section .data, size 0x26c lma 0x8011594\n"
+30+download,{section=".data",section-size="620",total-size="1054635"}
+~"Start address 0x08005384, load size 71672\n"
+~"Transfer rate: 31 KB/sec, 907 bytes/write.\n"
+30^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+31^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+32^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+33^error,msg="Can not fetch data now."
+(gdb) 
+34^done,name="var1",numchild="0",value="215 '\327'",type="uint8_t",has_more="0"
+(gdb) 
+35^done,name="var2",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+36^done,name="var3",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+37^done,name="var4",numchild="0",value="21 '\\025'",type="uint8_t",has_more="0"
+(gdb) 
+38^done,name="var5",numchild="0",value="4 '\\004'",type="uint8_t",has_more="0"
+(gdb) 
+39^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+40^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+41^done,depth="1"
+(gdb) 
+42^error,msg="Thread ID 1 has terminated."
+(gdb) 
+43^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+44^done,depth="1"
+(gdb) 
+45^done,name="var6",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+46^done,name="var7",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+47^done
+(gdb) 
+48^done,stack=[frame={level="0",addr="0x08005384",func="Reset_Handler",arch="armv7e-m"}]
+(gdb) 
+49^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+50^done,name="var8",numchild="0",value="215 '\327'",type="uint8_t",has_more="0"
+(gdb) 
+51^done,name="var9",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+52^done,name="var10",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+53^done,name="var11",numchild="0",value="21 '\\025'",type="uint8_t",has_more="0"
+(gdb) 
+54^done,name="var12",numchild="0",value="4 '\\004'",type="uint8_t",has_more="0"
+(gdb) 
+55^done,name="var13",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+56^done,name="var14",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+57^done
+(gdb) 
+58^running
+*running,thread-id="all"
+(gdb) 
+~"\nProgram"
+~" received signal SIGSEGV, Segmentation fault.\n"
+~"0x00000000 in ?? ()\n"
+*stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x00000000",func="??",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+59^error,msg="Thread ID 1 has terminated."
+(gdb) 
+60^done,depth="1"
+(gdb) 
+61^done
+(gdb) 
+62^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x00000000",func="??",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+63^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+64^done,changelist=[]
+(gdb) 
+65^done,changelist=[]
+(gdb) 
+66^done,changelist=[]
+(gdb) 
+67^done,changelist=[]
+(gdb) 
+68^done,changelist=[]
+(gdb) 
+69^done,changelist=[]
+(gdb) 
+70^done,changelist=[]
+(gdb) 
+71^done,locals=[]
+(gdb) 
+~"Kill the program being debugged? (y or n) [answered Y; input not from terminal]\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) killed]\n"
+72^done
+(gdb) 
+73^done,threads=[]
+(gdb) 
+74^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+75^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+76^exit
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"//monitor connect_rst enable\n"
+&"Undefined command: \"\".  Try \"help\".\n"
+26^error,msg="Undefined command: \"\".  Try \"help\"."
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.55V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F401C M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"HardFault_Handler () at ../Core/Src/stm32f4xx_it.c:93\n"
+~"93\t  while (1)\n"
+*stopped,frame={addr="0x08005140",func="HardFault_Handler",args=[],file="../Core/Src/stm32f4xx_it.c",fullname="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Core/Src/stm32f4xx_it.c",line="93",arch="armv7e-m"},thread-id="1",stopped-threads="all"
+30^exit
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) detached]\n"
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+26^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.55V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F401C M4\n"
+27^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+28^done
+~"HardFault_Handler () at ../Core/Src/stm32f4xx_it.c:93\n"
+~"93\t  while (1)\n"
+*stopped,frame={addr="0x08005140",func="HardFault_Handler",args=[],file="../Core/Src/stm32f4xx_it.c",fullname="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Core/Src/stm32f4xx_it.c",line="93",arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+29+download,{section=".isr_vector",section-size="408",total-size="1054635"}
+29+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1054635"}
+~"Loading section .text, size 0x110f0 lma 0x80001a0\n"
+29+download,{section=".text",section-size="69872",total-size="1054635"}
+29+download,{section=".text",section-sent="42960",section-size="69872",total-sent="43368",total-size="1054635"}
+~"Loading section .rodata, size 0x2f4 lma 0x8011290\n"
+29+download,{section=".rodata",section-size="756",total-size="1054635"}
+~"Loading section .ARM, size 0x8 lma 0x8011584\n"
+29+download,{section=".ARM",section-size="8",total-size="1054635"}
+~"Loading section .init_array, size 0x4 lma 0x801158c\n"
+29+download,{section=".init_array",section-size="4",total-size="1054635"}
+~"Loading section .fini_array, size 0x4 lma 0x8011590\n"
+29+download,{section=".fini_array",section-size="4",total-size="1054635"}
+~"Loading section .data, size 0x26c lma 0x8011594\n"
+29+download,{section=".data",section-size="620",total-size="1054635"}
+~"Start address 0x08005384, load size 71672\n"
+~"Transfer rate: 31 KB/sec, 907 bytes/write.\n"
+29^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+30^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+31^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+32^error,msg="Can not fetch data now."
+(gdb) 
+33^done,name="var1",numchild="0",value="215 '\327'",type="uint8_t",has_more="0"
+(gdb) 
+34^done,name="var2",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+35^done,name="var3",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+36^done,name="var4",numchild="0",value="21 '\\025'",type="uint8_t",has_more="0"
+(gdb) 
+37^done,name="var5",numchild="0",value="4 '\\004'",type="uint8_t",has_more="0"
+(gdb) 
+38^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+39^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+40^done,depth="1"
+(gdb) 
+41^error,msg="Thread ID 1 has terminated."
+(gdb) 
+42^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+43^done,depth="1"
+(gdb) 
+44^done,name="var6",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+45^done,name="var7",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+46^done
+(gdb) 
+47^done,stack=[frame={level="0",addr="0x08005384",func="Reset_Handler",arch="armv7e-m"}]
+(gdb) 
+48^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+49^done
+(gdb) 
+50^done,name="var8",numchild="0",value="215 '\327'",type="uint8_t",has_more="0"
+(gdb) 
+51^done,name="var9",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+52^done,name="var10",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+53^done,name="var11",numchild="0",value="21 '\\025'",type="uint8_t",has_more="0"
+(gdb) 
+54^done,name="var12",numchild="0",value="4 '\\004'",type="uint8_t",has_more="0"
+(gdb) 
+55^done,name="var13",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+56^done,name="var14",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+57^running
+*running,thread-id="all"
+(gdb) 
+~"\nProgram"
+~" received signal SIGSEGV, Segmentation fault.\n"
+~"0x00000000 in ?? ()\n"
+*stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x00000000",func="??",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+58^done,depth="1"
+(gdb) 
+59^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+60^done
+(gdb) 
+61^done,changelist=[]
+(gdb) 
+62^done,changelist=[]
+(gdb) 
+63^done,changelist=[]
+(gdb) 
+64^done,changelist=[]
+(gdb) 
+65^done,changelist=[]
+(gdb) 
+66^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x00000000",func="??",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+67^done,changelist=[]
+(gdb) 
+68^done,changelist=[]
+(gdb) 
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+26^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.54V\n"
+@"You are now detached from the previous target.\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F401C M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"A program is being debugged already.  Kill it? (y or n) [answered Y; input not from terminal]\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"0x00000000 in ?? ()\n"
+*stopped,frame={addr="0x00000000",func="??",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"detach\n"
+~"Detaching from program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) detached]\n"
+30^done
+(gdb) 
+&"quit\n"
+69^running
+*running,thread-id="all"
+(gdb) 
+&"Could not read registers; remote failure reply 'EFF'\n"
+(gdb) 
+70^error,msg="Could not read registers; remote failure reply 'EFF'"
+(gdb) 
+71^exit
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) detached]\n"
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+26^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.55V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F401C M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"0x00000000 in ?? ()\n"
+*stopped,frame={addr="0x00000000",func="??",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+30+download,{section=".isr_vector",section-size="408",total-size="1054635"}
+30+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1054635"}
+~"Loading section .text, size 0x110f0 lma 0x80001a0\n"
+30+download,{section=".text",section-size="69872",total-size="1054635"}
+30+download,{section=".text",section-sent="42960",section-size="69872",total-sent="43368",total-size="1054635"}
+~"Loading section .rodata, size 0x2f4 lma 0x8011290\n"
+30+download,{section=".rodata",section-size="756",total-size="1054635"}
+~"Loading section .ARM, size 0x8 lma 0x8011584\n"
+30+download,{section=".ARM",section-size="8",total-size="1054635"}
+~"Loading section .init_array, size 0x4 lma 0x801158c\n"
+30+download,{section=".init_array",section-size="4",total-size="1054635"}
+~"Loading section .fini_array, size 0x4 lma 0x8011590\n"
+30+download,{section=".fini_array",section-size="4",total-size="1054635"}
+~"Loading section .data, size 0x26c lma 0x8011594\n"
+30+download,{section=".data",section-size="620",total-size="1054635"}
+~"Start address 0x08005384, load size 71672\n"
+~"Transfer rate: 31 KB/sec, 907 bytes/write.\n"
+30^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+31^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+32^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+33^error,msg="Can not fetch data now."
+(gdb) 
+34^done,name="var1",numchild="0",value="215 '\327'",type="uint8_t",has_more="0"
+(gdb) 
+35^done,name="var2",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+36^done,name="var3",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+37^done,name="var4",numchild="0",value="21 '\\025'",type="uint8_t",has_more="0"
+(gdb) 
+38^done,name="var5",numchild="0",value="4 '\\004'",type="uint8_t",has_more="0"
+(gdb) 
+39^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+40^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+41^done,depth="1"
+(gdb) 
+42^error,msg="Thread ID 1 has terminated."
+(gdb) 
+43^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+44^done,depth="1"
+(gdb) 
+45^done,name="var6",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+46^done,name="var7",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+47^done
+(gdb) 
+48^done,stack=[frame={level="0",addr="0x08005384",func="Reset_Handler",arch="armv7e-m"}]
+(gdb) 
+49^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+50^done,name="var8",numchild="0",value="215 '\327'",type="uint8_t",has_more="0"
+(gdb) 
+51^done,name="var9",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+52^done,name="var10",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+53^done,name="var11",numchild="0",value="21 '\\025'",type="uint8_t",has_more="0"
+(gdb) 
+54^done,name="var12",numchild="0",value="4 '\\004'",type="uint8_t",has_more="0"
+(gdb) 
+55^done,name="var13",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+56^done,name="var14",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+57^done
+(gdb) 
+58^error,msg="No symbol \"MIDI_NOTE_ON\" in current context."
+(gdb) 
+59^error,msg="-var-create: unable to create variable object"
+(gdb) 
+60^error,msg="-var-create: unable to create variable object"
+(gdb) 
+~"Kill the program being debugged? (y or n) [answered Y; input not from terminal]\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) killed]\n"
+61^done
+(gdb) 
+62^done,threads=[]
+(gdb) 
+63^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+64^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+65^exit
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+26^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.57V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F401C M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"0x00000000 in ?? ()\n"
+*stopped,frame={addr="0x00000000",func="??",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+30+download,{section=".isr_vector",section-size="408",total-size="1054635"}
+30+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1054635"}
+~"Loading section .text, size 0x110f0 lma 0x80001a0\n"
+30+download,{section=".text",section-size="69872",total-size="1054635"}
+30+download,{section=".text",section-sent="42960",section-size="69872",total-sent="43368",total-size="1054635"}
+~"Loading section .rodata, size 0x2f4 lma 0x8011290\n"
+30+download,{section=".rodata",section-size="756",total-size="1054635"}
+~"Loading section .ARM, size 0x8 lma 0x8011584\n"
+30+download,{section=".ARM",section-size="8",total-size="1054635"}
+~"Loading section .init_array, size 0x4 lma 0x801158c\n"
+30+download,{section=".init_array",section-size="4",total-size="1054635"}
+~"Loading section .fini_array, size 0x4 lma 0x8011590\n"
+30+download,{section=".fini_array",section-size="4",total-size="1054635"}
+~"Loading section .data, size 0x26c lma 0x8011594\n"
+30+download,{section=".data",section-size="620",total-size="1054635"}
+~"Start address 0x08005384, load size 71672\n"
+~"Transfer rate: 31 KB/sec, 907 bytes/write.\n"
+30^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+31^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+32^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+33^error,msg="Can not fetch data now."
+(gdb) 
+34^done,name="var1",numchild="0",value="215 '\327'",type="uint8_t",has_more="0"
+(gdb) 
+35^done,name="var2",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+36^done,name="var3",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+37^done,name="var4",numchild="0",value="21 '\\025'",type="uint8_t",has_more="0"
+(gdb) 
+38^done,name="var5",numchild="0",value="4 '\\004'",type="uint8_t",has_more="0"
+(gdb) 
+39^error,msg="-var-create: unable to create variable object"
+(gdb) 
+40^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+41^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+42^done,depth="1"
+(gdb) 
+43^error,msg="Thread ID 1 has terminated."
+(gdb) 
+44^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+45^done,depth="1"
+(gdb) 
+46^done,name="var7",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+47^done,name="var8",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+48^done
+(gdb) 
+49^done,stack=[frame={level="0",addr="0x08005384",func="Reset_Handler",arch="armv7e-m"}]
+(gdb) 
+50^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+51^done
+(gdb) 
+52^done,name="var9",numchild="0",value="215 '\327'",type="uint8_t",has_more="0"
+(gdb) 
+53^done,name="var10",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+54^done,name="var11",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+55^done,name="var12",numchild="0",value="21 '\\025'",type="uint8_t",has_more="0"
+(gdb) 
+56^done,name="var13",numchild="0",value="4 '\\004'",type="uint8_t",has_more="0"
+(gdb) 
+57^error,msg="-var-create: unable to create variable object"
+(gdb) 
+58^error,msg="-var-create: unable to create variable object"
+(gdb) 
+59^done,name="var16",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+60^done,name="var17",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+61^error,msg="No symbol \"serial_temp\" in current context."
+(gdb) 
+62^error,msg="-var-create: unable to create variable object"
+(gdb) 
+63^running
+*running,thread-id="all"
+(gdb) 
+~"\nProgram"
+~" received signal SIGSEGV, Segmentation fault.\n"
+~"0x00000000 in ?? ()\n"
+*stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x00000000",func="??",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+64^done,depth="1"
+(gdb) 
+65^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+66^done
+(gdb) 
+67^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x00000000",func="??",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+68^done,changelist=[]
+(gdb) 
+69^done,changelist=[]
+(gdb) 
+70^done,changelist=[]
+(gdb) 
+71^done,changelist=[]
+(gdb) 
+72^done,changelist=[]
+(gdb) 
+73^error,msg="-var-create: unable to create variable object"
+(gdb) 
+74^error,msg="-var-create: unable to create variable object"
+(gdb) 
+75^done,changelist=[]
+(gdb) 
+76^done,changelist=[]
+(gdb) 
+77^error,msg="No symbol \"serial_temp\" in current context."
+(gdb) 
+78^error,msg="-var-create: unable to create variable object"
+(gdb) 
+79^done,asm_insns=[{address="0x00000000",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000002",opcodes="02 20",inst="movs\tr0, #2"},{address="0x00000004",opcodes="85 53",inst="strh\tr5, [r0, r6]"},{address="0x00000006",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000008",opcodes="35 51",inst="str\tr5, [r6, r4]"},{address="0x0000000a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000000c",opcodes="3d 51",inst="str\tr5, [r7, r4]"},{address="0x0000000e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000010",opcodes="45 51",inst="str\tr5, [r0, r5]"},{address="0x00000012",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000014",opcodes="4d 51",inst="str\tr5, [r1, r5]"},{address="0x00000016",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000018",opcodes="55 51",inst="str\tr5, [r2, r5]"},{address="0x0000001a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000001c",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000001e",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000020",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000022",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000024",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000026",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000028",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000002a",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000002c",opcodes="5d 51",inst="str\tr5, [r3, r5]"},{address="0x0000002e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000030",opcodes="6b 51",inst="str\tr3, [r5, r5]"},{address="0x00000032",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000034",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000036",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000038",opcodes="79 51",inst="str\tr1, [r7, r5]"},{address="0x0000003a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000003c",opcodes="87 51",inst="str\tr7, [r0, r6]"},{address="0x0000003e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000040",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000042",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000044",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000046",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000048",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000004a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000004c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000004e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000050",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000052",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000054",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000056",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000058",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000005a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000005c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000005e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000060",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000062",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000064",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000066",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000068",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000006a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000006c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000006e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000070",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000072",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000074",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000076",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000078",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000007a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000007c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000007e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000080",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000082",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000084",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000086",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000088",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000008a",opcodes="00 08",inst="lsrs\tr0, r0, #32"}]
+(gdb) 
+80^done,asm_insns=[{address="0x00000000",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000002",opcodes="02 20",inst="movs\tr0, #2"},{address="0x00000004",opcodes="85 53",inst="strh\tr5, [r0, r6]"},{address="0x00000006",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000008",opcodes="35 51",inst="str\tr5, [r6, r4]"},{address="0x0000000a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000000c",opcodes="3d 51",inst="str\tr5, [r7, r4]"},{address="0x0000000e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000010",opcodes="45 51",inst="str\tr5, [r0, r5]"},{address="0x00000012",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000014",opcodes="4d 51",inst="str\tr5, [r1, r5]"},{address="0x00000016",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000018",opcodes="55 51",inst="str\tr5, [r2, r5]"},{address="0x0000001a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000001c",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000001e",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000020",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000022",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000024",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000026",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000028",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000002a",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000002c",opcodes="5d 51",inst="str\tr5, [r3, r5]"},{address="0x0000002e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000030",opcodes="6b 51",inst="str\tr3, [r5, r5]"},{address="0x00000032",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000034",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000036",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000038",opcodes="79 51",inst="str\tr1, [r7, r5]"},{address="0x0000003a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000003c",opcodes="87 51",inst="str\tr7, [r0, r6]"},{address="0x0000003e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000040",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000042",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000044",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000046",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000048",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000004a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000004c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000004e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000050",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000052",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000054",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000056",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000058",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000005a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000005c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000005e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000060",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000062",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000064",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000066",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000068",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000006a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000006c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000006e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000070",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000072",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000074",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000076",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000078",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000007a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000007c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000007e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000080",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000082",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000084",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000086",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000088",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000008a",opcodes="00 08",inst="lsrs\tr0, r0, #32"}]
+(gdb) 
+81^done,asm_insns=[{address="0x0000008c",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000008e",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000090",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000092",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000094",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000096",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000098",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000009a",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000009c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000009e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000a0",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000a2",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000a4",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000a6",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000a8",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000aa",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000ac",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000ae",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000b0",opcodes="95 51",inst="str\tr5, [r2, r6]"},{address="0x000000b2",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000b4",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000b6",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000b8",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000ba",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000bc",opcodes="a9 51",inst="str\tr1, [r5, r6]"},{address="0x000000be",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000c0",opcodes="bd 51",inst="str\tr5, [r7, r6]"},{address="0x000000c2",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000c4",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000c6",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000c8",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000ca",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000cc",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000ce",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000d0",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000d2",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000d4",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000d6",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000d8",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000da",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000dc",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000de",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000e0",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000e2",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000e4",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000e6",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000e8",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000ea",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000ec",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000ee",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000f0",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000f2",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000f4",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000f6",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000f8",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000fa",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000fc",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000fe",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000100",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000102",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000104",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000106",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000108",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000010a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000010c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000010e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000110",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000112",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000114",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000116",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000118",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000011a",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000011c",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000011e",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000120",opcodes="d1 51",inst="str\tr1, [r2, r7]"},{address="0x00000122",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000124",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000126",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000128",opcodes="e5 51",inst="str\tr5, [r4, r7]"},{address="0x0000012a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000012c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000012e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000130",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000132",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000134",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000136",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000138",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000013a",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000013c",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000013e",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000140",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000142",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000144",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000146",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000148",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000014a",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000014c",opcodes="f9 51",inst="str\tr1, [r7, r7]"},{address="0x0000014e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000150",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000152",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000154",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000156",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000158",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000015a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000015c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000015e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000160",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000162",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000164",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000166",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000168",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000016a",opcodes="00 00",inst="movs\tr0, r0"}]
+(gdb) 
+82^done,asm_insns=[{address="0x0000008c",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000008e",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000090",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000092",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000094",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000096",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000098",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000009a",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000009c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000009e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000a0",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000a2",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000a4",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000a6",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000a8",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000aa",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000ac",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000ae",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000b0",opcodes="95 51",inst="str\tr5, [r2, r6]"},{address="0x000000b2",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000b4",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000b6",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000b8",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000ba",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000bc",opcodes="a9 51",inst="str\tr1, [r5, r6]"},{address="0x000000be",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000c0",opcodes="bd 51",inst="str\tr5, [r7, r6]"},{address="0x000000c2",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000c4",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000c6",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000c8",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000ca",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000cc",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000ce",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000d0",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000d2",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000d4",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000d6",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000d8",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000da",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000dc",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000de",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000e0",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000e2",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000e4",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000e6",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000e8",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000ea",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x000000ec",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000ee",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000f0",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000f2",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000f4",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000f6",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000f8",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000fa",opcodes="00 00",inst="movs\tr0, r0"},{address="0x000000fc",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x000000fe",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000100",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000102",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000104",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000106",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000108",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000010a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000010c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000010e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000110",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000112",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000114",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000116",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000118",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000011a",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000011c",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000011e",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000120",opcodes="d1 51",inst="str\tr1, [r2, r7]"},{address="0x00000122",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000124",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000126",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000128",opcodes="e5 51",inst="str\tr5, [r4, r7]"},{address="0x0000012a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000012c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000012e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000130",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000132",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000134",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000136",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000138",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000013a",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000013c",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000013e",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000140",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000142",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000144",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000146",opcodes="00 00",inst="movs\tr0, r0"},{address="0x00000148",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000014a",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000014c",opcodes="f9 51",inst="str\tr1, [r7, r7]"},{address="0x0000014e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000150",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000152",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000154",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000156",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000158",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000015a",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x0000015c",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x0000015e",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000160",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000162",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000164",opcodes="d5 53",inst="strh\tr5, [r2, r7]"},{address="0x00000166",opcodes="00 08",inst="lsrs\tr0, r0, #32"},{address="0x00000168",opcodes="00 00",inst="movs\tr0, r0"},{address="0x0000016a",opcodes="00 00",inst="movs\tr0, r0"}]
+(gdb) 
+~"Kill the program being debugged? (y or n) [answered Y; input not from terminal]\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) killed]\n"
+83^done
+(gdb) 
+84^done,threads=[]
+(gdb) 
+85^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+86^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+87^exit
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+26^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.54V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F401C M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"0x00000000 in ?? ()\n"
+*stopped,frame={addr="0x00000000",func="??",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+30+download,{section=".isr_vector",section-size="408",total-size="1054635"}
+30+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1054635"}
+~"Loading section .text, size 0x110f0 lma 0x80001a0\n"
+30+download,{section=".text",section-size="69872",total-size="1054635"}
+30+download,{section=".text",section-sent="42960",section-size="69872",total-sent="43368",total-size="1054635"}
+~"Loading section .rodata, size 0x2f4 lma 0x8011290\n"
+30+download,{section=".rodata",section-size="756",total-size="1054635"}
+~"Loading section .ARM, size 0x8 lma 0x8011584\n"
+30+download,{section=".ARM",section-size="8",total-size="1054635"}
+~"Loading section .init_array, size 0x4 lma 0x801158c\n"
+30+download,{section=".init_array",section-size="4",total-size="1054635"}
+~"Loading section .fini_array, size 0x4 lma 0x8011590\n"
+30+download,{section=".fini_array",section-size="4",total-size="1054635"}
+~"Loading section .data, size 0x26c lma 0x8011594\n"
+30+download,{section=".data",section-size="620",total-size="1054635"}
+~"Start address 0x08005384, load size 71672\n"
+~"Transfer rate: 31 KB/sec, 907 bytes/write.\n"
+30^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+31^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+32^done,BreakpointTable={nr_rows="0",nr_cols="6",hdr=[{width="7",alignment="-1",col_name="number",colhdr="Num"},{width="14",alignment="-1",col_name="type",colhdr="Type"},{width="4",alignment="-1",col_name="disp",colhdr="Disp"},{width="3",alignment="-1",col_name="enabled",colhdr="Enb"},{width="10",alignment="-1",col_name="addr",colhdr="Address"},{width="40",alignment="2",col_name="what",colhdr="What"}],body=[]}
+(gdb) 
+33^done,depth="1"
+(gdb) 
+34^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+35^done
+(gdb) 
+36^done,stack=[frame={level="0",addr="0x08005384",func="Reset_Handler",arch="armv7e-m"}]
+(gdb) 
+37^error,msg="Can not fetch data now."
+(gdb) 
+38^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+39^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+40^done,stack-args=[frame={level="0",args=[]}]
+(gdb) 
+41^done,locals=[]
+(gdb) 
+42^done
+(gdb) 
+43^done,name="var1",numchild="0",value="215 '\327'",type="uint8_t",has_more="0"
+(gdb) 
+44^done,name="var2",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+45^done,name="var3",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+46^done,name="var4",numchild="0",value="21 '\\025'",type="uint8_t",has_more="0"
+(gdb) 
+47^done,name="var5",numchild="0",value="4 '\\004'",type="uint8_t",has_more="0"
+(gdb) 
+48^error,msg="-var-create: unable to create variable object"
+(gdb) 
+49^done,name="var7",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+50^done,name="var8",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+51^error,msg="No symbol \"serial_temp\" in current context."
+(gdb) 
+52^error,msg="-var-create: unable to create variable object"
+(gdb) 
+53^running
+*running,thread-id="all"
+(gdb) 
+~"\nProgram"
+~" received signal SIGSEGV, Segmentation fault.\n"
+~"0x00000000 in ?? ()\n"
+*stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x00000000",func="??",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+54^error,msg="Thread ID 1 has terminated."
+(gdb) 
+55^done,depth="1"
+(gdb) 
+56^done
+(gdb) 
+57^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+58^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x00000000",func="??",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+59^error,msg="-var-create: unable to create variable object"
+(gdb) 
+60^error,msg="-var-create: unable to create variable object"
+(gdb) 
+61^error,msg="No symbol \"serial_temp\" in current context."
+(gdb) 
+62^error,msg="-var-create: unable to create variable object"
+(gdb) 
+63^done,changelist=[]
+(gdb) 
+64^done,changelist=[]
+(gdb) 
+65^done,changelist=[]
+(gdb) 
+66^done,changelist=[]
+(gdb) 
+67^done,changelist=[]
+(gdb) 
+68^done,changelist=[]
+(gdb) 
+69^done,changelist=[]
+(gdb) 
+70^error,msg="Thread ID 1 has terminated."
+(gdb) 
+71^done
+(gdb) 
+72^error,msg="Thread ID 1 has terminated."
+(gdb) 
+73^done,name="var13",numchild="0",value="",type="uint8_t",has_more="0"
+(gdb) 
+74^done,name="var14",numchild="96",value="[96]",type="uint8_t [96]",has_more="0"
+(gdb) 
+75^done,name="var15",numchild="256",value="[256]",type="uint8_t [256]",has_more="0"
+(gdb) 
+76^done,name="var16",numchild="0",value="",type="uint8_t",has_more="0"
+(gdb) 
+77^done,name="var17",numchild="0",value="",type="uint8_t",has_more="0"
+(gdb) 
+78^error,msg="-var-create: unable to create variable object"
+(gdb) 
+79^done,name="var19",numchild="1",value="0x20000db4 <serial_out>",type="uint8_t (*)[96]",has_more="0"
+(gdb) 
+80^done,name="var20",numchild="1",value="0x20000b24 <alt_pots>",type="uint8_t (*)[256]",has_more="0"
+(gdb) 
+81^error,msg="Thread ID 1 has terminated."
+(gdb) 
+82^done
+(gdb) 
+~"Kill the program being debugged? (y or n) [answered Y; input not from terminal]\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) killed]\n"
+83^done
+(gdb) 
+84^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+85^done,groups=[{id="i1",type="process",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+86^exit
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+26^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.55V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F401C M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"0x08000c74 in __udivmoddi4 ()\n"
+*stopped,frame={addr="0x08000c74",func="__udivmoddi4",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+30^done,groups=[{id="i1",type="process",pid="1",executable="/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf"}]
+(gdb) 
+&"load \"/home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf\" \n"
+~"Loading section .isr_vector, size 0x198 lma 0x8000000\n"
+31+download,{section=".isr_vector",section-size="408",total-size="1054635"}
+31+download,{section=".isr_vector",section-sent="408",section-size="408",total-sent="408",total-size="1054635"}
+~"Loading section .text, size 0x110f0 lma 0x80001a0\n"
+31+download,{section=".text",section-size="69872",total-size="1054635"}
+31+download,{section=".text",section-sent="42960",section-size="69872",total-sent="43368",total-size="1054635"}
+~"Loading section .rodata, size 0x2f4 lma 0x8011290\n"
+31+download,{section=".rodata",section-size="756",total-size="1054635"}
+~"Loading section .ARM, size 0x8 lma 0x8011584\n"
+31+download,{section=".ARM",section-size="8",total-size="1054635"}
+~"Loading section .init_array, size 0x4 lma 0x801158c\n"
+31+download,{section=".init_array",section-size="4",total-size="1054635"}
+~"Loading section .fini_array, size 0x4 lma 0x8011590\n"
+31+download,{section=".fini_array",section-size="4",total-size="1054635"}
+~"Loading section .data, size 0x26c lma 0x8011594\n"
+31+download,{section=".data",section-size="620",total-size="1054635"}
+~"Start address 0x08005384, load size 71672\n"
+~"Transfer rate: 31 KB/sec, 907 bytes/write.\n"
+31^done
+(gdb) 
+&"\n"
+^done
+(gdb) 
+32^done,threads=[{id="1",target-id="Thread 1",frame={level="0",addr="0x08005384",func="Reset_Handler",args=[],arch="armv7e-m"},state="stopped"}]
+(gdb) 
+33^exit
+&"SIGTERM\n"
+=cmd-param-changed,param="logging enabled",value="on"
+23^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+24^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+25^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+26^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.55V\n"
+@"JTAG scan found no devices.\n"
+~"Ignoring packet error, continuing...\n"
+&"Remote connection closed\n"
+27^error,msg="Remote connection closed"
+(gdb) 
+&"attach 1\n"
+&"Don't know how to attach.  Try \"help target\".\n"
+28^error,msg="Don't know how to attach.  Try \"help target\"."
+(gdb) 
+&"detach\n"
+&"The program is not being run.\n"
+29^error,msg="The program is not being run."
+(gdb) 
+&"quit\n"
+=cmd-param-changed,param="logging enabled",value="on"
+24^done
+(gdb) 
+&"set mem inaccessible-by-default off\n"
+=cmd-param-changed,param="mem inaccessible-by-default",value="off"
+25^done
+(gdb) 
+&"monitor connect_rst enable\n"
+@"Assert nRST during connect: enabled\n"
+26^done
+(gdb) 
+&"monitor swo enable\n"
+@"Baudrate: 2250000 "
+@"Channel mask: "
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"0"
+@"\n"
+@"Trace enabled for BMP serial 0106193C4D38122D004E4B43, USB EP 3\n"
+27^done
+(gdb) 
+&"monitor auto_scan\n"
+@"Target voltage: 2.55V\n"
+@"JTAG scan found no devices.\n"
+@"Available Targets:\n"
+@"No. Att Driver\n"
+@" 1      STM32F401C M4\n"
+28^done
+(gdb) 
+&"attach 1\n"
+~"Attaching to program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-group-started,id="i1",pid="1"
+=thread-created,id="1",group-id="i1"
+*running,thread-id="1"
+29^done
+~"0x08000cdc in __udivmoddi4 ()\n"
+*stopped,frame={addr="0x08000cdc",func="__udivmoddi4",args=[],arch="armv7e-m"},thread-id="1",stopped-threads="all"
+&"detach\n"
+~"Detaching from program: /home/viktor/Documents/GitHub/Akai-Midi-controller-sequencer/Debug/midi in F411.elf, Remote target\n"
+=thread-exited,id="1",group-id="i1"
+=thread-group-exited,id="i1"
+~"[Inferior 1 (Remote target) detached]\n"
+30^done
+(gdb) 
+&"quit\n"

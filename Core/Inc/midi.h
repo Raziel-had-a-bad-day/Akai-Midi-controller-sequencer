@@ -101,7 +101,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			uint8_t len1;  // note off
 			uint8_t cue_counter;
 
-			uint8_t note_midi [70] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};  // 3*16 ,   seems to get some garbage ?
+			uint8_t note_midi [128] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};  // 3*16 ,   seems to get some garbage ?
 			uint8_t nrpn_temp[36]={185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0};  //  9 bytes per nrpn send
 
 			nrpn_temp[30]=0;
@@ -150,6 +150,11 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 
 				if ((seq_pos&7)==1) {    // fixed time for now , note generator
+
+
+
+					memset(serial_out,0,128);  //clear serial out
+					serial_len=0;
 					uint8_t note_timing[16];
 					uint8_t midi_channel_select=9;
 					memcpy(note_timing,last_note_end_count,16);
@@ -170,11 +175,12 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 			if ((high_row_enable) && (i > 7)) high_row = 1; // enable only on second half
 
-			if ((note_timing[i] == 1) && (last_note_on_channel[i] )) { // creates note off  for non drum sounds
+			if ((note_timing[i] >= 1) && (last_note_on_channel[i] )) { // creates note off  ,all notes ,just basic off ,modified
 				note_midi[cue_counter] = midi_channel_select + MIDI_NOTE_OFF; // note off
-				note_midi[(cue_counter) + 1] = last_note_on_channel[i];
+				note_midi[(cue_counter) + 1] = last_note_on_channel[i]&127;
 				note_midi[(cue_counter) + 2] = 0;
 				cue_counter = cue_counter + 3;
+				note_timing[i]=0;
 				last_note_on_channel[i] = 0; // clear note
 			}
 
@@ -218,13 +224,13 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					note_midi[(cue_counter) + 2] = current_velocity;
 					cue_counter = cue_counter + 3;
 
-					if ((note_timing[i]>1 )){    // in case old note hasnt finished ,Note_off
+		/*			if ((note_timing[i]>1 )){    // in case old note hasnt finished ,Note_off
 						note_midi[cue_counter] =midi_channel_select+ MIDI_NOTE_OFF; // note off
 						note_midi[(cue_counter) + 1] =last_note_on_channel[i];
 						note_midi[(cue_counter) + 2] = 0;
 						cue_counter = cue_counter + 3;
 						note_timing[i]=0;
-					}
+					}*/
 					last_note_on_channel[i] = pitch_seq; // saves last pitch step
 
 					pitch_counter=(pitch_counter+pitch_change_rate[i])&63;   // pitch change up count 8-1 for now
@@ -240,7 +246,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			if (mute_list[i]) {button_states_temp[i] =3;} // show mute
 
 
-			 if ((cue_counter + 3) >= 47) cue_counter=47;  // test for buffer size
+			 if ((cue_counter + 3) >= 98) cue_counter=95;  // test for buffer size  (3*16)+(3*16) = 96
 
 					} //end of i count
 
@@ -260,6 +266,12 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 
 				//pitch_change_flag=0;
+
+
+
+				pitch_change_flag=0;lfo_full_send_enable=0;nrpn_gating_enable=0;   // dsiable everything for now
+
+
 				if (pitch_change_flag){   // sends pitch nrpn section ,single send , counts down
 					uint8_t counterb=pitch_change_flag-1;
 
@@ -322,41 +334,49 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 				//if(note_midi[0])  memcpy(test_byte, note_midi, 20);
 
 			//memcpy(test_byte,note_midi,9);
-			note_midi[50]=cue_counter;
+			note_midi[100]=cue_counter;
 
 			//nrpn_temp[15]=0;   //disable nrpn for now
 
 				//memcpy(cue_temp,midi_cue_noteoff,25);
 				cue_counter=0;
 
-				note_off_midi[50]=cue_counter;
+				//note_off_midi[50]=cue_counter;
 
 
-				len1=note_off_midi[50];
 
-					len=note_midi[50];
+			//	len1=note_off_midi[50];
+
+					len=note_midi[100];
 				//	if(pause) len=0;
 
-			memcpy(send_temp,note_off_midi,len1); // adding  Note off first
+		//	memcpy(send_temp,note_off_midi,len1); // adding  Note off first
 
-			memcpy(send_temp+len1,note_midi,len);     // adding Note on
+			memcpy(send_temp,note_midi,len);     // adding Note on
 
-			 if (pause)  len=len1; else len=len+len1;     // add note off and note on
+			// if (pause)  len=len1; else len=len+len1;     // add note off and note on
 
-			 if (pause==2)   len=0;   // disable all after last send
+		//	 if (pause==2)   len=0;   // disable all after last send
 
 			 serial_len=len;   // serial send length note off + note on
 
 			 memcpy(serial_out, midi_extra_cue, midi_extra_cue[28]); // extra stuff sent , anything
 			 // start of serial send
+
+
 			 memcpy(serial_out + midi_extra_cue[28], send_temp, serial_len);
 			 serial_len = serial_len + midi_extra_cue[28];
-			 midi_extra_cue[28] = 0;  // reset
-			 //nrpn_temp[30]=0;
-			 memcpy(serial_out + serial_len, nrpn_temp, nrpn_temp[30]); // temp only !  add nrpn
+
+
+			// memcpy(serial_out , send_temp, serial_len);  // basic note only send
+			 midi_extra_cue[28] = 0;  // reset    ,seems extra data coming from somewhere
+/*			 //nrpn_temp[30]=0;
+
+
+			 memcpy(serial_out + serial_len, nrpn_temp, nrpn_temp[30]); // temp only !  add nrpn here
 
 			 serial_len = serial_len + nrpn_temp[30];
-			 nrpn_temp[30] = 0;
+			 nrpn_temp[30] = 0;*/
 			 if (pause)
 				 pause = 2;
 

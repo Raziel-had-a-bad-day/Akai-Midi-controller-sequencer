@@ -218,7 +218,7 @@ uint8_t LFO_tracking_out[sound_set*4]; // LFO output
 
 uint8_t loop_length;
 
-uint8_t serial_out[96]; // holds midi out data
+uint8_t serial_out[128]; // holds midi out data
 uint8_t serial_len;
 uint8_t midi_channel_list[21]={9,9,9,9,9,9,9,9,9,9,9,9,3,3,3,3,3,3 };   //holds midi channel settings 0=1 (midi channels 1-16)
 uint8_t nrpn_cue[80]={186,99,5,186,98,16,186,6,32};  // stores message for nrpn on es1 only needs 1 initial c99=5  then only  2 bytes repeating  CC 98 =NRPN LSB and CC 6 =value , for now 9 bytes though  , initial normal 3 bytes then convrted to 9

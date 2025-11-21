@@ -115,7 +115,7 @@ void led_full_clear(void); // runs once clearing all leds
 
 void lcd_start(void);
 void lcd_print(uint8_t  pos , char print);  // position 0-39 , character
-void lcd_menu_vars(void);
+void lcd_menu_vars(uint8_t selected_var ,uint8_t var_position);
 void nrpn_send(void);
 void loop_screen(void);// loop screen change
 void note_buttons(void); // all note functions from buttons
@@ -152,7 +152,7 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  midi_extra_cue[28] = 0;
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -230,7 +230,8 @@ int main(void)
 		  green_position[0]=seq_step; green_position[1]=seq_step;
 		  cdc_send(); // all midi compiled for send  8/per note , sends on seq_pos=1 atm
 
-		  if (serial_len)   HAL_UART_Transmit(&huart1,serial_out,serial_len,100); // uart send disable if no info, sent seq_pos,
+		  if (serial_len)
+			  HAL_UART_Transmit(&huart1,serial_out,serial_len,100); // uart send disable if no info, sent seq_pos, going out data is clean here
 
 
 
@@ -331,7 +332,7 @@ int main(void)
 
 			  if (lcd_downcount) { lcd_message();lcd_downcount--; }
 
- 				 lcd_menu_vars();
+ 				lcd_menu_pages(1);
 
 
  				//		printf(" %d ", midi_cue[3]);
@@ -427,8 +428,8 @@ int main(void)
 				//  if (first_message) {first_message=0;  memset(other_buttons_hold,9,70);} // only runs after getting a midi message from usb
 
 
-				  if ((cdc_buffer[0]==145)) {keyboard[0]=cdc_buffer[1]-47;keyboard[1]=127;memset(cdc_buffer,0,9); } // works ,keyboard send ,quick
-				  if ((cdc_buffer[0]==129)) {keyboard[0]=cdc_buffer[1]-47;keyboard[1]=0;memset(cdc_buffer,0,9); }
+				  if ((cdc_buffer[0]==145)) {keyboard[0]=cdc_buffer[1];keyboard[1]=127;memset(cdc_buffer,0,9); } // works ,keyboard send ,quick
+				  if ((cdc_buffer[0]==129)) {keyboard[0]=cdc_buffer[1];keyboard[1]=0;memset(cdc_buffer,0,9); }
 
 				  // sends straight to keyboard on receive
 			 // printf(" 1=%d ",cdc_buffer[0] ); printf(" 2=%d ",cdc_buffer[1] ); printf(" 3=%d \n ",cdc_buffer[2] );
@@ -443,8 +444,8 @@ int main(void)
 				  if (keyboard[0])  {    // keyboard play live
 					  if (rec_arm && pause && (keyboard[1]>48)) {loop_screen_disable=1;step_recording();}
 						  uint8_t note_flag=144; // just use vel 0 for off
-						  uint8_t incoming=keyboard[0];
-						  uint8_t velocity=keyboard[1];
+						  uint8_t incoming=keyboard[0]&127;
+						  uint8_t velocity=keyboard[1]&127;
 						  uint8_t buffer_pos=keyboard_buffer[31];
 						  uint8_t current_seq_pos=seq_pos&255;
 						//  if (incoming>>7)  {note_flag=128;velocity=0;}
@@ -457,7 +458,7 @@ int main(void)
 						  midi_extra_cue[1]=(drum_list[selected_scene]);midi_extra_cue[2]=velocity; midi_extra_cue[28]=midi_extra_cue[28]+3;   // send midi
 
 						  incoming=0;}
-						  else  {midi_extra_cue[0]=note_flag+midi_channel_list[selected_scene];  midi_extra_cue[1]=((incoming+32))&127 ;
+						  else  {midi_extra_cue[0]=note_flag+midi_channel_list[selected_scene];  midi_extra_cue[1]=((incoming))&127 ;
 						  midi_extra_cue[2]=velocity; midi_extra_cue[28]=midi_extra_cue[28]+3;incoming=0;}  // send normal then keyboard off
 						  keyboard[0]=incoming;
 
@@ -753,8 +754,8 @@ static void MX_GPIO_Init(void)
 
 			memcpy(serial1_hold,serial1_hold2,1)  ;   // copy mem
 
-			serial1_hold[5]=1;   HAL_UART_Receive_DMA(&huart1, serial1_hold2,1);
-			//HAL_UART_Receive_IT(&huart1,&serial1_temp,1);}  //enable read  or reset irq
+
+			//}  //enable read  or reset irq
 
 		}
 
