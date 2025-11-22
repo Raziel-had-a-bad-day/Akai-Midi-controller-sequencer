@@ -496,23 +496,23 @@ void midi_extras(void){    // extra midi data added here , program change , cc
 	  if (((seq_pos>>5)&1) && (!pause))   // send cc , off during pause , dont disable
 	  {
 		  uint8_t extras=midi_extra_cue[28];
-		  midi_extra_cue[extras]=176+midi_channel_list[12];  // cc ch3
+/*		  midi_extra_cue[extras]=176+midi_channel_list[12];  // cc ch3
 		  midi_extra_cue[extras+1]=74;  // filter cutoff ,correct
 		  midi_extra_cue[extras+2]=(((loop_lfo_out[44]*2)+32)+pot_states[0])&127;  // lfo out , use pot 0 for offset
 		  // midi_extra_cue[extras+2]=64;
-		  midi_extra_cue[28]=extras+3;
+		  midi_extra_cue[28]=extras+3;*/
 
 
-		  { midi_extra_cue[extras+3]=192+midi_channel_list[0];     // program change data,always runs,  mainly used only for changing program on es1
+	/*	  { midi_extra_cue[extras+3]=192+midi_channel_list[0];     // program change data,always runs,  mainly used only for changing program on es1
 		  midi_extra_cue[extras+4]=program_change[0];
 		  midi_extra_cue[extras+5]=program_change[0];
-		  midi_extra_cue[28]=extras+6;}
+		  midi_extra_cue[28]=extras+6;}*/
 
-		  if (program_change[2]){midi_extra_cue[extras+6]=192+midi_channel_list[scene_buttons[0]];   // program change for non drums
-		  midi_extra_cue[extras+7]=program_change[1];
-		  midi_extra_cue[extras+8]=program_change[1];
-		  midi_extra_cue[28]=extras+9;
-		  program_change[2]=0; //clear
+		  if (program_change_flag){midi_extra_cue[extras]=192+midi_channel_list[program_change_flag-1];   // program change for non drums
+		  midi_extra_cue[extras+1]=program_change[program_change_flag-1];
+		  midi_extra_cue[extras+2]=0;
+		  midi_extra_cue[28]=extras+3;
+		  program_change_flag=0; //clear
 
 		  }
 

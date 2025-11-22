@@ -105,6 +105,7 @@ uint16_t mtc_tick=0;  // incoming realtime clock counter
 uint8_t seq_enable=1;  // start stop sequencer
 uint8_t seq_step; // 0-15 steps,paused
 uint8_t realtime;
+uint8_t program_change_flag=0;
 
 
 volatile uint16_t timer_value=512; // sets timer ccr  def is 1100 for now
@@ -247,7 +248,7 @@ uint8_t test_byte[64];
 uint8_t test_byteB[64];
 uint8_t second_scene=0;  // select second set of sounds
 uint8_t cdc_len_temp;
-uint8_t program_change[2]; // hold current prograam change for 2 channels
+uint8_t program_change[16]; // hold current prograam change for 2 channels
 uint8_t green_position[20];
 uint8_t cdc_buf2[12];
 //uint8_t pattern_scales[]={"major","minor","maj penta","minor penta","blues","dorian","half diminshed","lydian", "asc melodic minor","lyidian aug"," half dimished"," octatonic","persian" };  // 8 per scale
@@ -347,5 +348,5 @@ uint8_t controller_fx_value[2]; // controller level
 
 uint8_t keyboard_step_record;   // keeps count of keys pressed once rec_arm and pause is on
 uint8_t loop_screen_disable=0;
-
+uint8_t control_change[16];   // set control change data for selected sound mainly for keys for now
 

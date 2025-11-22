@@ -198,7 +198,7 @@ void note_buttons(void){  // always running only on notes though
 					memset(button_states+16, 0, 8);
 
 					 button_states[square_buttons_list[last_press]]=red_button;  // single program change select
-					if (selected_scene<12) program_change[0]=last_press-16;  else alt_pots_selector=last_press-16;
+				//	if (selected_scene<12) program_change[0]=last_press-16;  else alt_pots_selector=last_press-16;
 
 
 					if(record){   // only save on record
@@ -208,7 +208,8 @@ void note_buttons(void){  // always running only on notes though
 			//		{if (seq_step<8) { pc_set=(pc_set&240)+((program_change[0]&7)+1) ;} else {pc_set=(pc_set&15)+(((program_change[0]&7)+1)<<4) ;}} // modified program save save, twice on note 0 and 8
 				//	program_change_automation[seq_step_long]=pc_set;
 
-					memcpy(alt_pots+128,program_change_automation,32);} // save pc data ,program change automation
+					//memcpy(alt_pots+128,program_change_automation,32);
+					} // save pc data ,program change automation
 
 
 				}   // program change function when select enabled
@@ -519,7 +520,7 @@ void buttons_store(void){    // incoming data from controller
 			//if ((select_bn) && (current_scene>3))  //  cc function
 			//{midi_cc_cue[0] =midi_channel_list[current_scene]+176; midi_cc_cue[1] =incoming_message[2]; };break; // sets notes playing only on these bars
 
-			case pot_2:break; // sets notes playing only on these bars
+			case pot_2:program_change[current_scene]=pot_states[1];program_change_flag=current_scene+1; break; // sets notes playing only on these bars
 
 			case pot_3: break;// sets pitch for drums ,only first page
 
@@ -613,10 +614,11 @@ void note_replace(uint8_t note_replace) {    // replace first note
 void pattern_settings(void){     // pattern change function , also program change automation, change to 2 for now , using 4bytes *8 per sound (512 bytes) instead
 	uint8_t current_scene=scene_buttons[0];
 	uint8_t pc_set=0;
-	if (seq_step<8)  pc_set=program_change_automation[seq_step_long]&15; else pc_set=(program_change_automation[seq_step_long])>>4;  // modifies program change  twice during 16 notes
+//	if (seq_step<8)  pc_set=program_change_automation[seq_step_long]&15; else pc_set=(program_change_automation[seq_step_long])>>4;  // modifies program change  twice during 16 notes
 
 
 
+/*
 		if ((!seq_step) || (seq_step==8)) { // program change automation ,modified to change twice on note 0 and 8
 		if (pc_set)     program_change[0] = (pc_set - 1) & 7; //change pc but only on fresh data
 
@@ -629,12 +631,13 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 
 	}
-	/*else {memset(button_states + 16, 0, 8);
+	else {memset(button_states + 16, 0, 8);
 	button_states[pitch_selected_for_drums[scene_buttons[0]&7] + 16] = yellow_button;
 
-	}*/
+	}
 
 	} // end of program change
+*/
 
 
 ///////////bar section
