@@ -1,4 +1,17 @@
+void read_busy(void){
+	uint8_t temp[2]={0x05};
+	uint8_t  temp2[2]={0,0};
+	uint8_t volatile flag=1;  // this is needed as it can stuck here , something with gpio toggling
 
+	 while (flag) {
+		HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0);  // when readin low till the end
+		HAL_SPI_TransmitReceive (&hspi1,temp,temp2,2, 10); // request data , always leave extra room (clock) , works
+		HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);  // high end
+		flag=temp2[1]&1;
+
+	 }
+
+}
 
 void flash_page_write(uint8_t page_select,uint8_t* data){    // write single page (256 bytes )
 
@@ -13,20 +26,20 @@ void flash_page_write(uint8_t page_select,uint8_t* data){    // write single pag
 								  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0);
 								  HAL_SPI_Transmit(&hspi1, test_data3, 1, 100);
 								  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);
-								  HAL_Delay(20);
+									read_busy();
 
 
 								  test_data3[0]=0x02; //write ,page program
 								  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0);   // low
 								  HAL_SPI_Transmit(&hspi1, test_data3 ,260, 1000);  //address,then data
 								  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);  // high end
-								  HAL_Delay(200);
+									read_busy();
 
 								  test_data3[0]=0x04; //disable write
 								  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0); // low
 								  HAL_SPI_Transmit(&hspi1, test_data3, 1, 100);
 								  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);   // high end
-								  HAL_Delay(20);
+									read_busy();
 
 
 }
@@ -76,8 +89,7 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 		 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0);
 		 		  HAL_SPI_Transmit(&hspi1, test_data3, 1, 1000);
 		 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);
-		 		  HAL_Delay(5);
-
+		 			read_busy();
 		 		  //----formAT SECTION
 
 
@@ -87,7 +99,7 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 		 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0);         // enable for sector erase   , stays empty when enabled
 		 		  HAL_SPI_Transmit(&hspi1,  test_data3, 4, 1000);   //erase sector ,works       4kbytes   (block erase=32kbytes)
 		 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);
-		 		  HAL_Delay(150);  // S
+		 			read_busy();
 		 		  // test write
 
 
@@ -96,7 +108,7 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 		 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0); // low
 		 		  HAL_SPI_Transmit(&hspi1, test_data3, 1, 100);
 		 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);   // high end
-		 		  HAL_Delay(20);
+		 			read_busy();
 
 
 		  //sector erase works
@@ -133,7 +145,7 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 		//  memcpy  (test_data3+4 ,drum_store_one,  256);  // drums
 
 
-								  HAL_Delay(500);
+			read_busy();
 
 		  //  write_once=1;
 		  send=0;
@@ -149,8 +161,8 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 	  	  loop_screen();
 }
 
-void flash_read(void){     // 1kbyte for now
-	HAL_Delay(100);
+void flash_read(void){     //can hang here
+	read_busy();
 
 	uint8_t test_data2[2560]={0,10,0,0};
 	uint8_t test_data3[2560]={0,10,0,0};
@@ -161,7 +173,7 @@ void flash_read(void){     // 1kbyte for now
 	HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0);  // when readin low till the end
 	HAL_SPI_TransmitReceive (&hspi1,test_data2, test_data3,  2560, 100); // request data , always leave extra room (clock) , works
 	HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);  // high end
-	HAL_Delay(100);
+
 
 	memcpy(drum_store_one+256,test_data3+4,256);    // buttons data
 

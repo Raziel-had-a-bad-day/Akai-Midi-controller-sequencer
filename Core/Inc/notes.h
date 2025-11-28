@@ -371,11 +371,11 @@ void buttons_store(void){    // incoming data from controller
 		case send_button:send=1;break;
 		case rec_arm_button:rec_arm=1;break; // set up for step record
 		case device_button:{device=1;memset(button_states+24,0,16);button_states[31+(current_midi&7)-((current_midi>>3)<<3)]=yellow_blink_button;}break;// shows midi channel , for now
-		case stop_all_clips:  {button_states[play_pause_button]=3;pause=5; seq_step=0;seq_step_long=0;play_position=0;bar_selector=0;button_states[stop_all_clips]=0; all_notes_off();
+		case stop_all_clips:  {button_states[play_pause_button]=5;pause=5; seq_step=0;seq_step_long=0;play_position=0;bar_selector=0;button_states[stop_all_clips]=0; all_notes_off();
 		memset(LFO_tracking_counter,0,64);memset(last_pitch_count,0,16); memset(last_note_on_channel,0,16);  }// stop all clips, pause and reset to start
 		break;
 
-		case play_pause_button:pause=5;break;
+		case play_pause_button:pause=3;break;
 		case clip_stop_button: {clip_stop=1; lcd_downcount=10;lcd_messages_select=3;scene_solo=0;button_states[83]=0;  } break;
 		default:break;
 
@@ -429,7 +429,7 @@ void buttons_store(void){    // incoming data from controller
 
 
 	//alt_pots[(incoming_data1  - 48)+(alt_pots_selector*8)] =((incoming_message[2])); // sounds 0-7   , allow a off  setting, like full low or high that is played but zero volume
-	alt_pots[(incoming_data1  - 48)+(alt_pots_selector*8)] =((incoming_message[2])>>1)+32;   // at full setting velocity is off
+	alt_pots[(incoming_data1  - 48)+(alt_pots_selector*8)] =((incoming_message[2])>>1);   // at full setting velocity is off
 	// maybe 16 values or about 2 octaves in scales
 
 		status=0; // clear
@@ -522,7 +522,7 @@ void buttons_store(void){    // incoming data from controller
 
 			case pot_2:program_change[current_scene]=pot_states[1];program_change_flag=current_scene+1; break; // sets notes playing only on these bars
 
-			case pot_3: break;// sets pitch for drums ,only first page
+			case pot_3: control_change[current_scene]=pot_states[2];control_change_flag=current_scene+1; break;// sets pitch for drums ,only first page
 
 			case pot_4:break;
 			case pot_5: break;  // lfo rate

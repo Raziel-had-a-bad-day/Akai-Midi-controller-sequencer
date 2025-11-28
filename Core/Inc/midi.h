@@ -94,7 +94,7 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 
 
 void cdc_send(void){     // all midi runs often , need to separate  , will go back to the old way ,less confusing
-
+		// sometimes seem to miss note on message
 	//UART_HandleTypeDef huart1;
 			uint8_t len;  // note on
 			uint8_t send_temp[256];
@@ -205,24 +205,27 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 				}
 			}
-			if ((midi_channel_select != 9)&&(current_velocity)) {			// not drums playing
+			if ((midi_channel_select != 9)) {			// keys , not drums playing
 				if ((!seq_step )&&(pitch_change_rate[i]==8))last_pitch_count[i]=0;
 
-				if (drum_byte & (1 << (((offset_pitch) & 3) * 2))) { // ok , notes
+				if (drum_byte & (1 << (((offset_pitch) & 3) * 2))) { //notes
 
-					//if (first_step) {pitch_counter=0;}  else pitch_counter=last_pitch_count[i];  // resets pitch sequence on start or reads last count step
+					current_velocity=note_velocities[i];   // get accent info
 					pitch_counter=last_pitch_count[i];
-					current_velocity=(loop_lfo_out[i+32]+current_velocity)&127; //modify velocity with lfo , only temp
+					  pitch_seq=random_list[(pitch_counter>>3)];
+					  if (mute_list[i] || pause) {current_velocity=0;}
+
+					//current_velocity=(loop_lfo_out[i+32]+current_velocity)&127; //modify velocity with lfo , only temp
 
 				  //pitch_seq=pattern_scale_process(random_list[(pitch_counter)],i);  // note from alt_pots+scale ,disabled
-				  pitch_seq=random_list[(pitch_counter>>3)];
-				  if (pitch_seq>91) current_velocity=0; // turn off note at full pitch
+					if (!pitch_seq) current_velocity=0; // turn off note at full pitch
 					if (high_row)
 						button_states_temp[i] = 0; // button dark
+
 					note_midi[cue_counter] = midi_channel_select + MIDI_NOTE_ON; // add Note_on
 					note_midi[(cue_counter) + 1] = pitch_seq; // only first pitch set for now
 					note_midi[(cue_counter) + 2] = current_velocity;
-					cue_counter = cue_counter + 3;
+					if (current_velocity)  {cue_counter = cue_counter + 3; last_note_on_channel[i] = pitch_seq;} else last_note_on_channel[i] = 0; //skip sending on zero velocity
 
 		/*			if ((note_timing[i]>1 )){    // in case old note hasnt finished ,Note_off
 						note_midi[cue_counter] =midi_channel_select+ MIDI_NOTE_OFF; // note off
@@ -231,7 +234,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 						cue_counter = cue_counter + 3;
 						note_timing[i]=0;
 					}*/
-					last_note_on_channel[i] = pitch_seq; // saves last pitch step
+					 // saves last pitch step
 
 					pitch_counter=(pitch_counter+pitch_change_rate[i])&63;   // pitch change up count 8-1 for now
 
@@ -360,7 +363,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 			 serial_len=len;   // serial send length note off + note on
 
-			 memcpy(serial_out, midi_extra_cue, midi_extra_cue[28]); // extra stuff sent , anything
+		if( midi_extra_cue[28])	 memcpy(serial_out, midi_extra_cue, midi_extra_cue[28]); // extra stuff sent , anything
 			 // start of serial send
 
 
@@ -515,6 +518,16 @@ void midi_extras(void){    // extra midi data added here , program change , cc
 		  program_change_flag=0; //clear
 
 		  }
+		  if (control_change_flag){midi_extra_cue[extras]=176+midi_channel_list[control_change_flag-1];   // program change for non drums
+		  midi_extra_cue[extras+1]=73; // setting for reverb atm
+		  midi_extra_cue[extras+2]=control_change[control_change_flag-1];
+		  midi_extra_cue[28]=extras+3;
+		  control_change_flag=0; //clear
+
+		  }
+
+
+
 
 
 	  }

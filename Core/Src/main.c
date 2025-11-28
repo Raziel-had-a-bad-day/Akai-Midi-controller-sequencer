@@ -58,6 +58,8 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
+RTC_HandleTypeDef hrtc;
+
 SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_rx;
 DMA_HandleTypeDef hdma_spi1_tx;
@@ -68,8 +70,9 @@ UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
 
-
-
+RTC_TimeTypeDef seq_clock;  // get time
+RTC_DateTypeDef seq_date; // get date ,needed
+RTC_TimeTypeDef set_Time = {0}; // to reset rtc
 
 
 #include "flash.h"
@@ -96,6 +99,7 @@ static void MX_USART1_UART_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 
 void note_replace(uint8_t note_replace);
@@ -170,6 +174,7 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI1_Init();
   MX_TIM2_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
   // USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS);
 
@@ -193,7 +198,7 @@ int main(void)
 
     HAL_TIM_Base_Start_IT(&htim2);
    // HAL_UART_Receive_IT(&huart1, &serial1_temp, 1);		// midi irq
-    HAL_UART_Receive_DMA(&huart1, serial1_hold2,1);    //
+   // HAL_UART_Receive_DMA(&huart1, serial1_hold2,1);    //
   //CDC_Transmit_FS("Hello\r\n",7);
 
 	printf("hello");
@@ -223,7 +228,6 @@ int main(void)
 	 // uint16_t step_temp=0;
 	 // uint8_t seq_step_mod;
 	  uint8_t selected_scene=scene_buttons[0];
-
 
 	  if (seq_pos_mem!=seq_pos){     // runs  8 times /step  , control sequencer counting
 
@@ -264,8 +268,9 @@ int main(void)
 
 	  if ((s_temp) != (seq_pos>>3)) {			// runs on note steps 0-15
 
-
-
+		  if(!seq_step_long) {HAL_RTC_SetTime(&hrtc, &set_Time, RTC_FORMAT_BIN);}  //resets rtc
+		  HAL_RTC_GetTime(&hrtc, &seq_clock, RTC_FORMAT_BIN);
+		  HAL_RTC_GetDate(&hrtc, &seq_date, RTC_FORMAT_BIN);  // this needs to be called or the time wont work properly
 		  midi_extras();
 			  pattern_settings();
 			  led_full_clear();
@@ -349,7 +354,7 @@ int main(void)
  				//  if( (USBD_MIDI_GetState(&hUsbDeviceFS) == MIDI_IDLE) )  USB_send();  // fast     	//temp disable
 
 
-
+ 			//	  if (!midi_channel_list[0]) flash_read(); // in case flash didn't load
 
  				  s_temp = seq_pos>>3;
 
@@ -495,8 +500,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 25;
@@ -554,6 +560,41 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+
+  /** Initialize RTC Only
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
 
 }
 

@@ -345,6 +345,7 @@ uint8_t nrpn_gating_sequence[16]={127,0,127,0,120,0,100,0,127,0,127,0,120,0,100,
 uint8_t controller_fx_enable; // controller data flag
 uint8_t controller_fx_select[2];  // selects which controller data
 uint8_t controller_fx_value[2]; // controller level
+uint8_t control_change_flag=0;
 
 uint8_t keyboard_step_record;   // keeps count of keys pressed once rec_arm and pause is on
 uint8_t loop_screen_disable=0;
