@@ -274,8 +274,8 @@ int main(void)
 		  midi_extras();
 			  pattern_settings();
 			  led_full_clear();
-
-			  if (clip_stop) alt_pots_playing(); // lights for alt pots during play
+			  alt_pots_playing(); // run it always
+			  //if (clip_stop) alt_pots_playing(); // lights for alt pots during play
 
 			  uint8_t current_scene=scene_buttons[0]; //  local
 			  seq_current_step=loop_lfo_out[current_scene+32];
@@ -335,7 +335,7 @@ int main(void)
 
 
 
-			  if (lcd_downcount) { lcd_message();lcd_downcount--; }
+			  //if (lcd_downcount) { lcd_message();lcd_downcount--; }
 
  				lcd_menu_pages(1);
 
@@ -447,8 +447,10 @@ int main(void)
 		  }  // end of cdc message
 
 				  if (keyboard[0])  {    // keyboard play live
-					  if (rec_arm && pause && (keyboard[1]>48)) {loop_screen_disable=1;step_recording();}
+					  if (rec_arm && pause && (keyboard[1]>48)&& (scene_buttons[0]>12)) {loop_screen_disable=1;step_recording();}
+
 						  uint8_t note_flag=144; // just use vel 0 for off
+						  if (!keyboard[1]) note_flag=128; // note off
 						  uint8_t incoming=keyboard[0]&127;
 						  uint8_t velocity=keyboard[1]&127;
 						  uint8_t buffer_pos=keyboard_buffer[31];

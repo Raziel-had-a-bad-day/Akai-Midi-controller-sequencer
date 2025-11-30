@@ -121,11 +121,11 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 				uint16_t drum_byte_select;   // selects a trigger 16 + (i*4) 16*64 ... 0-256
 				uint8_t drum_byte;
 				 uint16_t pattern=bar_playing; // modified
-				 uint8_t random_list[16]; // alt pots
+				 uint8_t random_list[64]; // alt pots
 				 uint8_t note_enable[16];
 				uint8_t note_velocities[16];  // holds temp velocities ,can be modified
 				 // memcpy (random_list,alt_pots+(pattern*16),16); // load tones for current pattern  , might do it with pitch change selector
-				 memcpy (random_list,alt_pots+(alt_pots_selector*8),16); // load tones for current pattern
+				 memcpy (random_list,alt_pots,64); // load tones for current pattern
 				// memcpy (random_list,alt_pots+(0),16); // disable keychange , just defualts alt pots for now
 
 				 memcpy (note_velocities,note_accent,16);
@@ -206,13 +206,14 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 				}
 			}
 			if ((midi_channel_select != 9)) {			// keys , not drums playing
-				if ((!seq_step )&&(pitch_change_rate[i]==8))last_pitch_count[i]=0;
+			//	if ((!seq_step )&&(pitch_change_rate[i]==8))last_pitch_count[i]=0;   //  optional    ,resets counter at next bar
 
 				if (drum_byte & (1 << (((offset_pitch) & 3) * 2))) { //notes
 
 					current_velocity=note_velocities[i];   // get accent info
+					if (!note_enable[i]) current_velocity=0; // disable if note enable is not zero
 					pitch_counter=last_pitch_count[i];
-					  pitch_seq=random_list[(pitch_counter>>3)];
+					  if(i>11) pitch_seq=random_list[(pitch_counter>>3)+((i-12)*8)];   // only works on last 4 scenes/keys
 					  if (mute_list[i] || pause) {current_velocity=0;}
 
 					//current_velocity=(loop_lfo_out[i+32]+current_velocity)&127; //modify velocity with lfo , only temp
@@ -519,7 +520,7 @@ void midi_extras(void){    // extra midi data added here , program change , cc
 
 		  }
 		  if (control_change_flag){midi_extra_cue[extras]=176+midi_channel_list[control_change_flag-1];   // program change for non drums
-		  midi_extra_cue[extras+1]=73; // setting for reverb atm
+		  midi_extra_cue[extras+1]=control_change_value; // setting for reverb atm
 		  midi_extra_cue[extras+2]=control_change[control_change_flag-1];
 		  midi_extra_cue[28]=extras+3;
 		  control_change_flag=0; //clear

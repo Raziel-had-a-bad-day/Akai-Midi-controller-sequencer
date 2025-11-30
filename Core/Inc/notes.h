@@ -62,10 +62,12 @@ void top_bar(uint8_t input){ // red bar function for top row
 void step_recording(void)  {    // write keyboard notes to alt_pots  , but only during pause and arm_rec
 
 	top_bar(keyboard_step_record);
+	uint8_t selected_scene=scene_buttons[0];
 	if (keyboard_step_record>7) { keyboard_step_record=0;  button_states[rec_arm_button]=0;rec_arm=0;
 	} //reset rec_arm
-	else{		alt_pots[(alt_pots_selector*8)+keyboard_step_record]=(keyboard[0]);
+	else{		alt_pots[((selected_scene-12)*8)+keyboard_step_record]=(keyboard[0]);
 				keyboard_step_record++;}
+
 
 	}
 void midi_cue_fill(void){
@@ -307,7 +309,7 @@ void buttons_store(void){    // incoming data from controller
 
 	//if (status == 145)  {if((incoming_data1>47)& (incoming_data1<73)) keyboard[0]=(incoming_data1 -47);}  // store last key pressed mainly , 48-72 default setting(24)  0-24 13 in th emiddle
 	//if (status == 129)  {if((incoming_data1>47)& (incoming_data1<73)) keyboard[0]=(incoming_data1 -47)+128;}  // note off keyboard
-	if (record && keyboard[0] && (keyboard[0]<128)) record_overdub(); // only on note on , enable overdub
+	//if (record && keyboard[0] && (keyboard[0]<128)) record_overdub(); // only on note on , enable overdub
 	if (status == MIDI_NOTE_ON){  // Midi Note on  for buttons
 
 		note_off_flag[0]=1;note_off_flag[1]=incoming_data1 ;
@@ -427,9 +429,9 @@ void buttons_store(void){    // incoming data from controller
 
 	if ((status == 176) && (clip_stop)){   // with clip stop on
 
+		if (current_scene>11)  alt_pots_selector_list[current_scene-12];   // program alt pots based on keys selected  0-3
 
-	//alt_pots[(incoming_data1  - 48)+(alt_pots_selector*8)] =((incoming_message[2])); // sounds 0-7   , allow a off  setting, like full low or high that is played but zero volume
-	alt_pots[(incoming_data1  - 48)+(alt_pots_selector*8)] =((incoming_message[2])>>1);   // at full setting velocity is off
+	alt_pots[(incoming_data1  - 48)+((current_scene-12)*8)] =((incoming_message[2])>>1);   // at zero setting velocity is off  , set for 4 banks for the last for 4 scenes
 	// maybe 16 values or about 2 octaves in scales
 
 		status=0; // clear
@@ -520,15 +522,15 @@ void buttons_store(void){    // incoming data from controller
 			//if ((select_bn) && (current_scene>3))  //  cc function
 			//{midi_cc_cue[0] =midi_channel_list[current_scene]+176; midi_cc_cue[1] =incoming_message[2]; };break; // sets notes playing only on these bars
 
-			case pot_2:program_change[current_scene]=pot_states[1];program_change_flag=current_scene+1; break; // sets notes playing only on these bars
+			case pot_2:program_change[current_scene]=pot_states[1];program_change_flag=current_scene+1; break; // send program change value
 
-			case pot_3: control_change[current_scene]=pot_states[2];control_change_flag=current_scene+1; break;// sets pitch for drums ,only first page
+			case pot_3: control_change[current_scene]=pot_states[2];control_change_flag=current_scene+1;control_change_value=91; break;// cc reverb
 
-			case pot_4:break;
-			case pot_5: break;  // lfo rate
-			case pot_6: break;  // lfo level
+			case pot_4:control_change[current_scene]=pot_states[3];control_change_flag=current_scene+1;control_change_value=72; break;// cc release
+			case pot_5: control_change[current_scene]=pot_states[3];control_change_flag=current_scene+1;control_change_value=5; break; // cc portamento time
+			case pot_6: break;  //
 
-			case pot_7:	break;   // sets midi channel on selected sound
+			case pot_7:	break;   //
 
 			case pot_8:break;
 			default:break;

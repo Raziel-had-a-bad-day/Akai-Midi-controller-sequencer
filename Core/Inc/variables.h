@@ -41,7 +41,10 @@
 #define pot_7 54
 #define pot_8 55
 
-
+	//MIDI CC
+	//	0 	Bank Select (MSB)  for patch banks , 7-volume, 5-portamento time
+	// 73 -Attack ,   72 -Release ,71 -VCF REsonance , 74 -VCF cutoff freq,  91 -Reverb , 84-portamento, 94-detune, 95-phaser, 70-sound variation,
+	//92 -tremolo, 75-79 generic fx settings , may use it for delay unit
 
 
 
@@ -54,7 +57,7 @@ uint16_t skip_counter; // keeps track of ppq skip
 volatile uint8_t ppq_send; // ppq_counter
 volatile uint8_t skip_enable; // allow ppq toggle skip
 volatile uint8_t skip_setting; // slow or faster 3,1,0
-
+// SWING - even numbered notes are shifted left or right
 
 
 //buttons
@@ -179,7 +182,7 @@ uint8_t loop_lfo_out[sound_set*3];  // used for some level of lfo using pot7 for
 // uint8_t lfo_settings[sound_set*3];  // lfo 0-8   rate , gain,offset, target
 uint8_t alt_pots[sound_set*16]; // stores a set of alt pot settings , 8 bytes per bank , 8 banks , also holds extra data > 128
 uint8_t alt_pots_selector=0; // changes alt_pots banks (8bytes each )
-
+uint8_t alt_pots_selector_list[16]; // changes alt_pots banks (8bytes each )
 
 uint8_t seq_step_mem;  // mem for looper
 
@@ -350,4 +353,4 @@ uint8_t control_change_flag=0;
 uint8_t keyboard_step_record;   // keeps count of keys pressed once rec_arm and pause is on
 uint8_t loop_screen_disable=0;
 uint8_t control_change[16];   // set control change data for selected sound mainly for keys for now
-
+uint8_t control_change_value=71;
