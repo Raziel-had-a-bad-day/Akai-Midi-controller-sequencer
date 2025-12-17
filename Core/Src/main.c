@@ -213,7 +213,7 @@ int main(void)
 	//TIM2->CCMR1 = 0;
 	lcd_start();
 
-	loop_screen();
+	//loop_screen();
 	// panic_delete();                 WATCH FOR WEIRD APC SENDS , IE UP ARROW PLUS BOTTOM ROW 3 SENDS CONSTANT CONTROLLER 50 INFO  ?
   /* USER CODE END 2 */
 
@@ -231,7 +231,7 @@ int main(void)
 
 	  if (seq_pos_mem!=seq_pos){     // runs  8 times /step  , control sequencer counting
 
-		  green_position[0]=seq_step; green_position[1]=seq_step;
+		   green_position[1]=seq_step;
 		  cdc_send(); // all midi compiled for send  8/per note , sends on seq_pos=1 atm
 
 		  if (serial_len)
@@ -273,15 +273,25 @@ int main(void)
 		  HAL_RTC_GetDate(&hrtc, &seq_date, RTC_FORMAT_BIN);  // this needs to be called or the time wont work properly
 		  midi_extras();
 			  pattern_settings();
-			  led_full_clear();
-			  alt_pots_playing(); // run it always
+			//  led_full_clear();
+		//	  alt_pots_playing(); // run it always
 			  //if (clip_stop) alt_pots_playing(); // lights for alt pots during play
 
 			  uint8_t current_scene=scene_buttons[0]; //  local
 			  seq_current_step=loop_lfo_out[current_scene+32];
 			  loop_current_speed=pattern_scale_list[current_scene];
 
-			  if (!seq_pos) LFO_tracking(); // runs once per bar
+
+			  if (!seq_pos) current_playing_bar=(current_playing_bar+1)&31;  // resets on a stop
+
+			  if (!seq_pos){ LFO_tracking(current_playing_bar,LFO_tracking_out); // runs once per bar ,after a full stop resets to zero
+			  LFO_tracking(current_playing_bar,LFO_tracking_bank);
+			  LFO_tracking((current_playing_bar+1),(LFO_tracking_bank+16));
+			  LFO_tracking((current_playing_bar+2),(LFO_tracking_bank+32));
+			  LFO_tracking((current_playing_bar+3),(LFO_tracking_bank+48));
+
+			  }
+
 			  if ((s_temp==14) && (overdub_enabled==2))  overdub_enabled=1; // resets bar wipe on record
 
 			  note_enable_list_selected=0;
@@ -350,7 +360,7 @@ int main(void)
  				  note_off_enable=1;
  				//  arrows();
  				  if (!pause) seq_step = seq_pos>> 3; else seq_step=seq_step;
-
+ 				  green_position[0]=seq_step;
  				//  if( (USBD_MIDI_GetState(&hUsbDeviceFS) == MIDI_IDLE) )  USB_send();  // fast     	//temp disable
 
 
@@ -447,7 +457,7 @@ int main(void)
 		  }  // end of cdc message
 
 				  if (keyboard[0])  {    // keyboard play live
-					  if (rec_arm && pause && (keyboard[1]>48)&& (scene_buttons[0]>12)) {loop_screen_disable=1;step_recording();}
+					  if (rec_arm && pause && (keyboard[1]>48)&& (scene_buttons[0]>7)) {loop_screen_disable=1;step_recording();}
 
 						  uint8_t note_flag=144; // just use vel 0 for off
 						  if (!keyboard[1]) note_flag=128; // note off

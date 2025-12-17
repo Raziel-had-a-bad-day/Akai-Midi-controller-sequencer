@@ -45,5 +45,6 @@ right arrow = different pot functions
 Pot 1 + right arrow= sets number of steps in pitch as it's looping ie  1-4 ' ,drums only 
 Pot 3 =sets pitch change advance rate on keys 
 Pause +arm_rec = allows pitch entry with keyboard in step mode , top bar shows progress
-
+left arrow=zoom in to one bars
+right arrow= zoom out to 4/8/16/32 bars  mainly for notes but also fx and so on 
  

@@ -4,6 +4,20 @@
 #define ppq_set 192   // TIM10 values
 #define drum_store 64  // scene_select  *4
 #define sound_set 16   // define selectable sounds for scene_buttons[0]  , important
+#define SRAM_BitB_BASE         0x22000000 //sram bit band  base for calculations
+#define RAM_BASE                         0x20000000   // ram address start
+#define VAR_RESET_BIT(variables_addr, bit_number)    \
+        (*(uint32_t *)(SRAM_BitB_BASE + ((variables_addr - RAM_BASE) * 32) + ((bit_number) * 4)) = 0)
+
+#define VAR_SET_BIT(variables_addr, bit_number)       \
+        (*(uint32_t *)(SRAM_BitB_BASE + ((variables_addr - RAM_BASE) * 32) + ((bit_number) * 4)) = 1)
+
+#define VAR_GET_BIT(variables_addr, bit_number)       \
+        (*(uint32_t *)(SRAM_BitB_BASE + ((variables_addr - RAM_BASE) * 32) + ((bit_number) * 4)))
+
+
+
+
 #define MIDI_NOTE_OFF 128
 #define MIDI_NOTE_ON 144
 #define up_arrow_button 64
@@ -30,7 +44,7 @@
 #define red_blink_button 4
 #define yellow_button 5
 #define yellow_blink_button 6
-#define variable_count 15   // for flash mem
+#define variable_count 18   // for flash mem
 
 #define pot_1 48
 #define pot_2 49
@@ -226,7 +240,7 @@ uint8_t serial_out[128]; // holds midi out data
 uint8_t serial_len;
 uint8_t midi_channel_list[21]={9,9,9,9,9,9,9,9,9,9,9,9,3,3,3,3,3,3 };   //holds midi channel settings 0=1 (midi channels 1-16)
 uint8_t nrpn_cue[80]={186,99,5,186,98,16,186,6,32};  // stores message for nrpn on es1 only needs 1 initial c99=5  then only  2 bytes repeating  CC 98 =NRPN LSB and CC 6 =value , for now 9 bytes though  , initial normal 3 bytes then convrted to 9
-uint8_t pitch_lut[127] ={0,0,0,0,0,0,0,0,0,0,0,0,0,2,4,6,8,10,12,14,16,18,20,22,24,27,30,33,36,39,42,45,48,51,54,57,64,0,2,4,6,8,10,12,14,16,18,20,22,24,27,30,33,36,39,42,45,48,51,54,57,64,70,73,76,79,82,85,88,91,94,97,100,103,105,107,109,111,113,115,117,119,121,123,125,127,64,70,73,76,79,82,85,88,91,94,97,100,103,105,107,109,111,113,115,117,119,121,123,125,127};   // es1 pitch table  4 octaves
+const uint8_t pitch_lut[127] ={0,0,0,0,0,0,0,0,0,0,0,0,0,2,4,6,8,10,12,14,16,18,20,22,24,27,30,33,36,39,42,45,48,51,54,57,64,0,2,4,6,8,10,12,14,16,18,20,22,24,27,30,33,36,39,42,45,48,51,54,57,64,70,73,76,79,82,85,88,91,94,97,100,103,105,107,109,111,113,115,117,119,121,123,125,127,64,70,73,76,79,82,85,88,91,94,97,100,103,105,107,109,111,113,115,117,119,121,123,125,127};   // es1 pitch table  4 octaves
 uint8_t es_filter[9]; // track es1 filters  old and new values  say 4+4
 uint8_t es_filter_cue[20];   // hold filter data for nrpn
 uint8_t midi_cc[sound_set]; // enabled if sending midi cc
@@ -354,3 +368,14 @@ uint8_t keyboard_step_record;   // keeps count of keys pressed once rec_arm and 
 uint8_t loop_screen_disable=0;
 uint8_t control_change[16];   // set control change data for selected sound mainly for keys for now
 uint8_t control_change_value=71;
+uint8_t buttons_bank_1[32];  // alternative buttons_states for different displays
+uint8_t current_playing_bar;   // keep record of the current playing bar , lenght to be set
+uint8_t LFO_tracking_bank[64]; //stores 4 steps when run
+uint8_t bar_map_1[sound_set]={255,255,255,255,255,255,255,255};  // bit mapped enable 1 bar
+uint8_t bar_map_8[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 8 bar
+uint8_t bar_map_32[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 32 bar   , for now might change to diff values
+uint8_t bar_map_screen_level=2;  //selects which zoom is displayed 0-3   , 0=none 1=8 2=32
+
+
+
+

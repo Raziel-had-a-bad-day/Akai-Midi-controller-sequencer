@@ -120,13 +120,13 @@ void lcd_menu_vars(uint8_t selected_var ,uint8_t var_position){     // print var
 	uint8_t digits=1; //actual number of ridigtis
 	uint8_t scene=scene_buttons[0];
 	uint8_t custom_characters=0;
-	uint8_t custom_pos=0;
-
+	//uint8_t custom_pos=0;
+	uint8_t blank=0;  // prints blank if value is 0
 	const char* list_ch=" :+=-_()^&$#@#@!*"    ;
 
 
 
-#define lcd_menu_items 12
+#define lcd_menu_items 13
 
 	//uint8_t *lcd_page1 []={ // need to enable more pages,this needs to be here,  also letters etc
 
@@ -151,9 +151,9 @@ void lcd_menu_vars(uint8_t selected_var ,uint8_t var_position){     // print var
 		case 8:lcd_item[8].var=&note_accent[scene];lcd_item[8].name="Note_accent";digits=3;break;
 		case 9:lcd_item[9].var=&LFO_low_list[(scene)];lcd_item[9].name="filter_rate";digits=1;break;
 		case 10:lcd_item[10].var=&LFO_high_list[(scene)];lcd_item[10].name="filter_gain";digits=1;break;
-		case 11:lcd_item[11].var=&seq_clock.Minutes;lcd_item[11].name="minutes";digits=1;break;
+		case 11:lcd_item[11].var=&seq_clock.Minutes;lcd_item[11].name="minutes";digits=1;blank=1;break;
 		case 12:lcd_item[12].var=&seq_clock.Seconds;lcd_item[12].name="seconds";digits=2;break;
-
+		case 13:lcd_item[13].var=&last_note_on_channel[scene];lcd_item[13].name="last note pitch";digits=3;blank=1;break;
 		default:break;}
 
 
@@ -168,7 +168,7 @@ void lcd_menu_vars(uint8_t selected_var ,uint8_t var_position){     // print var
 
 			if (dec_hold<10)  {sprintf (lcd_char,"  %d", dec_hold) ;var_size=1;}  else if (dec_hold<100)  {sprintf (lcd_char," %d", dec_hold) ;var_size=0;}  //sort digits for number
 			else if (dec_hold>99)  {sprintf (lcd_char,"%d", dec_hold) ;var_size=0;}   // check length and add space
-
+			if ((!dec_hold)&&(blank))  {sprintf (lcd_char,"   ") ;var_size=1;}  // option to print nothing if zero
 		/*	if (var_size==1)  {lcd_buffer[var_position+2]=lcd_char[0];lcd_buffer[var_position]=32;lcd_buffer[var_position+1]=32;}   // 32=space 48=0 65=A
 			if (var_size==2)  {lcd_buffer[var_position+1]=lcd_char[0]; lcd_buffer[var_position+2]=lcd_char[1]; lcd_buffer[var_position]=32;}
 			if (var_size==3)  {lcd_buffer[var_position]=lcd_char[0];lcd_buffer[var_position+1]=lcd_char[1]; lcd_buffer[var_position+2]=lcd_char[2];  }
@@ -221,7 +221,8 @@ void lcd_menu_pages(uint8_t page){  // various setups for different pages  ,0-3 
 
 	memset(lcd_buffer,32,32); //clear
 	switch (page){    // var ,  postiion
-	case 1:lcd_menu_vars(1,0); lcd_menu_vars(11,4);lcd_menu_vars(12,6);lcd_menu_vars(4,14);lcd_menu_vars(0,16);lcd_menu_vars(9,18);lcd_menu_vars(10,20);lcd_menu_vars(13,5);  break;
+	case 1:lcd_menu_vars(1,0); lcd_menu_vars(11,4);lcd_menu_vars(12,6);lcd_menu_vars(4,14);lcd_menu_vars(0,16);lcd_menu_vars(9,18);
+	lcd_menu_vars(10,20);lcd_menu_vars(14,5); lcd_menu_vars(13,23);   break;
 	case 2:break;
 	case 3:break;
 	default:break;

@@ -52,21 +52,34 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 
 	  uint8_t seq_step_mod=(seq_pos>>3)&31;
 	  uint8_t send_temp[100];  // need this for temp lights
+	  uint8_t buffer_out[512] ;  // large send
+	  uint16_t buffer_size=0;
+	  uint8_t buffer_short[4];
 	  memcpy(send_temp,button_states,100);
-	  memcpy(send_temp,blink_light_list,8);
+	 // memcpy(send_temp,blink_light_list,8);
 	if (send_buffer_sent == 1) { // moving light send and button change , current
 
 		seq_step_mem = seq_step_mod;
 		send_buffer_sent = 2;
 	}
 	////  temporary lights , not stored
-
 	if (!pause)send_temp[square_buttons_list[green_position[0]]]=1;
-	if (record) send_temp[square_buttons_list[green_position[0]]]=3;   // add moving green light  ,off during pause
+	//	if (record) send_temp[square_buttons_list[green_position[0]]]=3;   // add moving green light  ,off during pause
+
+	send_temp[square_buttons_list[seq_step]]=1;
+	/*if (down_arrow){
+	memcpy(send_temp+8,LFO_tracking_bank+8,8);     // temporary for testing
+	memcpy(send_temp+16,LFO_tracking_bank+24,8);
+	memcpy(send_temp+24,LFO_tracking_bank+40,8);
+	memcpy(send_temp+32,LFO_tracking_bank+56,8);
+	if (scene_buttons[0]<8) memset(send_temp+8,0,32);}*/
+
+	for(n=0;n<512;n+=4){
+
 
 	counter_a = 0; // clear
 	i=0;
-	while((!counter_a)&& (i<100))
+	while((!counter_a)&& (i<100))    // testing for changed buttons but only against send temp
 	{ // test for all button changes
 		if ((other_buttons_hold[i] != send_temp[i]) // this is ok
 				&& (!counter_a)) {
@@ -75,21 +88,23 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 		}  // can be used to reset all these buttons
 	i++;}
 
+
+
 	if (counter_a) { // one at a time ,but runs often ,might change
 
-		send_buffer[6] = MIDI_NOTE_ON;
-		send_buffer[7] = (counter_a - 1) & 127;
-		send_buffer[8] = send_temp[counter_a - 1] & 127;
-
+		buffer_short[0] = MIDI_NOTE_ON;
+		buffer_short[1] = (counter_a - 1) & 127;
+		buffer_short[2] = send_temp[counter_a - 1] & 127;
+		buffer_short[3]=9;   // usb extra
 	}
+	buffer_size=n;memcpy(buffer_out+buffer_size,buffer_short,4);
+	if (!counter_a) n=512;
 
-	send_buffer[5]=9;   // usb extra
-		// if ((cdc_len>2)   )
-	  			// {  memcpy (send_temp+1,cdc_send_cue+(cdc_len-3),3); USBD_MIDI_SendReport(&hUsbDeviceFS,send_temp,4); cdc_len=cdc_len-3;}  else cdc_len=0;  // usb send
-	//if (send_buffer[6]) {USBD_MIDI_SendReport(&hUsbDeviceFS,send_buffer+5,4);send_buffer[6]=0;} // only data for controller
+	}  // end of loop
+
 
 	//if (send_buffer[6]){ while (CDC_Transmit_FS(send_buffer+5, 3)== USBD_BUSY){HAL_Delay(1);}}//bad
-	if (send_buffer[6]) CDC_Transmit_FS(send_buffer+5, 4);
+	if (buffer_size) CDC_Transmit_FS(buffer_out, buffer_size); // trying big send
 }
 
 
@@ -98,7 +113,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 	//UART_HandleTypeDef huart1;
 			uint8_t len;  // note on
 			uint8_t send_temp[256];
-			uint8_t len1;  // note off
+			//uint8_t len1;  // note off
 			uint8_t cue_counter;
 
 			uint8_t note_midi [128] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};  // 3*16 ,   seems to get some garbage ?
@@ -185,7 +200,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			}
 
 
-			if (drum_byte & (1 << ((((offset_pitch) & 3) * 2)+1)) ) current_velocity=96; else current_velocity=note_velocities[i];   // get accent info
+			if (drum_byte & (1 << ((((offset_pitch) & 3) * 2)+1)) ) current_velocity=96; else current_velocity=note_velocities[i];   // get accent info ,drums playing
 
 			if (mute_list[i] || pause) {current_velocity=0;} // mutes sound also sound button button goes dark
 
@@ -195,7 +210,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 				if (drum_byte & (1 << (((offset_pitch) & 3) * 2))) { // ok , drums
 					if (high_row)
-						button_states_temp[i] = 0;
+					//	button_states_temp[i] = 0;    // blink
 					note_midi[cue_counter] = 153; // add note on
 					note_midi[(cue_counter) + 1] = drum_list[i];
 					note_midi[(cue_counter) + 2] = current_velocity;
@@ -213,15 +228,15 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					current_velocity=note_velocities[i];   // get accent info
 					if (!note_enable[i]) current_velocity=0; // disable if note enable is not zero
 					pitch_counter=last_pitch_count[i];
-					  if(i>11) pitch_seq=random_list[(pitch_counter>>3)+((i-12)*8)];   // only works on last 4 scenes/keys
+					  if(i>7) pitch_seq=random_list[(pitch_counter>>3)+((i-8)*8)];   // only works on last 8 scenes/keys
 					  if (mute_list[i] || pause) {current_velocity=0;}
 
 					//current_velocity=(loop_lfo_out[i+32]+current_velocity)&127; //modify velocity with lfo , only temp
 
 				  //pitch_seq=pattern_scale_process(random_list[(pitch_counter)],i);  // note from alt_pots+scale ,disabled
 					if (!pitch_seq) current_velocity=0; // turn off note at full pitch
-					if (high_row)
-						button_states_temp[i] = 0; // button dark
+					//if (high_row)
+					//	button_states_temp[i] = 0; // button blink
 
 					note_midi[cue_counter] = midi_channel_select + MIDI_NOTE_ON; // add Note_on
 					note_midi[(cue_counter) + 1] = pitch_seq; // only first pitch set for now
@@ -536,36 +551,43 @@ void midi_extras(void){    // extra midi data added here , program change , cc
 
 		}
 
-void LFO_tracking(void){ //0-7 15-23 , simple on -off lfo based on bar count ,effective , 4x
+void LFO_tracking(uint8_t selected_bar, uint8_t *pointer){ //0-7 15-23 , simple note on -off lfo based on bar count ,effective , 4x , maybe run it ahead for say 4 bars
 
-	uint8_t lfo_counter;
-	uint8_t lfo_phase_value;
-	uint8_t lfo_out;
+
+	uint8_t counter=0;
+
+	uint8_t output=0;
+	uint8_t lfo_out=0;
+	if (selected_bar>31) selected_bar=31;  // limit to a single set for now
+
 	#define max_LFO_value 8
 
+	for (i=0;i<16;i++){     // produce output for selected bar
+		output=0;
 
-					for (i=0;i<(sound_set*4);i++){
-					lfo_counter=LFO_tracking_counter[i];
-					lfo_phase_value=LFO_phase_list[i];
-					lfo_out =LFO_tracking_out[i];
+		counter=0;
+		lfo_out=0;
 
-				if (lfo_counter<max_LFO_value){  // only low count
-
-					if((lfo_counter)<LFO_low_list[i]) lfo_counter++; else lfo_counter=max_LFO_value;
-
-					}
-				else {if((lfo_counter-max_LFO_value)<(LFO_high_list[i])) lfo_counter++; else lfo_counter=0;}  // high count
-
-				if (lfo_counter<max_LFO_value) lfo_out=0; else lfo_out=1;  // output
-				if(lfo_phase_value>1) lfo_out=!lfo_out; // change phase
-				if (!lfo_phase_value) lfo_out=1; // lfo off
-				LFO_tracking_out[i]=lfo_out;
-				LFO_tracking_counter[i]=lfo_counter;
+			while (counter<selected_bar){
+			counter+=(LFO_low_list[i]+1); // minimum+1
+			if ((counter>=selected_bar)&&(!output)) {output=1;lfo_out=0;}
 
 
+			counter+=(LFO_high_list[i]+1); // minimum+1
+			if ((counter>=selected_bar)&&(!output)) {output=1;lfo_out=1;}
 			}
 
+			if(!LFO_phase_list[i]) lfo_out=1;
+			if(LFO_phase_list[i]==2) lfo_out=!lfo_out;
+			pointer[i]=lfo_out;
 
-		}
+	}
+
+
+	}
+
+
+
+
 
 

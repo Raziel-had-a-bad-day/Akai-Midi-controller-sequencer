@@ -1,5 +1,76 @@
 
 UART_HandleTypeDef huart1;
+
+void waterfall(void){
+	uint8_t current_scene=scene_buttons[0];
+	if (current_scene<8 )  current_scene=0; else current_scene=8;
+	for (i=0;i<32;i++){
+
+		//buttons_bank_1[i]=
+
+	}
+
+}
+void bar_map_screen(void){    // draw and modify bar_ map screens
+	uint8_t note_enabled=0;
+	uint8_t scene_select=scene_buttons[0]; // clear last two bits
+	uint8_t i=0;
+	uint32_t pointer;   // this is the actual address
+	uint8_t incoming_message[3];
+		memcpy(incoming_message,cdc_buf2, 3); // works off only receiving buffer , this might be changing
+
+
+		memset(button_states+8,0,32); USB_send();  // do full clear send before new data
+
+
+		uint8_t incoming_data1 = incoming_message[1]&127;
+
+	switch(bar_map_screen_level){   // grab the pointer for the correct bar map screen
+		case 1: pointer=(uint32_t)&bar_map_1;break;
+		case 2: pointer=(uint32_t)&bar_map_8;break;
+		case 3: pointer=(uint32_t)&bar_map_32;break;
+		default:break;}
+	pointer+=(scene_select&12);   // shows a batch of 4 rows
+
+	if ((incoming_data1>7) && (incoming_data1<40)  ) {
+	// modify button from incoming
+
+			uint8_t alt_list=	 button_states[incoming_data1 ];
+			switch(alt_list){    // change state of button
+			case 0 :alt_list = 1;break;   // normal lights , yellow
+			case 5 :alt_list= 0;break;		// green
+
+			case 1 :alt_list = 0;  ;break;
+			default:alt_list = 0; ;break; }
+
+
+			button_states[incoming_data1 ]=alt_list;
+			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
+
+
+ // modify data from button state
+	switch(button_states[square_buttons_list[alt_list]]){    // change state
+				case 0 :VAR_RESET_BIT((pointer+((alt_list>>3))),(alt_list&7));break;
+				case 1 :VAR_SET_BIT((pointer+((alt_list>>3))),(alt_list&7));break;
+
+	}
+	} //end of mod
+// draw screen
+
+
+		for(i=0;i<32;i++){
+			note_enabled=VAR_GET_BIT((pointer+(i>>3)),(i&7));
+			//note_enabled=VAR_GET_BIT(bar_map_8[scene_select+(i>>3)],(i&7));
+			button_states[square_buttons_list[i]]=note_enabled;   // set light
+		}
+
+	} // end of bar map screen
+
+
+
+
+
+
 void all_notes_off(void){
 	uint8_t data[48];
 	for (i=0;i<16;i++){
@@ -65,7 +136,7 @@ void step_recording(void)  {    // write keyboard notes to alt_pots  , but only 
 	uint8_t selected_scene=scene_buttons[0];
 	if (keyboard_step_record>7) { keyboard_step_record=0;  button_states[rec_arm_button]=0;rec_arm=0;
 	} //reset rec_arm
-	else{		alt_pots[((selected_scene-12)*8)+keyboard_step_record]=(keyboard[0]);
+	else{		alt_pots[((selected_scene-8)*8)+keyboard_step_record]=(keyboard[0]);
 				keyboard_step_record++;}
 
 
@@ -103,7 +174,7 @@ void patch_screen(void)		{     // shows last loaded patch and save patch as well
 	}
 
 
-void loop_screen(void){  // always on now ,produces lights for notes,  16 notes and 8 bars , full redraw  , notes only
+void loop_screen(void){  // always on now ,produces lights for notes,  16 notes and 8 bars , full redraw  , notes only   might remove this
 
 	//uint16_t current_scene=scene_buttons[0]*256;  // pattern select
 
@@ -118,8 +189,9 @@ void loop_screen(void){  // always on now ,produces lights for notes,  16 notes 
 	//pattern_select=0;
 	uint16_t drum_byte_select;
 	uint8_t drum_byte;
+	//memset(button_states+24,0,16);
+	drums=0;    //always
 
-	drums=1;    //always
 	if (loop_screen_disable) drums=0; //disable for rec arm
 
 	if(device) drums=0;  // disables loop screen
@@ -128,14 +200,16 @@ void loop_screen(void){  // always on now ,produces lights for notes,  16 notes 
 
 			for (i=0;i<16;i++) {// drums fill  i=actual step 0-15
 
-				drum_byte_select= (i>>2)+(selected_scene*4)+(bar_playing*drum_store);  // select byte position
+				drum_byte_select= (i>>2)+(selected_scene*4)+(drum_store);  // select byte position
 				drum_byte=drum_store_one[drum_byte_select];  // get data
 
 				if (drum_byte & (1<<((i&3)*2))) data_temp2=1; else data_temp2=0;     // note test ok
 				if (drum_byte & (1<<(((i&3)*2)+1))) accent_temp=1; else accent_temp=0;  // accent test
 
 				if (data_temp2)    // read back on first loop select   , change button state colour
-				{if (accent_temp) button_states[square_buttons_list[i]]=red_button ;  else button_states[square_buttons_list[i]]=yellow_button ;}
+				{
+					//if (accent_temp) button_states[square_buttons_list[i]]=red_button ;  else
+						button_states[square_buttons_list[i]]=yellow_button ;}
 				else button_states[square_buttons_list[i]]=0;
 
 				note_counter++;
@@ -150,16 +224,16 @@ void loop_screen(void){  // always on now ,produces lights for notes,  16 notes 
 
 void note_buttons(void){  // always running only on notes though
 
-	uint8_t incoming_message[3];
-	memcpy(incoming_message,cdc_buf2, 3); // works off only receiving buffer , this might be changing
-	//uint16_t clear[20]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-	uint8_t incoming_data1 = incoming_message[1]&127;
-	uint8_t selected_scene=scene_buttons[0];
 
+	uint8_t selected_scene=scene_buttons[0];
+	uint8_t incoming_message[3];
+		memcpy(incoming_message,cdc_buf2, 3); // works off only receiving buffer , this might be changing
+
+		uint8_t incoming_data1 = incoming_message[1]&127;
 
 	last_button = square_buttons_list[incoming_data1];   // memory location  of note pressed 0-256(0-3 (16notes)   + sounds*4+(pattern_select*16)
 
-	uint8_t last_press = square_buttons_list[incoming_data1];  //0-32
+	uint8_t last_press = square_buttons_list[incoming_data1];  //0-32  ,uses the modified map from top to bottom
 
 	uint16_t drum_byte_select= (last_press>>2)+((selected_scene)*4)+(bar_playing*drum_store);  //
 	uint8_t drum_byte=drum_store_one[drum_byte_select];  // get data
@@ -172,7 +246,7 @@ void note_buttons(void){  // always running only on notes though
 
 
 
-	if ((!pan) && (last_press<16) )      //  normal screen
+	if ((!pan) && (last_press<16) && (!bar_map_screen_level))      //  normal screen  , draws notes on main screen
 
 			{ //  , only if enabled though ,
 
@@ -194,29 +268,22 @@ void note_buttons(void){  // always running only on notes though
 
 			}
 
-	/////////////////////////////////////////////
-					if((last_press>15)&& (last_press<24) && (select_bn)){    // program change , right attow removed
-								//uint8_t pattern=pattern_select;
-					memset(button_states+16, 0, 8);
-
-					 button_states[square_buttons_list[last_press]]=red_button;  // single program change select
-				//	if (selected_scene<12) program_change[0]=last_press-16;  else alt_pots_selector=last_press-16;
+	if ((!pan) && (bar_map_screen_level)) {
+		bar_map_screen();
 
 
-					if(record){   // only save on record
-				//	uint8_t pc_set= program_change_automation[seq_step_long];
-					//program_change_automation[seq_step_long]=seq_step+(((program_change[0]&7)+1)<<4);  // save program change ,only one per bar +1 or stay on previous setting
-
-			//		{if (seq_step<8) { pc_set=(pc_set&240)+((program_change[0]&7)+1) ;} else {pc_set=(pc_set&15)+(((program_change[0]&7)+1)<<4) ;}} // modified program save save, twice on note 0 and 8
-				//	program_change_automation[seq_step_long]=pc_set;
-
-					//memcpy(alt_pots+128,program_change_automation,32);
-					} // save pc data ,program change automation
 
 
-				}   // program change function when select enabled
-//////////////////////////////////////////
-				if((last_press>15)&& (last_press<24) && (!select_bn) && (selected_scene<8)){    // pitch  change on first page  only
+
+
+
+	}
+
+
+
+
+
+/*				if((last_press>15)&& (last_press<24) && (!select_bn) && (selected_scene<8)){    // pitch  change on first page  only
 											//uint8_t pattern=pattern_select;
 								memset(button_states+16, 0, 8);
 
@@ -245,10 +312,10 @@ void note_buttons(void){  // always running only on notes though
 
 								//	button_states[punch_in[0]+16]=yellow_button;
 
-							}   // pitch change end
+							} */  // pitch change end
 //////////////////////////////////////////////
 
-				if((last_press>23)){    // row 4 , changed to bar selection for now
+/*				if((last_press>23)){    // row 4 , changed to bar selection for now
 				//uint8_t pattern=pattern_select;
 				uint8_t new_bar=(last_press-24);
 				bar_selector=new_bar;
@@ -259,7 +326,7 @@ void note_buttons(void){  // always running only on notes though
 					// new_pattern_select=new_pattern;  //add only to new pattern select,   disable pattern select for now !!!
 
 
-				}
+				}*/
 
 
 		}
@@ -307,8 +374,7 @@ void buttons_store(void){    // incoming data from controller
 	if ((incoming_data1 <8)&& (status==MIDI_NOTE_ON)) {   // scene buttons
 		scene_select=incoming_data1 +1+second_scene;}  //enable scene_select section
 
-	//if (status == 145)  {if((incoming_data1>47)& (incoming_data1<73)) keyboard[0]=(incoming_data1 -47);}  // store last key pressed mainly , 48-72 default setting(24)  0-24 13 in th emiddle
-	//if (status == 129)  {if((incoming_data1>47)& (incoming_data1<73)) keyboard[0]=(incoming_data1 -47)+128;}  // note off keyboard
+
 	//if (record && keyboard[0] && (keyboard[0]<128)) record_overdub(); // only on note on , enable overdub
 	if (status == MIDI_NOTE_ON){  // Midi Note on  for buttons
 
@@ -326,7 +392,7 @@ void buttons_store(void){    // incoming data from controller
 
 			button_states[incoming_data1 ]=alt_list;
 		}
-		if ((incoming_data1>23)&&(incoming_data1 <40)  ){				// button lights, notes
+/*		if ((incoming_data1>23)&&(incoming_data1 <40)  ){				// button lights, notes  , might replace with a separate function
 			alt_list=button_states[incoming_data1];
 
 			switch(alt_list){    // change state
@@ -339,8 +405,10 @@ void buttons_store(void){    // incoming data from controller
 			}
 			button_states[incoming_data1]=alt_list;
 
-		}
-
+		}*/
+		if ((incoming_data1 > 7) && (incoming_data1 < 40))   // do all 4 top rows
+						{memcpy(cdc_buf2,incoming_message, 3); // copy current message
+						note_buttons(); }  // send to buttons input
 
 
 		// function select logic  here , change from if-then
@@ -353,18 +421,23 @@ void buttons_store(void){    // incoming data from controller
 		switch(incoming_data1){
 
 		case up_arrow_button:
-		 if ((scene_buttons[0]<8)) 	{scene_buttons[0]=scene_buttons[0]+8;second_scene=8;lcd_downcount=10;lcd_messages_select=2;loop_screen();}
+		 if ((scene_buttons[0]<8)) 	{memset(button_states,1,8);bar_map_screen();
+
+		 scene_buttons[0]=scene_buttons[0]+8;second_scene=8;
+
+		 } else
+		 {memset(button_states,1,8);bar_map_screen(); }
 		break;
 
 		case solo_button: {scene_solo=1;clip_stop=0;button_states[82]=0; } //solo but with pots now ,turns off clip stop or mute
 		 if (shift) memset(mute_list,0,16); // clear all mute info when shift held
 		break;
-		case right_arrow_button:right_arrow=1;  break;//shift notes right
+		case right_arrow_button:right_arrow=1; {if (bar_map_screen_level<3) bar_map_screen_level++; } bar_map_screen();right_arrow=0;button_states[right_arrow_button]=0;break;//zoom out
 		case select_button: {select_bn=1;} ;break; // select enable
-		case down_arrow_button: if ((!pattern_copy_full)) {down_arrow=1;  	 memcpy(pattern_copy,drum_store_one+drum_store_select,4);pattern_copy_full=1; }	// use for copy pattern
+		case down_arrow_button: down_arrow=1;//
 		break;
-		case left_arrow_button: {left_arrow=1;  memcpy(drum_store_one+drum_store_select,pattern_copy,4);midi_cue_fill();pattern_copy_full=0; down_arrow=0;button_states[65]=0;button_states[66]=0;left_arrow=0; 	   }
-		break;// use for paste pattern
+		case left_arrow_button: {left_arrow=1;  {if (bar_map_screen_level) bar_map_screen_level--; }	   }bar_map_screen();left_arrow=0;button_states[left_arrow_button]=0;
+		break;// zoom in
 
 		case mute_button:scene_mute=1;break;
 		case record_button:record=1;overdub_enabled=1;break;
@@ -374,7 +447,7 @@ void buttons_store(void){    // incoming data from controller
 		case rec_arm_button:rec_arm=1;break; // set up for step record
 		case device_button:{device=1;memset(button_states+24,0,16);button_states[31+(current_midi&7)-((current_midi>>3)<<3)]=yellow_blink_button;}break;// shows midi channel , for now
 		case stop_all_clips:  {button_states[play_pause_button]=5;pause=5; seq_step=0;seq_step_long=0;play_position=0;bar_selector=0;button_states[stop_all_clips]=0; all_notes_off();
-		memset(LFO_tracking_counter,0,64);memset(last_pitch_count,0,16); memset(last_note_on_channel,0,16);  }// stop all clips, pause and reset to start
+		memset(LFO_tracking_counter,0,64);memset(last_pitch_count,0,16); memset(last_note_on_channel,0,16);current_playing_bar=0;  }// stop all clips, pause and reset to start
 		break;
 
 		case play_pause_button:pause=3;break;
@@ -390,11 +463,14 @@ void buttons_store(void){    // incoming data from controller
 			{
 			switch(incoming_data1){
 
-			case up_arrow_button:up_arrow=0;if ((scene_buttons[0]>7)) {scene_buttons[0]=scene_buttons[0]-8;second_scene=0;loop_screen();};break;
-			case right_arrow_button:right_arrow=0;  break;//shift notes right
+			case up_arrow_button:up_arrow=0;if ((scene_buttons[0]>7)) {
+				memset(button_states,1,8);
+				scene_buttons[0]=scene_buttons[0]-8;second_scene=0;
+				loop_screen();}else{ memset(button_states,1,8);}  ;break;
+			case right_arrow_button:right_arrow=0;  break;//zoom out
 			case select_button: {select_bn=0;} ;break; // select enable
 			case down_arrow_button:down_arrow=0; break;
-			case left_arrow_button: left_arrow=0; break;// use for paste pattern
+			case left_arrow_button: left_arrow=0; break;// zoom in
 			case mute_button:scene_mute=0;break;
 			case record_button:record=0;overdub_enabled=0;break;
 			case volume_button:volume=0;break;
@@ -416,9 +492,7 @@ void buttons_store(void){    // incoming data from controller
 		}
 
 
-		if ((incoming_data1 > 7) && (incoming_data1 < 40))
-				{memcpy(cdc_buf2,incoming_message, 3); // copy current message
-				note_buttons(); }  // send to buttons input
+
 		} // end of Note on for all buttons
 
 
@@ -429,9 +503,9 @@ void buttons_store(void){    // incoming data from controller
 
 	if ((status == 176) && (clip_stop)){   // with clip stop on
 
-		if (current_scene>11)  alt_pots_selector_list[current_scene-12];   // program alt pots based on keys selected  0-3
+		if (current_scene>7)    // program alt pots based on keys selected  on second page
 
-	alt_pots[(incoming_data1  - 48)+((current_scene-12)*8)] =((incoming_message[2])>>1);   // at zero setting velocity is off  , set for 4 banks for the last for 4 scenes
+	{alt_pots[(incoming_data1  - 48)+((current_scene-8)*8)] =((incoming_message[2]));}   // at zero setting velocity is off  , set for 4 banks for the last for 4 scenes
 	// maybe 16 values or about 2 octaves in scales
 
 		status=0; // clear
@@ -458,7 +532,7 @@ void buttons_store(void){    // incoming data from controller
 			patch_screen();
 		}
 
-		if (!right_arrow){     // right arrow disabled ,default screen
+		if (!down_arrow){     // down arrow disabled ,default screen
 		switch(incoming_data1){   // pots data selector ,default screen
 
 		case pot_1:
@@ -493,7 +567,7 @@ void buttons_store(void){    // incoming data from controller
 		pitch_selected_drum_value[current_scene]=incoming_message[2];   // this actually sends data for nrpn
 		lcd_downcount=3;lcd_messages_select=7;
 		pitch_change_flag=1+current_scene; }  // enable nrpn send
-		if ((current_scene>11) && (!clip_stop)) pitch_change_rate[current_scene]=8-(incoming_message[2]>>4);
+		if ((current_scene>7) && (!clip_stop)) pitch_change_rate[current_scene]=8-(incoming_message[2]>>4);
 		 ;break;// sets pitch for drums ,only first page
 
 		case pot_4:{pattern_scale_list[current_scene]=(pot_states[3]>>3)&15;lcd_downcount=3;lcd_messages_select=3;};break;
@@ -514,7 +588,7 @@ void buttons_store(void){    // incoming data from controller
 
 		}
 
-		if (right_arrow){      // with right arrow enabled , change pot function
+		if (down_arrow){      // with down arrow enabled , change pot function
 			switch(incoming_data1){   // pots data selector ,default screen
 
 			case pot_1:pitch_change_loop[current_scene]=pot_states[0]>>4; break;
@@ -527,12 +601,12 @@ void buttons_store(void){    // incoming data from controller
 			case pot_3: control_change[current_scene]=pot_states[2];control_change_flag=current_scene+1;control_change_value=91; break;// cc reverb
 
 			case pot_4:control_change[current_scene]=pot_states[3];control_change_flag=current_scene+1;control_change_value=72; break;// cc release
-			case pot_5: control_change[current_scene]=pot_states[3];control_change_flag=current_scene+1;control_change_value=5; break; // cc portamento time
-			case pot_6: break;  //
+			case pot_5: control_change[current_scene]=pot_states[4];control_change_flag=current_scene+1;control_change_value=5; break; // cc portamento time
+			case pot_6:control_change[current_scene]=pot_states[5];control_change_flag=current_scene+1;control_change_value=75; break;  //
 
-			case pot_7:	break;   //
+			case pot_7:	control_change[current_scene]=pot_states[6];control_change_flag=current_scene+1;control_change_value=76; break;   //
 
-			case pot_8:break;
+			case pot_8:control_change[current_scene]=pot_states[7];control_change_flag=current_scene+1;control_change_value=77; break;
 			default:break;
 
 			}
@@ -565,7 +639,7 @@ void buttons_store(void){    // incoming data from controller
 		scene_select=scene_select-1;
 		//uint8_t clear_green[8]= {1,1,1,1,1,1,1,1};
 
-	//	memset(button_states,1,8); ;  // turn green
+		memset(button_states,1,8); ;  // turn green
 		button_states[scene_select&7]=5;
 		if (scene_mute) { // muting control
 
@@ -581,10 +655,10 @@ void buttons_store(void){    // incoming data from controller
 			 //loop_selector=1; // redraw
 	
 		scene_select=0;
-
+		bar_map_screen();
 	}// end of scene select
 	buffer_clear = 1;
-	loop_screen();  // always run except when device on ,except when keyboard step
+	//loop_screen();  // always run except when device on ,except when keyboard step
 	if (buffer_clear)
 		memcpy(cdc_buffer+cdc_start, clear, 3);
 
@@ -615,7 +689,7 @@ void note_replace(uint8_t note_replace) {    // replace first note
 
 void pattern_settings(void){     // pattern change function , also program change automation, change to 2 for now , using 4bytes *8 per sound (512 bytes) instead
 	uint8_t current_scene=scene_buttons[0];
-	uint8_t pc_set=0;
+	//uint8_t pc_set=0;
 //	if (seq_step<8)  pc_set=program_change_automation[seq_step_long]&15; else pc_set=(program_change_automation[seq_step_long])>>4;  // modifies program change  twice during 16 notes
 
 
@@ -643,7 +717,7 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 
 ///////////bar section
-	if ((seq_pos==0) && (!pause)){memset(button_states+8,0,8);
+/*	if ((seq_pos==0) && (!pause)){memset(button_states+8,0,8);
 
 	//{ if (bar_playing!=bar_selector) bar_playing=bar_selector;  else bar_playing=(bar_playing+1)&7;   }
 	{ if (bar_playing!=bar_selector) bar_playing=bar_selector;   }  // disable bar advance for now
@@ -658,7 +732,9 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 	if ( (pause)){ memset(button_states+8,0,8);bar_playing=bar_selector;
 	button_states[bar_playing+8]=green_button;
-	loop_screen(); }  // change current bar when in pause as well
+	loop_screen();
+
+	} */ // change current bar when in pause as well
 
 /////////////pitch section
 
@@ -666,8 +742,9 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 
 		uint8_t pitch_byte=pitch_change_loop_position[current_scene]; // current pitch selected
-		if (clip_stop) memset(button_states+16,0,4);  else memset(button_states+16,0,8);
-		button_states[pitch_byte+16]=yellow_button;
+	/*	if (clip_stop) memset(button_states+16,0,4);
+		else memset(button_states+16,0,8);
+		button_states[pitch_byte+16]=yellow_button;*/
 
 
 		for(i=0;i<8;i++){   // loads up pitch values
@@ -706,7 +783,7 @@ void pattern_settings(void){     // pattern change function , also program chang
 				  if(button_states[64]) scene_high=8; // if up arrow
 				  for (d = 0; d < 8; d++) {   // clears scene light if no data in bar , seems to kill blinky lights ?
 
-					if (bar_note_register[bar_selector]&(1<<(d+scene_high))) button_states[d]=1; else button_states[d]=0;
+				//	if (bar_note_register[bar_selector]&(1<<(d+scene_high))) button_states[d]=1; else button_states[d]=1;
 
 				}
 
