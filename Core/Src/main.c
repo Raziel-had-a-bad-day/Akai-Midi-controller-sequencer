@@ -268,6 +268,9 @@ int main(void)
 
 	  if ((s_temp) != (seq_pos>>3)) {			// runs on note steps 0-15
 
+		  if((!seq_pos)&&(!pause) ) bar_map_tracker();
+		  if (!pause) seq_step_long=bar_map_counter&63;    //
+
 		  if(!seq_step_long) {HAL_RTC_SetTime(&hrtc, &set_Time, RTC_FORMAT_BIN);}  //resets rtc
 		  HAL_RTC_GetTime(&hrtc, &seq_clock, RTC_FORMAT_BIN);
 		  HAL_RTC_GetDate(&hrtc, &seq_date, RTC_FORMAT_BIN);  // this needs to be called or the time wont work properly
@@ -299,11 +302,11 @@ int main(void)
 			  note_enable_list_selected=((LFO_low_list[current_scene]+1)*10)+note_enable_list_selected;
 			 // note_enable_list_selected=((LFO_delay_list[current_scene]+1)*100)+note_enable_list_selected;
 
-			  if ((!seq_pos)&& (!pause)) seq_step_long=(seq_step_long+1)&31;    // this needs to be main clock
 
-			  play_position=seq_step_long;
-			  if ((seq_step_long&31)==0)   play_position=(play_position+1)&31;  // normal screen leave alone ,too fast
-			  if ((seq_step_long&3)==0) {play_position=(play_position>>2)<<2;} // reset
+
+			//  play_position=seq_step_long;
+			 // if ((seq_step_long&31)==0)   play_position=(play_position+1)&31;  // normal screen leave alone ,too fast
+			//  if ((seq_step_long&3)==0) {play_position=(play_position>>2)<<2;} // reset
 
 			  if ((s_temp&15)==14) { loop_lfo();lfo_full_send_enable=1;} // run lfo at end of a bar , 2 notes long to send 16 settings
 

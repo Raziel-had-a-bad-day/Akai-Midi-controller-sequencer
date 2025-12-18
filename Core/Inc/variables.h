@@ -44,7 +44,7 @@
 #define red_blink_button 4
 #define yellow_button 5
 #define yellow_blink_button 6
-#define variable_count 18   // for flash mem
+#define variable_count 19   // for flash mem
 
 #define pot_1 48
 #define pot_2 49
@@ -371,11 +371,13 @@ uint8_t control_change_value=71;
 uint8_t buttons_bank_1[32];  // alternative buttons_states for different displays
 uint8_t current_playing_bar;   // keep record of the current playing bar , lenght to be set
 uint8_t LFO_tracking_bank[64]; //stores 4 steps when run
+uint8_t bar_map_0[sound_set*2];  // bit map for notes 16*16bit
 uint8_t bar_map_1[sound_set]={255,255,255,255,255,255,255,255};  // bit mapped enable 1 bar
 uint8_t bar_map_8[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 8 bar
-uint8_t bar_map_32[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 32 bar   , for now might change to diff values
+uint8_t bar_map_64[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 8*8 bar   , for now might change to diff values
 uint8_t bar_map_screen_level=2;  //selects which zoom is displayed 0-3   , 0=none 1=8 2=32
-
-
+uint8_t clear_rows=0;   // clear_top 4 rows only on USB send
+uint8_t bar_map_sound_enable[sound_set]; // output from bar map editor
+uint16_t bar_map_counter=0;  // keeps total bar count
 
 

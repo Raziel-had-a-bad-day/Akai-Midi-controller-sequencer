@@ -11,62 +11,105 @@ void waterfall(void){
 	}
 
 }
-void bar_map_screen(void){    // draw and modify bar_ map screens
+void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well, works good
 	uint8_t note_enabled=0;
 	uint8_t scene_select=scene_buttons[0]; // clear last two bits
 	uint8_t i=0;
 	uint32_t pointer;   // this is the actual address
 	uint8_t incoming_message[3];
+	uint8_t color=green_button;
 		memcpy(incoming_message,cdc_buf2, 3); // works off only receiving buffer , this might be changing
+		memset(cdc_buf2,0,3);
 
-
-		memset(button_states+8,0,32); USB_send();  // do full clear send before new data
-
+	//	clear_rows=1;
 
 		uint8_t incoming_data1 = incoming_message[1]&127;
 
 	switch(bar_map_screen_level){   // grab the pointer for the correct bar map screen
-		case 1: pointer=(uint32_t)&bar_map_1;break;
-		case 2: pointer=(uint32_t)&bar_map_8;break;
-		case 3: pointer=(uint32_t)&bar_map_32;break;
+		case 0: pointer=(uint32_t)&bar_map_0;color=green_button;break;
+		case 1: pointer=(uint32_t)&bar_map_1;color=red_button;break;
+		case 2: pointer=(uint32_t)&bar_map_8;color=red_button;break;
+		case 3: pointer=(uint32_t)&bar_map_64;color=yellow_button;break;
 		default:break;}
-	pointer+=(scene_select&12);   // shows a batch of 4 rows
 
-	if ((incoming_data1>7) && (incoming_data1<40)  ) {
+
+	if ((incoming_data1>7) && (incoming_data1<40) && bar_map_screen_level) {
 	// modify button from incoming
 
 			uint8_t alt_list=	 button_states[incoming_data1 ];
 			switch(alt_list){    // change state of button
-			case 0 :alt_list = 1;break;   // normal lights , yellow
-			case 5 :alt_list= 0;break;		// green
-
-			case 1 :alt_list = 0;  ;break;
+			case 0 :alt_list = color;break;   //
 			default:alt_list = 0; ;break; }
-
 
 			button_states[incoming_data1 ]=alt_list;
 			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
 
+ // modify data from button state
+			if (button_states[square_buttons_list[alt_list]]) {VAR_SET_BIT((pointer+(scene_select&12)+((alt_list>>3))),(alt_list&7));}
+			else {VAR_RESET_BIT((pointer+(scene_select&12)+((alt_list>>3))),(alt_list&7));}
+
+	} //end of mod
+	if ((incoming_data1>23) && (incoming_data1<40) && (!bar_map_screen_level)  ) {
+	// modify button from incoming
+
+			uint8_t alt_list=	 button_states[incoming_data1 ];
+			switch(alt_list){    // change state of button
+			case 0 :alt_list = color;break;   //
+			default:alt_list = 0; ;break; }
+
+			button_states[incoming_data1 ]=alt_list;
+			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
 
  // modify data from button state
-	switch(button_states[square_buttons_list[alt_list]]){    // change state
-				case 0 :VAR_RESET_BIT((pointer+((alt_list>>3))),(alt_list&7));break;
-				case 1 :VAR_SET_BIT((pointer+((alt_list>>3))),(alt_list&7));break;
+		if(button_states[square_buttons_list[alt_list]])  {VAR_SET_BIT((pointer+(scene_select*2)),(alt_list&15));}
+		else {VAR_RESET_BIT((pointer+(scene_select*2)),(alt_list&15));}
 
-	}
+
 	} //end of mod
+
+
 // draw screen
 
-
+	if (bar_map_screen_level){       // draw bars
+		pointer+=(scene_select&12);
 		for(i=0;i<32;i++){
 			note_enabled=VAR_GET_BIT((pointer+(i>>3)),(i&7));
-			//note_enabled=VAR_GET_BIT(bar_map_8[scene_select+(i>>3)],(i&7));
+			note_enabled*=color;
 			button_states[square_buttons_list[i]]=note_enabled;   // set light
-		}
+		}}
 
+	if (!bar_map_screen_level){   // draw notes
+		pointer+=(scene_select*2);
+			for(i=0;i<16;i++){
+				note_enabled=VAR_GET_BIT(pointer,(i&15));
+				note_enabled*=color;
+				button_states[square_buttons_list[i]]=note_enabled;   // set light
+			}
+				memset(button_states+8,0,16);}   // clear last two rows
+
+		USB_send();  // do full clear send before new data
 	} // end of bar map screen
 
+void bar_map_tracker(void){     // creates sound enable for notes from bar_map_edit
+	uint8_t enable[3];
+	uint16_t counter=bar_map_counter;
+	uint32_t pointer=( uint32_t)&bar_map_1;
+	for(i=0;i<16;i++){
+	pointer=( uint32_t)&bar_map_1;
+	enable[0]=VAR_GET_BIT(pointer+i,(counter&7));
+	pointer=( uint32_t)&bar_map_8;
+	enable[1]=VAR_GET_BIT(pointer+i,((counter>>3)&7));
+	pointer=( uint32_t)&bar_map_64;
+	enable[2]=VAR_GET_BIT(pointer+i,((counter>>6)&7));
+		if ((enable[0]+enable[1]+enable[2])!=3) enable[0]=0; else enable[0]=1;
 
+	bar_map_sound_enable[i]=enable[0];
+
+	}
+
+
+		bar_map_counter=(bar_map_counter+1)&511;
+		}
 
 
 
@@ -173,15 +216,16 @@ void patch_screen(void)		{     // shows last loaded patch and save patch as well
 			//all_update=1;
 	}
 
-
+///  gonna do away with all  this
 void loop_screen(void){  // always on now ,produces lights for notes,  16 notes and 8 bars , full redraw  , notes only   might remove this
 
+/*
 	//uint16_t current_scene=scene_buttons[0]*256;  // pattern select
 
 	//uint8_t current_scene_drums=((scene_buttons[0]&3)*4) + (pattern_select*16);  // pattern location
 	uint8_t selected_scene=scene_buttons[0];  // this wiil change to pattern select 0-15
 	uint16_t data_temp2;
-	uint8_t accent_temp;
+//	uint8_t accent_temp;
 	//uint16_t fast_bit;
 	uint8_t note_counter=0;
 	uint8_t drums=0;
@@ -193,8 +237,9 @@ void loop_screen(void){  // always on now ,produces lights for notes,  16 notes 
 	drums=0;    //always
 
 	if (loop_screen_disable) drums=0; //disable for rec arm
+*/
 
-	if(device) drums=0;  // disables loop screen
+/*	if(device) drums=0;  // disables loop screen
 
 		if (drums){  // for all sounds now
 
@@ -215,16 +260,17 @@ void loop_screen(void){  // always on now ,produces lights for notes,  16 notes 
 				note_counter++;
 
 			} // end of loop
-		} // end of drums
+		}*/ // end of drums
 
 		//loop_note_count[selected_scene]=note_counter;
 	}
 
 
 
-void note_buttons(void){  // always running only on notes though
+void note_buttons(void){  // always running only on notes though , might dump it
 
 
+/*
 	uint8_t selected_scene=scene_buttons[0];
 	uint8_t incoming_message[3];
 		memcpy(incoming_message,cdc_buf2, 3); // works off only receiving buffer , this might be changing
@@ -237,6 +283,7 @@ void note_buttons(void){  // always running only on notes though
 
 	uint16_t drum_byte_select= (last_press>>2)+((selected_scene)*4)+(bar_playing*drum_store);  //
 	uint8_t drum_byte=drum_store_one[drum_byte_select];  // get data
+*/
 
 
 			for (i = 0; i < 40; i++){   // test for bad data
@@ -246,6 +293,7 @@ void note_buttons(void){  // always running only on notes though
 
 
 
+/*
 	if ((!pan) && (last_press<16) && (!bar_map_screen_level))      //  normal screen  , draws notes on main screen
 
 			{ //  , only if enabled though ,
@@ -267,8 +315,9 @@ void note_buttons(void){  // always running only on notes though
 				drum_store_one[drum_byte_select]=drum_byte; //write back info
 
 			}
+*/
 
-	if ((!pan) && (bar_map_screen_level)) {
+	if ((!pan) ) {
 		bar_map_screen();
 
 
@@ -352,7 +401,7 @@ void buttons_store(void){    // incoming data from controller
 	uint16_t clear[20]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 	uint8_t current_scene=scene_buttons[0];
 
-	uint16_t drum_store_select=(current_scene*4)+(bar_playing*drum_store);
+//	uint16_t drum_store_select=(current_scene*4)+(bar_playing*drum_store);
 	incoming_message[2]=(incoming_message[2]&127);
 	//drum_byte_select = (offset_pitch >> 2) + (i * 4) + (pattern * drum_store); //based on time,  selects a trigger 16 + (i*4) 16*64 ... 0-256 (64bytes per pattern, 4 bytes per per )
 	//drum_byte = drum_store_one[drum_byte_select]; // this could be smaller
@@ -688,7 +737,7 @@ void note_replace(uint8_t note_replace) {    // replace first note
 
 
 void pattern_settings(void){     // pattern change function , also program change automation, change to 2 for now , using 4bytes *8 per sound (512 bytes) instead
-	uint8_t current_scene=scene_buttons[0];
+//	uint8_t current_scene=scene_buttons[0];
 	//uint8_t pc_set=0;
 //	if (seq_step<8)  pc_set=program_change_automation[seq_step_long]&15; else pc_set=(program_change_automation[seq_step_long])>>4;  // modifies program change  twice during 16 notes
 
@@ -741,7 +790,7 @@ void pattern_settings(void){     // pattern change function , also program chang
 	if ((seq_pos==0) && (!select_bn)&& (!pause)){     // apply pitch to drum notes on first step or when pressed  ,however buggy ,also only send on change ?
 
 
-		uint8_t pitch_byte=pitch_change_loop_position[current_scene]; // current pitch selected
+		//uint8_t pitch_byte=pitch_change_loop_position[current_scene]; // current pitch selected
 	/*	if (clip_stop) memset(button_states+16,0,4);
 		else memset(button_states+16,0,8);
 		button_states[pitch_byte+16]=yellow_button;*/
@@ -776,7 +825,7 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 	}
 
-	  	  	  	  uint8_t scene_high=0;   // scene buttons off if no data in bar
+/*	  	  	  	  uint8_t scene_high=0;   // scene buttons off if no data in bar
 				  uint8_t d;
 				 // memset(button_states,1,8); //scene lights
 
@@ -785,7 +834,7 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 				//	if (bar_note_register[bar_selector]&(1<<(d+scene_high))) button_states[d]=1; else button_states[d]=1;
 
-				}
+				}*/
 
 //	if (pause && (!pc_set)) memset(button_states+8,2,8);  // green blink in pause if no data in current bar
 

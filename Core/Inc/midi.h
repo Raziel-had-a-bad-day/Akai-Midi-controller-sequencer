@@ -49,13 +49,15 @@ void USBD_MIDI_DataInHandler(uint8_t *usb_rx_buffer, uint8_t usb_rx_buffer_lengt
 */
 
 void USB_send(void){    // send to midi controller, clean atm , maybe do a full send including led off as well every 8 bars
-
+		// modifying send temp can get out of sync at times , maybe modify after compare and just add to send data
 	  uint8_t seq_step_mod=(seq_pos>>3)&31;
 	  uint8_t send_temp[100];  // need this for temp lights
 	  uint8_t buffer_out[512] ;  // large send
 	  uint16_t buffer_size=0;
 	  uint8_t buffer_short[4];
+	  uint16_t counter=bar_map_counter;
 	  memcpy(send_temp,button_states,100);
+	  if (clear_rows) { memset(send_temp+8,0,32);clear_rows=0;}
 	 // memcpy(send_temp,blink_light_list,8);
 	if (send_buffer_sent == 1) { // moving light send and button change , current
 
@@ -63,10 +65,18 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 		send_buffer_sent = 2;
 	}
 	////  temporary lights , not stored
-	if (!pause)send_temp[square_buttons_list[green_position[0]]]=1;
+	if ((!pause)  && (!bar_map_screen_level))  send_temp[square_buttons_list[green_position[0]]]=5;
+	if (bar_map_screen_level==1) {counter=(counter&7); send_temp[8+counter]=red_blink_button;send_temp[16+counter]=red_blink_button;
+	send_temp[24+counter]=red_blink_button;send_temp[32+counter]=red_blink_button;}
+	if (bar_map_screen_level==2) {counter=(counter>>3)&7; send_temp[8+counter]=yellow_button;send_temp[16+counter]=yellow_button;
+		send_temp[24+counter]=yellow_button;send_temp[32+counter]=yellow_button;}
+	if (bar_map_screen_level==3) {counter=(counter>>6)&7; send_temp[8+counter]=red_button;send_temp[16+counter]=red_button;
+			send_temp[24+counter]=red_button;send_temp[32+counter]=red_button;}
+
+
 	//	if (record) send_temp[square_buttons_list[green_position[0]]]=3;   // add moving green light  ,off during pause
 
-	send_temp[square_buttons_list[seq_step]]=1;
+	//send_temp[square_buttons_list[seq_step]]=1;
 	/*if (down_arrow){
 	memcpy(send_temp+8,LFO_tracking_bank+8,8);     // temporary for testing
 	memcpy(send_temp+16,LFO_tracking_bank+24,8);
@@ -103,6 +113,8 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	}  // end of loop
 
 
+
+
 	//if (send_buffer[6]){ while (CDC_Transmit_FS(send_buffer+5, 3)== USBD_BUSY){HAL_Delay(1);}}//bad
 	if (buffer_size) CDC_Transmit_FS(buffer_out, buffer_size); // trying big send
 }
@@ -115,12 +127,12 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			uint8_t send_temp[256];
 			//uint8_t len1;  // note off
 			uint8_t cue_counter;
-
+			uint32_t pointer=(uint32_t)&bar_map_0;
 			uint8_t note_midi [128] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};  // 3*16 ,   seems to get some garbage ?
 			uint8_t nrpn_temp[36]={185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0};  //  9 bytes per nrpn send
 
 			nrpn_temp[30]=0;
-			uint8_t note_off_midi[50];
+			//uint8_t note_off_midi[50];
 
 			uint8_t nrpn_counter=0; //keeps track when sending more then one set of commands
 			uint8_t current_scene=scene_buttons[0];
@@ -133,9 +145,9 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			uint8_t current_velocity=64;
 			uint8_t offset_pitch=seq_pos>>3; // 0-15  , one bar
 				//counterb=(pattern_select*512) +(offset_pitch*32) ; // pattern=512bytes or 16*32
-				uint16_t drum_byte_select;   // selects a trigger 16 + (i*4) 16*64 ... 0-256
-				uint8_t drum_byte;
-				 uint16_t pattern=bar_playing; // modified
+			//	uint16_t drum_byte_select;   // selects a trigger 16 + (i*4) 16*64 ... 0-256
+				//uint8_t drum_byte;
+				// uint16_t pattern=bar_playing; // modified
 				 uint8_t random_list[64]; // alt pots
 				 uint8_t note_enable[16];
 				uint8_t note_velocities[16];  // holds temp velocities ,can be modified
@@ -144,7 +156,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 				// memcpy (random_list,alt_pots+(0),16); // disable keychange , just defualts alt pots for now
 
 				 memcpy (note_velocities,note_accent,16);
-				 memcpy(note_enable,LFO_tracking_out,16);
+				 memcpy(note_enable,bar_map_sound_enable,16);
 				 //uint8_t pitch_seq=alt_pots[((seq_pos>>3)&7)+(pattern_select*16)]; // loops 0-7 ,steps
 						uint8_t pitch_counter; // keeps track of pitch count up
 
@@ -182,8 +194,8 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			if (note_timing[i] > 1)
 				note_timing[i]--; //count down for notes ,seems to skip
 
-			drum_byte_select = (offset_pitch >> 2) + (i * 4) + (pattern * drum_store); //based on time,  selects a trigger 16 + (i*4) 16*64 ... 0-256 (64bytes per pattern, 4 bytes per per )
-			drum_byte = drum_store_one[drum_byte_select]; // this could be smaller
+			//drum_byte_select = (offset_pitch >> 2) + (i * 4) + (pattern * drum_store); //based on time,  selects a trigger 16 + (i*4) 16*64 ... 0-256 (64bytes per pattern, 4 bytes per per )
+			//drum_byte = drum_store_one[drum_byte_select]; // this could be smaller
 
 			if ((high_row_enable == 0) && (i < 8)) high_row = 1;
 			else high_row = 0; // enable only on first half
@@ -200,7 +212,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			}
 
 
-			if (drum_byte & (1 << ((((offset_pitch) & 3) * 2)+1)) ) current_velocity=96; else current_velocity=note_velocities[i];   // get accent info ,drums playing
+			//if (drum_byte & (1 << ((((offset_pitch) & 3) * 2)+1)) ) current_velocity=96; else current_velocity=note_velocities[i];   // get accent info ,drums playing
 
 			if (mute_list[i] || pause) {current_velocity=0;} // mutes sound also sound button button goes dark
 
@@ -208,7 +220,10 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 			if ((midi_channel_select == 9)&&(current_velocity)) {			//drums playing
 
-				if (drum_byte & (1 << (((offset_pitch) & 3) * 2))) { // ok , drums
+			//	if (drum_byte & (1 << (((offset_pitch) & 3) * 2)))
+				if ((VAR_GET_BIT(pointer+(i*2),(offset_pitch)))==1)
+
+				{ // ok , drums
 					if (high_row)
 					//	button_states_temp[i] = 0;    // blink
 					note_midi[cue_counter] = 153; // add note on
@@ -223,8 +238,8 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			if ((midi_channel_select != 9)) {			// keys , not drums playing
 			//	if ((!seq_step )&&(pitch_change_rate[i]==8))last_pitch_count[i]=0;   //  optional    ,resets counter at next bar
 
-				if (drum_byte & (1 << (((offset_pitch) & 3) * 2))) { //notes
-
+				//if (drum_byte & (1 << (((offset_pitch) & 3) * 2))) { //notes
+					if ((VAR_GET_BIT(pointer+(i*2),(offset_pitch)))==1) {
 					current_velocity=note_velocities[i];   // get accent info
 					if (!note_enable[i]) current_velocity=0; // disable if note enable is not zero
 					pitch_counter=last_pitch_count[i];
@@ -288,7 +303,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 
 
-				pitch_change_flag=0;lfo_full_send_enable=0;nrpn_gating_enable=0;   // dsiable everything for now
+				pitch_change_flag=0;lfo_full_send_enable=0;nrpn_gating_enable=0;   // Disable everything for now
 
 
 				if (pitch_change_flag){   // sends pitch nrpn section ,single send , counts down
