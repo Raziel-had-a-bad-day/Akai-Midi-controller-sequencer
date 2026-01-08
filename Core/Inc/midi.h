@@ -66,12 +66,12 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	}
 	////  temporary lights , not stored
 	if ((!pause)  && (!bar_map_screen_level))  send_temp[square_buttons_list[green_position[0]]]=5;
-	if (bar_map_screen_level==1) {counter=(counter&7); send_temp[8+counter]=red_blink_button;send_temp[16+counter]=red_blink_button;
-	send_temp[24+counter]=red_blink_button;send_temp[32+counter]=red_blink_button;}
-	if (bar_map_screen_level==2) {counter=(counter>>3)&7; send_temp[8+counter]=yellow_button;send_temp[16+counter]=yellow_button;
-		send_temp[24+counter]=yellow_button;send_temp[32+counter]=yellow_button;}
-	if (bar_map_screen_level==3) {counter=(counter>>6)&7; send_temp[8+counter]=red_button;send_temp[16+counter]=red_button;
-			send_temp[24+counter]=red_button;send_temp[32+counter]=red_button;}
+	if (bar_map_screen_level==1) {counter=(counter&7); send_temp[8+counter]*=2;send_temp[16+counter]*=2;
+	send_temp[24+counter]*=2;send_temp[32+counter]*=2;}
+	if (bar_map_screen_level==2) {counter=(counter>>3)&7; send_temp[8+counter]&=6;send_temp[16+counter]&=6;
+		send_temp[24+counter]&=6;send_temp[32+counter]&=6;}
+	if (bar_map_screen_level==3) {counter=(counter>>6)&7; send_temp[8+counter]&=4;send_temp[16+counter]&=4;
+			send_temp[24+counter]&=4;send_temp[32+counter]&=4;}
 
 
 	//	if (record) send_temp[square_buttons_list[green_position[0]]]=3;   // add moving green light  ,off during pause
@@ -102,9 +102,9 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 
 	if (counter_a) { // one at a time ,but runs often ,might change
 
-		buffer_short[0] = MIDI_NOTE_ON;
-		buffer_short[1] = (counter_a - 1) & 127;
-		buffer_short[2] = send_temp[counter_a - 1] & 127;
+		buffer_short[0] = MIDI_NOTE_ON+temp_midi_var;
+		buffer_short[1] = (counter_a - 1) & 127;    // selected light
+		buffer_short[2] = send_temp[counter_a - 1] & 127;  // value for colour
 		buffer_short[3]=9;   // usb extra
 	}
 	buffer_size=n;memcpy(buffer_out+buffer_size,buffer_short,4);
@@ -142,7 +142,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 			i=0;
 			// not super important but good for testing , below
-			uint8_t current_velocity=64;
+			uint8_t current_velocity=0;
 			uint8_t offset_pitch=seq_pos>>3; // 0-15  , one bar
 				//counterb=(pattern_select*512) +(offset_pitch*32) ; // pattern=512bytes or 16*32
 			//	uint16_t drum_byte_select;   // selects a trigger 16 + (i*4) 16*64 ... 0-256
@@ -164,16 +164,16 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 						//=pattern_scale_process(random_list[(pitch_counter)]);  // change pitch from pots , maybe run always and ignore original pitch
 
 						uint8_t button_states_temp[16];
-						uint8_t high_row_enable=0; // select second sounds scene ,default on
+
 						memcpy(button_states_temp,button_states,8);
 						memcpy(button_states_temp+8,button_states,8);
-						uint8_t high_row=0;
+
 						// uint8_t first_step=0;  // to controll pitch sequence for notes
 					//	if ((!seq_step)&& (!bar_playing)) first_step=1; // resets on seq_pos and zero bar
 					//	if ((!seq_step)) first_step=1; // resets on seq_step , doenst seem to work
 						//memcpy(button_states_temp,button_states,8); // transfer bottom row data for blinky lights
 
-						if (current_scene>7) high_row_enable=1;
+
 
 
 				if ((seq_pos&7)==1) {    // fixed time for now , note generator
@@ -189,7 +189,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					button_states_temp[current_scene]=5;  // selected sound yellow
 
 		for (i = 0; i < sound_set; i++) { // transfer from midi_cue to note_midi to be sent
-
+			current_velocity=0;
 			midi_channel_select = midi_channel_list[i] & 15;
 			if (note_timing[i] > 1)
 				note_timing[i]--; //count down for notes ,seems to skip
@@ -197,10 +197,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			//drum_byte_select = (offset_pitch >> 2) + (i * 4) + (pattern * drum_store); //based on time,  selects a trigger 16 + (i*4) 16*64 ... 0-256 (64bytes per pattern, 4 bytes per per )
 			//drum_byte = drum_store_one[drum_byte_select]; // this could be smaller
 
-			if ((high_row_enable == 0) && (i < 8)) high_row = 1;
-			else high_row = 0; // enable only on first half
 
-			if ((high_row_enable) && (i > 7)) high_row = 1; // enable only on second half
 
 			if ((note_timing[i] >= 1) && (last_note_on_channel[i] )) { // creates note off  ,all notes ,just basic off ,modified
 				note_midi[cue_counter] = midi_channel_select + MIDI_NOTE_OFF; // note off
@@ -224,9 +221,9 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 				if ((VAR_GET_BIT(pointer+(i*2),(offset_pitch)))==1)
 
 				{ // ok , drums
-					if (high_row)
+
 					//	button_states_temp[i] = 0;    // blink
-					note_midi[cue_counter] = 153; // add note on
+					note_midi[cue_counter] = 153; // add note on for drums
 					note_midi[(cue_counter) + 1] = drum_list[i];
 					note_midi[(cue_counter) + 2] = current_velocity;
 					cue_counter = cue_counter + 3;
@@ -244,6 +241,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					if (!note_enable[i]) current_velocity=0; // disable if note enable is not zero
 					pitch_counter=last_pitch_count[i];
 					  if(i>7) pitch_seq=random_list[(pitch_counter>>3)+((i-8)*8)];   // only works on last 8 scenes/keys
+
 					  if (mute_list[i] || pause) {current_velocity=0;}
 
 					//current_velocity=(loop_lfo_out[i+32]+current_velocity)&127; //modify velocity with lfo , only temp
@@ -289,7 +287,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 		//if (!pause)
 
-		{if (high_row_enable )  memcpy(blink_light_list,button_states_temp+8,8); else memcpy(blink_light_list,button_states_temp,8);}   //copy back blinky lights and mute
+	//	{if (high_row_enable )  memcpy(blink_light_list,button_states_temp+8,8); else memcpy(blink_light_list,button_states_temp,8);}   //copy back blinky lights and mute
 
 
 		memcpy(last_note_end_count,note_timing,16);

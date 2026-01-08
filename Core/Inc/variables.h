@@ -375,9 +375,10 @@ uint8_t bar_map_0[sound_set*2];  // bit map for notes 16*16bit
 uint8_t bar_map_1[sound_set]={255,255,255,255,255,255,255,255};  // bit mapped enable 1 bar
 uint8_t bar_map_8[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 8 bar
 uint8_t bar_map_64[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 8*8 bar   , for now might change to diff values
-uint8_t bar_map_screen_level=2;  //selects which zoom is displayed 0-3   , 0=none 1=8 2=32
+uint8_t bar_map_screen_level=0;  //selects which zoom is displayed 0-3   , 0=none 1=8 2=32
 uint8_t clear_rows=0;   // clear_top 4 rows only on USB send
 uint8_t bar_map_sound_enable[sound_set]; // output from bar map editor
 uint16_t bar_map_counter=0;  // keeps total bar count
-
-
+uint8_t alt_pots_overwrite_enable[sound_set];  // allows to overwrite alt pots value after reaching oroginal value ,then reset after a while ,maybe count down
+uint8_t last_pot_used=0;
+uint8_t temp_midi_var=0;

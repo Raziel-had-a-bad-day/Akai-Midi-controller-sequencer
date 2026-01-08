@@ -469,10 +469,11 @@ void buttons_store(void){    // incoming data from controller
 		{
 		switch(incoming_data1){
 
-		case up_arrow_button:
+		case up_arrow_button:   // sends bum notes when pressed
 		 if ((scene_buttons[0]<8)) 	{memset(button_states,1,8);bar_map_screen();
 
-		 scene_buttons[0]=scene_buttons[0]+8;second_scene=8;
+		// scene_buttons[0]=scene_buttons[0]+8;
+		 second_scene=8;
 
 		 } else
 		 {memset(button_states,1,8);bar_map_screen(); }
@@ -514,7 +515,9 @@ void buttons_store(void){    // incoming data from controller
 
 			case up_arrow_button:up_arrow=0;if ((scene_buttons[0]>7)) {
 				memset(button_states,1,8);
-				scene_buttons[0]=scene_buttons[0]-8;second_scene=0;
+				//scene_buttons[0]=scene_buttons[0]-8;
+
+				second_scene=0;
 				loop_screen();}else{ memset(button_states,1,8);}  ;break;
 			case right_arrow_button:right_arrow=0;  break;//zoom out
 			case select_button: {select_bn=0;} ;break; // select enable
@@ -535,38 +538,65 @@ void buttons_store(void){    // incoming data from controller
 			}
 			}
 
-		if (shift && pause && clip_stop) { 			// clear all program change info on drums , needs to be saved though ,disabled
-			//memset(program_change_automation,0,32);
-			//memcpy(alt_pots+128,program_change_automation,32);clip_stop=0;button_states[82]=0;
-		}
 
 
 
 		} // end of Note on for all buttons
 
 
-		    // not very useful
+	if ((status == 176) && (clip_stop)&& (current_scene>7)){   // with clip stop on   , first detects moving fader then only adjustment is starts to track , if another pot it moves on
+		uint8_t old_pitch=alt_pots[(incoming_data1  - 48)+((current_scene-8)*8)] ;  // grabs old value of currently used pot
+		uint8_t continue_write=0;
+		if(last_pot_used==(incoming_data1-47))    // only if using the same pot as last time
 
-	//if ((status == 177) && (incoming_data1==64) && (incoming_message[2]==127) && (sustain)) {sustain=0;button_states[square_buttons_list[pattern_select+16]]=yellow_button;status=0;}
-	//if ((status == 177) && (incoming_data1==64) && (incoming_message[2]==127) && (!sustain)) {sustain=1;button_states[square_buttons_list[pattern_select+16]]=red_blink_button;status=0;}	 // toggle sustain also reset pattern repeat
+		{
 
-	if ((status == 176) && (clip_stop)){   // with clip stop on
+			if(((old_pitch>(incoming_message[2]+2)) && ((old_pitch<(incoming_message[2]+10))))  ||  (((old_pitch+2)>incoming_message[2]) && (((old_pitch+10)<incoming_message[2])))  )
+						button_states[clip_stop_button]=green_blink_button;   // set to green blink  when close
 
-		if (current_scene>7)    // program alt pots based on keys selected  on second page
+			if 	( (old_pitch==incoming_message[2])) {alt_pots_overwrite_enable[current_scene]=1;}
 
-	{alt_pots[(incoming_data1  - 48)+((current_scene-8)*8)] =((incoming_message[2]));}   // at zero setting velocity is off  , set for 4 banks for the last for 4 scenes
+			if (alt_pots_overwrite_enable[current_scene] )  {alt_pots[(incoming_data1  - 48)+((current_scene-8)*8)] =((incoming_message[2]));button_states[clip_stop_button]=green_button; }
+
+
+
+
+		} else {alt_pots_overwrite_enable[current_scene]=0;button_states[clip_stop_button]=green_blink_button;}
+
+
+		last_pot_used=(incoming_data1-47); // save last pot used
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//if 	((!alt_pots_overwrite_enable[current_scene] ) && (old_pitch==incoming_message[2]))  {button_states[clip_stop_button]=red_button;  alt_pots_overwrite_enable[current_scene]=5; }
+//	if 	( (old_pitch==incoming_message[2]))  {button_states[clip_stop_button]=green_button;  alt_pots_overwrite_enable[current_scene]=5; }
+
+
+	//enables alt pots overwrite
+
+//	{if (alt_pots_overwrite_enable[current_scene] )  {alt_pots[(incoming_data1  - 48)+((current_scene-8)*8)] =((incoming_message[2]));}   // at zero setting velocity is off  , set for 4 banks for the last for 4 scenes
 	// maybe 16 values or about 2 octaves in scales
 
 		status=0; // clear
 	}
 
-	if ((status == 176) && (scene_solo)&& (incoming_data1<pot_5)){   // solo processing
+/*	if ((status == 176) && (scene_solo)&& (incoming_data1<pot_5)){   // solo processing
 		uint8_t solo_selector=(incoming_data1-48)*4;
 		incoming_message[2]=(incoming_message[2]>>5)&3;
 
 			memset(mute_list+solo_selector,1,4);mute_list[incoming_message[2]+solo_selector]=0;
 		status=0; // clear
-	}
+	}*/
 
 
 	if (status == 176) {//  controller data , store pot , clip stop off
@@ -687,7 +717,7 @@ void buttons_store(void){    // incoming data from controller
 	if (scene_select)  { // change scene select lite , one at a time though , fully update so need for extra sends
 		scene_select=scene_select-1;
 		//uint8_t clear_green[8]= {1,1,1,1,1,1,1,1};
-
+		memset(alt_pots_overwrite_enable,0,sound_set );  // clear alt pots edit
 		memset(button_states,1,8); ;  // turn green
 		button_states[scene_select&7]=5;
 		if (scene_mute) { // muting control
