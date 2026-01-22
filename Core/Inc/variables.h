@@ -362,11 +362,11 @@ uint8_t nrpn_gating_sequence[16]={127,0,127,0,120,0,100,0,127,0,127,0,120,0,100,
 uint8_t controller_fx_enable; // controller data flag
 uint8_t controller_fx_select[2];  // selects which controller data
 uint8_t controller_fx_value[2]; // controller level
-uint8_t control_change_flag=0;
+uint8_t control_change_flag=0;  // selects from fx list , not sounds or midi
 
 uint8_t keyboard_step_record;   // keeps count of keys pressed once rec_arm and pause is on
 uint8_t loop_screen_disable=0;
-uint8_t control_change[16];   // set control change data for selected sound mainly for keys for now
+uint8_t control_change[16];   // set control change data using fx menu list
 uint8_t control_change_value=71;
 uint8_t buttons_bank_1[32];  // alternative buttons_states for different displays
 uint8_t current_playing_bar;   // keep record of the current playing bar , lenght to be set
@@ -375,10 +375,63 @@ uint8_t bar_map_0[sound_set*2];  // bit map for notes 16*16bit
 uint8_t bar_map_1[sound_set]={255,255,255,255,255,255,255,255};  // bit mapped enable 1 bar
 uint8_t bar_map_8[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 8 bar
 uint8_t bar_map_64[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 8*8 bar   , for now might change to diff values
-uint8_t bar_map_screen_level=0;  //selects which zoom is displayed 0-3   , 0=none 1=8 2=32
+uint8_t bar_map_screen_level=1;  //selects which zoom is displayed 0-3   , 0=none 1=8 2=32
 uint8_t clear_rows=0;   // clear_top 4 rows only on USB send
 uint8_t bar_map_sound_enable[sound_set]; // output from bar map editor
 uint16_t bar_map_counter=0;  // keeps total bar count
 uint8_t alt_pots_overwrite_enable[sound_set];  // allows to overwrite alt pots value after reaching oroginal value ,then reset after a while ,maybe count down
 uint8_t last_pot_used=0;
 uint8_t temp_midi_var=0;
+
+uint8_t fx_incoming[3];
+uint8_t fx_pot_settings[16]={3,74,3,71,4,5,4,75,3,74,3,71,3,74,3,71};      //  holds midi_channel and cc assignment for 8 pots  0-15 and 0-127 , fx list
+uint8_t fx_pot_values[32]={64,64,64,64,
+							64,64,64,64,
+							23,76,64,64,
+							23,76,64,64,
+							0,84,64,64,
+							0,84,84,84,
+							23,76,64,64,
+							23,76,64,64
+							//23,76,64,64,
+							//23,76,64,64,
+
+
+
+
+
+}; // holds on and off values as well as transition speed for both , 8 tracks for now
+
+uint8_t fx_map_sound_enable[8]; //tracks if bar is enabled
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -7,7 +7,7 @@
   ******************************************************************************
   * @attention
   *
-  * Copyright (c) 2025 STMicroelectronics.
+  * Copyright (c) 2026 STMicroelectronics.
   * All rights reserved.
   *
   * This software is licensed under terms that can be found in the LICENSE file
@@ -22,7 +22,7 @@
 #include "usbd_cdc_if.h"
 
 /* USER CODE BEGIN INCLUDE */
-extern uint8_t cdc_buffer[64];
+
 /* USER CODE END INCLUDE */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -263,14 +263,9 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
   /* USER CODE BEGIN 6 */
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
   USBD_CDC_ReceivePacket(&hUsbDeviceFS);
-uint8_t len = (uint8_t)*Len;  
-//memset(cdc_buffer,0,64);
-  memcpy(cdc_buffer,Buf,len);
- // memset(Buf,0,len);
-
-
-
-        return (USBD_OK);
+  USB_CDC_RxHandler(UserRxBufferFS, *Len);
+  memset(UserRxBufferFS, '\0', *Len);
+  return (USBD_OK);
   /* USER CODE END 6 */
 }
 

@@ -22,22 +22,27 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
 #include"string.h"
 #include "stdio.h"
 #include <stdlib.h>
 #include "string.h"
 #include "variables.h"
-#include "usbd_midi.h"
-extern USBD_HandleTypeDef hUsbDeviceFS;
-
-
-// change HID to MIDI in usb_device.c  and usbd_conf.c     !!!! also modifiy files in USB_Device
-// device configurator can overwrite usb_device  files
-#include "usbd_cdc.h"
 #include "usbd_cdc_if.h"
+
+
+//extern USBD_HandleTypeDef hUsbDeviceFS;
+
+// Build ALL  !
+// device configurator can overwrite usb_device  files
+//#include "usbd_cdc.h"
+//#include "usbd_cdc_if.h"
 #include "midi.h"
+#include "fx.h"
 #include "notes.h"
 #include "lcd.h"
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -80,7 +85,7 @@ RTC_TimeTypeDef set_Time = {0}; // to reset rtc
 
 
 
-int _write(int le, char *ptr, int len)
+/*int _write(int le, char *ptr, int len)
 {
 int DataIdx;
 for(DataIdx = 0; DataIdx < len; DataIdx++)
@@ -88,7 +93,7 @@ for(DataIdx = 0; DataIdx < len; DataIdx++)
 ITM_SendChar(*ptr++);
 }
 return len;
-}
+}*/
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -137,6 +142,9 @@ uint8_t pattern_scale_process(uint8_t value, uint8_t selected_sound ); // midi i
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+
+
+
 /* USER CODE END 0 */
 
 /**
@@ -169,15 +177,21 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_USB_DEVICE_Init();
   MX_USART1_UART_Init();
   MX_I2C1_Init();
   MX_SPI1_Init();
   MX_TIM2_Init();
   MX_RTC_Init();
+  MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
+
+
+
+
   // USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS);
 
+  //tusb_init(0,0);
+  //tud_init(BOARD_TUD_RHPORT);
   HAL_SPI_Init(&hspi1); // write to register hspi2
   HAL_DMA_Init(&hdma_spi1_rx);
   	HAL_DMA_Init(&hdma_spi1_tx);
@@ -213,6 +227,18 @@ int main(void)
 	//TIM2->CCMR1 = 0;
 	lcd_start();
 
+//	 board_init();
+
+/*
+	tusb_rhport_init_t dev_init={
+			.role =	TUSB_ROLE_DEVICE,
+				.speed = TUSB_SPEED_FULL
+
+	};
+		tusb_init(BOARD_TUD_RHPORT, &dev_init);   // essential
+*/
+//	 board_init_after_tusb();
+
 	//loop_screen();
 	// panic_delete();                 WATCH FOR WEIRD APC SENDS , IE UP ARROW PLUS BOTTOM ROW 3 SENDS CONSTANT CONTROLLER 50 INFO  ?
   /* USER CODE END 2 */
@@ -224,6 +250,7 @@ int main(void)
 
 
 	 // HAL_GPIO_WritePin(PPQ_GPIO_Port, PPQ_Pin, (ppq_send|1));
+
 
 	 // uint16_t step_temp=0;
 	 // uint8_t seq_step_mod;
@@ -255,9 +282,11 @@ int main(void)
 					 // cdc_send();
 				  }
 
-
-
-
+		  if (seq_pos==1) fx_cc_send(0);   // send cc values
+		  if (seq_pos==2) fx_cc_send(1);
+		  if (seq_pos==3) fx_cc_send(2);
+		  if (seq_pos==4) fx_cc_send(3);
+		  midi_extras();
 
 
 
@@ -268,13 +297,13 @@ int main(void)
 
 	  if ((s_temp) != (seq_pos>>3)) {			// runs on note steps 0-15
 
-		  if((!seq_pos)&&(!pause) ) bar_map_tracker();
+		  if((!seq_pos)&&(!pause) ) { bar_map_tracker(); fx_map_tracker();}
 		  if (!pause) seq_step_long=bar_map_counter&63;    //
 
 		  if(!seq_step_long) {HAL_RTC_SetTime(&hrtc, &set_Time, RTC_FORMAT_BIN);}  //resets rtc
 		  HAL_RTC_GetTime(&hrtc, &seq_clock, RTC_FORMAT_BIN);
 		  HAL_RTC_GetDate(&hrtc, &seq_date, RTC_FORMAT_BIN);  // this needs to be called or the time wont work properly
-		  midi_extras();
+
 			  pattern_settings();
 			//  led_full_clear();
 		//	  alt_pots_playing(); // run it always
@@ -286,7 +315,7 @@ int main(void)
 
 
 			  if (!seq_pos) current_playing_bar=(current_playing_bar+1)&31;  // resets on a stop
-
+			//  if (seq_pos==1)
 			  if (!seq_pos){ LFO_tracking(current_playing_bar,LFO_tracking_out); // runs once per bar ,after a full stop resets to zero
 			  LFO_tracking(current_playing_bar,LFO_tracking_bank);
 			  LFO_tracking((current_playing_bar+1),(LFO_tracking_bank+16));
@@ -756,8 +785,8 @@ static void MX_DMA_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-/* USER CODE BEGIN MX_GPIO_Init_1 */
-/* USER CODE END MX_GPIO_Init_1 */
+  /* USER CODE BEGIN MX_GPIO_Init_1 */
+  /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -792,8 +821,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(CS1_GPIO_Port, &GPIO_InitStruct);
 
-/* USER CODE BEGIN MX_GPIO_Init_2 */
-/* USER CODE END MX_GPIO_Init_2 */
+  /* USER CODE BEGIN MX_GPIO_Init_2 */
+  /* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -878,7 +907,10 @@ static void MX_GPIO_Init(void)
 		if  (stop_toggle ==4) {HAL_TIM_Base_Start_IT(&htim2);stop_toggle=0;}
 
 	}
-
+	void USB_CDC_RxHandler(uint8_t* Buf, uint32_t Len)
+	{
+		memcpy(cdc_buffer,Buf,Len);
+	}
 	/*void HAL_I2C_MasterTxCpltCallback (I2C_HandleTypeDef * hi2c)
 	{
 	  I2C_transmit=1;
@@ -900,8 +932,7 @@ void Error_Handler(void)
 	  }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.

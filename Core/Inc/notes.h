@@ -318,7 +318,7 @@ void note_buttons(void){  // always running only on notes though , might dump it
 */
 
 	if ((!pan) ) {
-		bar_map_screen();
+		{if (down_arrow) fx_map_screen();else bar_map_screen();}
 
 
 
@@ -470,23 +470,30 @@ void buttons_store(void){    // incoming data from controller
 		switch(incoming_data1){
 
 		case up_arrow_button:   // sends bum notes when pressed
-		 if ((scene_buttons[0]<8)) 	{memset(button_states,1,8);bar_map_screen();
+		 if ((scene_buttons[0]<8)) 	{memset(button_states,1,8);{if (down_arrow) fx_map_screen();else bar_map_screen();}
 
 		// scene_buttons[0]=scene_buttons[0]+8;
 		 second_scene=8;
 
 		 } else
-		 {memset(button_states,1,8);bar_map_screen(); }
+		 {memset(button_states,1,8);{if (down_arrow) fx_map_screen();else bar_map_screen();} }
 		break;
 
 		case solo_button: {scene_solo=1;clip_stop=0;button_states[82]=0; } //solo but with pots now ,turns off clip stop or mute
 		 if (shift) memset(mute_list,0,16); // clear all mute info when shift held
 		break;
-		case right_arrow_button:right_arrow=1; {if (bar_map_screen_level<3) bar_map_screen_level++; } bar_map_screen();right_arrow=0;button_states[right_arrow_button]=0;break;//zoom out
+		case right_arrow_button:right_arrow=1; {if (bar_map_screen_level<3) bar_map_screen_level++; }
+
+
+		{if (down_arrow) fx_map_screen();else bar_map_screen();}
+		right_arrow=0;button_states[right_arrow_button]=0;break;//zoom out
 		case select_button: {select_bn=1;} ;break; // select enable
-		case down_arrow_button: down_arrow=1;//
+		case down_arrow_button: down_arrow=1;fx_map_screen();//
 		break;
-		case left_arrow_button: {left_arrow=1;  {if (bar_map_screen_level) bar_map_screen_level--; }	   }bar_map_screen();left_arrow=0;button_states[left_arrow_button]=0;
+		case left_arrow_button: {left_arrow=1;  {if (bar_map_screen_level) bar_map_screen_level--; }	   }
+
+		{if (down_arrow) fx_map_screen();else bar_map_screen();}
+		left_arrow=0;button_states[left_arrow_button]=0;
 		break;// zoom in
 
 		case mute_button:scene_mute=1;break;
@@ -521,7 +528,7 @@ void buttons_store(void){    // incoming data from controller
 				loop_screen();}else{ memset(button_states,1,8);}  ;break;
 			case right_arrow_button:right_arrow=0;  break;//zoom out
 			case select_button: {select_bn=0;} ;break; // select enable
-			case down_arrow_button:down_arrow=0; break;
+			case down_arrow_button:down_arrow=0;bar_map_screen(); break;
 			case left_arrow_button: left_arrow=0; break;// zoom in
 			case mute_button:scene_mute=0;break;
 			case record_button:record=0;overdub_enabled=0;break;
@@ -629,11 +636,14 @@ void buttons_store(void){    // incoming data from controller
 			// else {current_lfo_pos=(current_lfo_pos&48)+((current_lfo_pos&7)+(pot_temp_in-pot_temp_old));}
 
 			//LFO_tracking_counter[current_scene]= current_lfo_pos;
-			LFO_phase_list[current_scene]=((pot_states[0]>>5))&3;	 // lfo phase setting
-			lcd_downcount=3;lcd_messages_select=0;
+			//LFO_phase_list[current_scene]=((pot_states[0]>>5))&3;	 // lfo phase setting
+			//lcd_downcount=3;lcd_messages_select=0;
 
 		}
-		else 	{LFO_low_list[current_scene]=((pot_states[0]>>4))&7;lcd_downcount=3;lcd_messages_select=6;}
+		//else 	{LFO_low_list[current_scene]=((pot_states[0]>>4))&7;lcd_downcount=3;lcd_messages_select=6;}
+		else  {pitch_change_loop[current_scene]=pot_states[0]>>4;}    // sets number of notes on pitch chnage
+
+
 		break;
 
 		//if ((select_bn) && (current_scene>3))  //  cc function
@@ -667,28 +677,10 @@ void buttons_store(void){    // incoming data from controller
 
 		}
 
-		if (down_arrow){      // with down arrow enabled , change pot function
-			switch(incoming_data1){   // pots data selector ,default screen
+		if (down_arrow){      // with down arrow enabled fx menu section ,pot settings
 
-			case pot_1:pitch_change_loop[current_scene]=pot_states[0]>>4; break;
-
-			//if ((select_bn) && (current_scene>3))  //  cc function
-			//{midi_cc_cue[0] =midi_channel_list[current_scene]+176; midi_cc_cue[1] =incoming_message[2]; };break; // sets notes playing only on these bars
-
-			case pot_2:program_change[current_scene]=pot_states[1];program_change_flag=current_scene+1; break; // send program change value
-
-			case pot_3: control_change[current_scene]=pot_states[2];control_change_flag=current_scene+1;control_change_value=91; break;// cc reverb
-
-			case pot_4:control_change[current_scene]=pot_states[3];control_change_flag=current_scene+1;control_change_value=72; break;// cc release
-			case pot_5: control_change[current_scene]=pot_states[4];control_change_flag=current_scene+1;control_change_value=5; break; // cc portamento time
-			case pot_6:control_change[current_scene]=pot_states[5];control_change_flag=current_scene+1;control_change_value=75; break;  //
-
-			case pot_7:	control_change[current_scene]=pot_states[6];control_change_flag=current_scene+1;control_change_value=76; break;   //
-
-			case pot_8:control_change[current_scene]=pot_states[7];control_change_flag=current_scene+1;control_change_value=77; break;
-			default:break;
-
-			}
+			fx_incoming[1]=incoming_data1;  // selects which pot
+			fx_menu(fx_incoming[1]);  // saves pot settings for fx
 
 			}
 
@@ -719,6 +711,11 @@ void buttons_store(void){    // incoming data from controller
 		//uint8_t clear_green[8]= {1,1,1,1,1,1,1,1};
 		memset(alt_pots_overwrite_enable,0,sound_set );  // clear alt pots edit
 		memset(button_states,1,8); ;  // turn green
+		for (i=0;i<8;i++){
+		if(scene_select<8)	{if (mute_list[i]) button_states[i]=3;}
+		if(scene_select>7)	{if (mute_list[i+8]) button_states[i]=3;}
+
+		}
 		button_states[scene_select&7]=5;
 		if (scene_mute) { // muting control
 
@@ -734,7 +731,7 @@ void buttons_store(void){    // incoming data from controller
 			 //loop_selector=1; // redraw
 	
 		scene_select=0;
-		bar_map_screen();
+		{if (down_arrow) fx_map_screen();else bar_map_screen();}
 	}// end of scene select
 	buffer_clear = 1;
 	//loop_screen();  // always run except when device on ,except when keyboard step

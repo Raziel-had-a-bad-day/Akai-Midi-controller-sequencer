@@ -33,8 +33,8 @@ Stop all clips = stops and jumps to start
 clip_stop = enables all_pots to set pitch for 8 sequentual notes  on keys
 device =   shows current midi channel on top rows ,blinky yellow  
 
-down arrow = different pot functions
-Pot 1 + right arrow= sets number of steps in pitch as it's looping ie  1-4 ' ,drums only 
+down arrow = calls up fx menu , pots set cc send on 1-8 fx channels  , buttons set on/off per bar 1,8,64 ,0-3 level on , 4-7 level off, only single channel for now
+
 Pot 3 =sets pitch change advance rate on keys 
 Pause +arm_rec = allows pitch entry with keyboard in step mode , top bar shows progress , now default way for pitch entry
 

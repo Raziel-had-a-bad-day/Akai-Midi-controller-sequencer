@@ -117,6 +117,9 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 
 	//if (send_buffer[6]){ while (CDC_Transmit_FS(send_buffer+5, 3)== USBD_BUSY){HAL_Delay(1);}}//bad
 	if (buffer_size) CDC_Transmit_FS(buffer_out, buffer_size); // trying big send
+//	if (buffer_size)  tud_cdc_n_write(0, buffer_out, buffer_size);
+
+
 }
 
 
@@ -525,7 +528,8 @@ void midi_send_control(void){   // 16notes 1/8 res , 16 pattern , for one patter
 
 void midi_extras(void){    // extra midi data added here , program change , cc
 
-	  if (((seq_pos>>5)&1) && (!pause))   // send cc , off during pause , dont disable
+	//  if (((seq_pos>>5)&1) && (!pause))   // send cc , off during pause , dont disable
+		  if (!pause)  // send cc , off during pause , dont disable
 	  {
 		  uint8_t extras=midi_extra_cue[28];
 /*		  midi_extra_cue[extras]=176+midi_channel_list[12];  // cc ch3
@@ -547,7 +551,7 @@ void midi_extras(void){    // extra midi data added here , program change , cc
 		  program_change_flag=0; //clear
 
 		  }
-		  if (control_change_flag){midi_extra_cue[extras]=176+midi_channel_list[control_change_flag-1];   // program change for non drums
+		  if (control_change_flag){midi_extra_cue[extras]=176+fx_pot_settings[(control_change_flag-1)*2];   // program change for non drums
 		  midi_extra_cue[extras+1]=control_change_value; // setting for reverb atm
 		  midi_extra_cue[extras+2]=control_change[control_change_flag-1];
 		  midi_extra_cue[28]=extras+3;
