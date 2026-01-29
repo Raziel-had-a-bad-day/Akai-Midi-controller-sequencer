@@ -15,7 +15,7 @@
 #define VAR_GET_BIT(variables_addr, bit_number)       \
         (*(uint32_t *)(SRAM_BitB_BASE + ((variables_addr - RAM_BASE) * 32) + ((bit_number) * 4)))
 
-
+// access individual bits as byte addresses
 
 
 #define MIDI_NOTE_OFF 128
@@ -44,7 +44,7 @@
 #define red_blink_button 4
 #define yellow_button 5
 #define yellow_blink_button 6
-#define variable_count 19   // for flash mem
+#define variable_count 20   // for flash mem
 
 #define pot_1 48
 #define pot_2 49
@@ -384,7 +384,7 @@ uint8_t last_pot_used=0;
 uint8_t temp_midi_var=0;
 
 uint8_t fx_incoming[3];
-uint8_t fx_pot_settings[16]={3,74,3,71,4,5,4,75,3,74,3,71,3,74,3,71};      //  holds midi_channel and cc assignment for 8 pots  0-15 and 0-127 , fx list
+uint8_t fx_pot_settings[16]={4,75,4,72,4,5,4,76,3,74,3,71,3,74,3,71};      //  holds midi_channel and cc assignment for 8 pots  0-15 and 0-127 , fx list
 uint8_t fx_pot_values[32]={64,64,64,64,
 							64,64,64,64,
 							23,76,64,64,
@@ -403,9 +403,11 @@ uint8_t fx_pot_values[32]={64,64,64,64,
 }; // holds on and off values as well as transition speed for both , 8 tracks for now
 
 uint8_t fx_map_sound_enable[8]; //tracks if bar is enabled
-
-
-
+uint8_t motion_record_buf[sound_set*8];  // holds 1 bit motion record when pressing shift and changing knob levels set elsewhere
+uint8_t motion_record_limits[sound_set*2]={64,127,64,127,64,127,64,127,64,127,64,127,64,127,
+		64,127,64,127,64,127,64,127,64,127,64,127,64,127,64,127,64,127,64,127,64,127}; // using for accent only atm so only using the low values , high is note_accent
+uint8_t accent_bit; // keeps track of bit for motion play 0-32
+uint8_t accent_bit_shift; // moves up one word
 
 
 

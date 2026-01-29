@@ -37,6 +37,8 @@ down arrow = calls up fx menu , pots set cc send on 1-8 fx channels  , buttons s
 
 Pot 3 =sets pitch change advance rate on keys 
 Pause +arm_rec = allows pitch entry with keyboard in step mode , top bar shows progress , now default way for pitch entry
-
+Third row is accent on/off for avery 2 notes for 8 bars , can be recorded with shift+pot8 as well.
+Forth row is bar position of 8 bars.
+//Try to get a live mode screen with muting sounds and fx and maybe loops.
 
  

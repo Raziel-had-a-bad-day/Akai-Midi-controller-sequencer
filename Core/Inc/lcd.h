@@ -93,7 +93,7 @@ int8_t var_size; // track size of variables for lcd
 void lcd_mem(void){   // updates lcd buffer , v
 	lcd_buffer_counter=0;
 
-	for (lcd_pos=0;lcd_pos<32;lcd_pos++){   // one character at a time
+ 	for (lcd_pos=0;lcd_pos<32;lcd_pos++){   // one character at a time
 		if ((lcd_buffer[lcd_pos]!=lcd_buffer_mem[lcd_pos]) && (!lcd_buffer_full))             {
 
 			lcd_print(lcd_pos,lcd_buffer[lcd_pos]);

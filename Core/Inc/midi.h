@@ -65,7 +65,9 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 		send_buffer_sent = 2;
 	}
 	////  temporary lights , not stored
-	if ((!pause)  && (!bar_map_screen_level))  send_temp[square_buttons_list[green_position[0]]]=5;
+	if ((!pause)  && (!bar_map_screen_level)) { send_temp[square_buttons_list[green_position[0]]]=5;
+	 //send_temp[counter&7]=3;   // draws green runner and bar position on first screen
+	}
 	if (bar_map_screen_level==1) {counter=(counter&7); send_temp[8+counter]*=2;send_temp[16+counter]*=2;
 	send_temp[24+counter]*=2;send_temp[32+counter]*=2;}
 	if (bar_map_screen_level==2) {counter=(counter>>3)&7; send_temp[8+counter]&=6;send_temp[16+counter]&=6;
@@ -133,7 +135,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 			uint32_t pointer=(uint32_t)&bar_map_0;
 			uint8_t note_midi [128] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};  // 3*16 ,   seems to get some garbage ?
 			uint8_t nrpn_temp[36]={185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0,185,99,5,185,98,0,185,6,0};  //  9 bytes per nrpn send
-
+			uint32_t accent_pointer=(uint32_t)&motion_record_buf;
 			nrpn_temp[30]=0;
 			//uint8_t note_off_midi[50];
 
@@ -159,6 +161,8 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 				// memcpy (random_list,alt_pots+(0),16); // disable keychange , just defualts alt pots for now
 
 				 memcpy (note_velocities,note_accent,16);
+
+
 				 memcpy(note_enable,bar_map_sound_enable,16);
 				 //uint8_t pitch_seq=alt_pots[((seq_pos>>3)&7)+(pattern_select*16)]; // loops 0-7 ,steps
 						uint8_t pitch_counter; // keeps track of pitch count up
@@ -179,7 +183,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 
 
-				if ((seq_pos&7)==1) {    // fixed time for now , note generator
+				if ((seq_pos&7)==1) {    // fixed time for now runs only once per step , note generator
 
 
 
@@ -192,7 +196,10 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					button_states_temp[current_scene]=5;  // selected sound yellow
 
 		for (i = 0; i < sound_set; i++) { // transfer from midi_cue to note_midi to be sent
-			current_velocity=0;
+			//current_velocity=0;
+			//current_velocity=VAR_GET_BIT(accent_pointer+(i*2),(offset_pitch));   // 16*8 bytes 1 byte =1 bar
+			if (VAR_GET_BIT(accent_pointer+(i*8)+accent_bit_shift,(accent_bit))) current_velocity=note_velocities[i]; else current_velocity=64;
+
 			midi_channel_select = midi_channel_list[i] & 15;
 			if (note_timing[i] > 1)
 				note_timing[i]--; //count down for notes ,seems to skip
@@ -240,7 +247,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 				//if (drum_byte & (1 << (((offset_pitch) & 3) * 2))) { //notes
 					if ((VAR_GET_BIT(pointer+(i*2),(offset_pitch)))==1) {
-					current_velocity=note_velocities[i];   // get accent info
+					//current_velocity=note_velocities[i];   // get accent info
 					if (!note_enable[i]) current_velocity=0; // disable if note enable is not zero
 					pitch_counter=last_pitch_count[i];
 					  if(i>7) pitch_seq=random_list[(pitch_counter>>3)+((i-8)*8)];   // only works on last 8 scenes/keys

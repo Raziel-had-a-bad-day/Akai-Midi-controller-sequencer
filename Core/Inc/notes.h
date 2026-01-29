@@ -18,6 +18,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 	uint32_t pointer;   // this is the actual address
 	uint8_t incoming_message[3];
 	uint8_t color=green_button;
+	uint8_t accent_color=yellow_button;
 		memcpy(incoming_message,cdc_buf2, 3); // works off only receiving buffer , this might be changing
 		memset(cdc_buf2,0,3);
 
@@ -66,7 +67,24 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 
 
 	} //end of mod
+	if ((incoming_data1>8) && (incoming_data1<24) && (!bar_map_screen_level)  ) {
+	// modify button from incoming
+			uint32_t accent_pointer=(uint32_t)&motion_record_buf;
 
+			uint8_t alt_list=	 button_states[incoming_data1 ];
+			switch(alt_list){    // change state of button
+			case 0 :alt_list = accent_color;break;   //
+			default:alt_list = 0; ;break; }
+
+			button_states[incoming_data1 ]=alt_list;
+			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
+
+ // modify data from button state
+		if(button_states[square_buttons_list[alt_list]])  {VAR_SET_BIT((accent_pointer+(scene_select*8)+accent_bit_shift),((accent_bit&24)+(alt_list-16)));}
+		else {VAR_RESET_BIT((accent_pointer+(scene_select*8)+accent_bit_shift),((accent_bit&24)+(alt_list-16)));}
+
+
+	} //end of mod
 
 // draw screen
 
@@ -78,14 +96,24 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 			button_states[square_buttons_list[i]]=note_enabled;   // set light
 		}}
 
-	if (!bar_map_screen_level){   // draw notes
+	if (!bar_map_screen_level){   // draw notes also accent on/off
+		//uint32_t accent_pointer=(uint32_t)&motion_record_buf;
+
+		for(i=0;i<8;i++){
+		//if	(VAR_GET_BIT(accent_pointer+(scene_select*2),(accent_bit))) 	 button_states[16+i]=5;
+		//else button_states[16+i]=0;  // adds accent on/off bar on thrid row
+
+
+		}
+
 		pointer+=(scene_select*2);
 			for(i=0;i<16;i++){
 				note_enabled=VAR_GET_BIT(pointer,(i&15));
 				note_enabled*=color;
 				button_states[square_buttons_list[i]]=note_enabled;   // set light
 			}
-				memset(button_states+8,0,16);}   // clear last two rows
+				//memset(button_states+8,0,16);
+	}   // clear last two rows
 
 		USB_send();  // do full clear send before new data
 	} // end of bar map screen
@@ -397,7 +425,7 @@ void buttons_store(void){    // incoming data from controller
 	uint8_t buffer_clear = 0;
 	uint8_t incoming_data1 = incoming_message[1]&127;
 	uint8_t status=incoming_message[0];
-
+	uint32_t accent_pointer=(uint32_t)&motion_record_buf;
 	uint16_t clear[20]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 	uint8_t current_scene=scene_buttons[0];
 
@@ -670,7 +698,12 @@ void buttons_store(void){    // incoming data from controller
 			if ((shift) && (device))		{timer_value=bpm_table[incoming_message[2]+64]; tempo=incoming_message[2]+64;} //tempo
 			if ((!device)&&(!shift)) {note_accent[current_scene]=incoming_message[2];rand_velocities[current_scene]=incoming_message[2];     // accent input
 		lcd_control=1;lcd_downcount=3;lcd_messages_select=8;current_accent=pot_states[7];}  // accent also used for tempo with shift
-		;break;
+		if (shift && (!device)){
+			if (incoming_message[2]>64) (VAR_SET_BIT(accent_pointer+(current_scene*8)+accent_bit_shift,(accent_bit))); else (VAR_RESET_BIT(accent_pointer+(current_scene*8)+accent_bit_shift,(accent_bit)));  // record motion with shift held
+
+		}
+
+			;break;
 		default:break;
 
 		}

@@ -49,9 +49,9 @@ void settings_storage(void){   // runs to store setting and read back
 			uint8_t *settings[variable_count]={scene_transpose,pot_states,pot_tracking,mute_list,note_accent,midi_channel_list,
 					pitch_list_for_drums,pattern_scale_list,
 					lfo_settings_list,single_settings_list,pitch_change_loop,LFO_low_list
-			,LFO_high_list,LFO_phase_list,pitch_change_rate,bar_map_1,bar_map_8,bar_map_64,bar_map_0};
-			uint8_t settings_multi[variable_count]={1,1,4,1,1,1,4,1,2,1,1,4,4,4,1,1,1,1,2};   // sets length,  sound_set*x ,512 atm
-			uint8_t settings_temp[96];
+			,LFO_high_list,LFO_phase_list,pitch_change_rate,bar_map_1,bar_map_8,bar_map_64,bar_map_0, motion_record_buf};
+			uint8_t settings_multi[variable_count]={1,1,4,1,1,1,4,1,2,1,1,4,4,4,1,1,1,1,2,8};   // sets length,  sound_set*x ,512 atm
+			uint8_t settings_temp[256];
 			uint16_t settings_total=0;  //adds up position , huge miss here retard alert
 			uint8_t length=0; // max 64 atm
 			tempo=single_settings_list[1];

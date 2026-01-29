@@ -258,7 +258,12 @@ int main(void)
 
 	  if (seq_pos_mem!=seq_pos){     // runs  8 times /step  , control sequencer counting
 
-		   green_position[1]=seq_step;
+
+		  if (!pause) seq_step = seq_pos>> 3; else seq_step=seq_step;
+		 				  green_position[0]=seq_step;
+
+		  green_position[1]=seq_step;
+
 		  cdc_send(); // all midi compiled for send  8/per note , sends on seq_pos=1 atm
 
 		  if (serial_len)
@@ -297,8 +302,25 @@ int main(void)
 
 	  if ((s_temp) != (seq_pos>>3)) {			// runs on note steps 0-15
 
+
+		  accent_bit=((seq_step_long&3)<<3)+(seq_step>>1);   //0-32 ,32+32 for 8 bytes ,1 bit is 2 steps,
+		  accent_bit_shift=((seq_step_long>>2)&1)*4;
+
 		  if((!seq_pos)&&(!pause) ) { bar_map_tracker(); fx_map_tracker();}
-		  if (!pause) seq_step_long=bar_map_counter&63;    //
+		  if (!pause) {seq_step_long=bar_map_counter&63;
+		  if (!bar_map_screen_level) {
+			  memset(button_states+8,0,8); button_states[8+(seq_step_long&7)]=3;  // shows current bar pos on first screen
+			  uint32_t accent_pointer=(uint32_t)&motion_record_buf;
+			  for(i=0;i<8;i++){
+			  		if	(VAR_GET_BIT(accent_pointer+(scene_buttons[0]*8)+accent_bit_shift,((accent_bit&24)+i))) 	 button_states[16+i]=5;
+			  		else button_states[16+i]=0;  // adds accent on/off bar on thrid row
+
+
+			  		}
+
+
+		  }
+		  } //
 
 		  if(!seq_step_long) {HAL_RTC_SetTime(&hrtc, &set_Time, RTC_FORMAT_BIN);}  //resets rtc
 		  HAL_RTC_GetTime(&hrtc, &seq_clock, RTC_FORMAT_BIN);
@@ -391,8 +413,7 @@ int main(void)
  				  flash_write(); // works only if button pressed , not during pause ?
  				  note_off_enable=1;
  				//  arrows();
- 				  if (!pause) seq_step = seq_pos>> 3; else seq_step=seq_step;
- 				  green_position[0]=seq_step;
+
  				//  if( (USBD_MIDI_GetState(&hUsbDeviceFS) == MIDI_IDLE) )  USB_send();  // fast     	//temp disable
 
 
