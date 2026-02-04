@@ -20,6 +20,7 @@
 
 #define MIDI_NOTE_OFF 128
 #define MIDI_NOTE_ON 144
+#define CC_Message 176   // for this particular unit
 #define up_arrow_button 64
 #define down_arrow_button 65
 #define left_arrow_button 66
@@ -123,6 +124,7 @@ uint8_t seq_enable=1;  // start stop sequencer
 uint8_t seq_step; // 0-15 steps,paused
 uint8_t realtime;
 uint8_t program_change_flag=0;
+uint8_t seq_pos_swing[sound_set]={2,1,1,1,3,3,3,3,5,5,5,5,7,7,7,7}; // swing timing for seq_pos note triggering
 
 
 volatile uint16_t timer_value=512; // sets timer ccr  def is 1100 for now
@@ -162,7 +164,8 @@ uint8_t cdc_start=0;  // checks for extra messages
 uint8_t bar_selector; // select bar for editing
 uint8_t bar_playing; // currently playing bar , 16 notes per bar
 uint8_t punch_in[8]; // allow instant response for certain buttons
-
+uint8_t flash_settings_count; // count of elements in settings array
+uint16_t flash_settings_size;  // size of all settings
 
 
 uint8_t counter_a;
@@ -180,7 +183,7 @@ uint8_t send_spi2[260];
 uint8_t write_once; // allow only a single flash write for now
 uint8_t test_data[32]={0,0,0,0,1,0,5,1,1,0,1,5,1,1,0,1,1,3,0,1,1,0,1,0,1,0,1,0,1,0,1};
 uint8_t spi_hold[260]={0,10,0,0};
-uint8_t all_settings[1024];  // store all extra settings:  transpose , pots
+uint8_t all_settings[2048];  // store all extra settings:  transpose , pots
 uint8_t other_buttons; // update control button lights
 uint8_t other_buttons_hold[100]; // keeps track of buttons
 uint8_t send_buffer_sent;
@@ -197,7 +200,7 @@ uint8_t loop_lfo_out[sound_set*3];  // used for some level of lfo using pot7 for
 uint8_t alt_pots[sound_set*16]; // stores a set of alt pot settings , 8 bytes per bank , 8 banks , also holds extra data > 128
 uint8_t alt_pots_selector=0; // changes alt_pots banks (8bytes each )
 uint8_t alt_pots_selector_list[16]; // changes alt_pots banks (8bytes each )
-
+uint8_t alt_pots_octave[sound_set]; // tracks octave from alt pots
 uint8_t seq_step_mem;  // mem for looper
 
 
@@ -405,9 +408,13 @@ uint8_t fx_pot_values[32]={64,64,64,64,
 uint8_t fx_map_sound_enable[8]; //tracks if bar is enabled
 uint8_t motion_record_buf[sound_set*8];  // holds 1 bit motion record when pressing shift and changing knob levels set elsewhere
 uint8_t motion_record_limits[sound_set*2]={64,127,64,127,64,127,64,127,64,127,64,127,64,127,
-		64,127,64,127,64,127,64,127,64,127,64,127,64,127,64,127,64,127,64,127,64,127}; // using for accent only atm so only using the low values , high is note_accent
+		64,127,64,127,64,127,64,127,64,127,64,127,64,127}; // using for accent only atm so only using the low values , high is note_accent
 uint8_t accent_bit; // keeps track of bit for motion play 0-32
 uint8_t accent_bit_shift; // moves up one word
+
+uint8_t shift_hold_enable;  // this is enabled when shift is held while a pot is turned
+uint8_t shift_hold_buf[4]; // this holds the last message , for repeating at regular intervals until shift is released
+
 
 
 

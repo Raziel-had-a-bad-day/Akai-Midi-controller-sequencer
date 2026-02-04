@@ -1,16 +1,10 @@
 
+
+
 UART_HandleTypeDef huart1;
+void shift_hold_function(void); // declare first  here than it's happy
+void pitch_mode(void);
 
-void waterfall(void){
-	uint8_t current_scene=scene_buttons[0];
-	if (current_scene<8 )  current_scene=0; else current_scene=8;
-	for (i=0;i<32;i++){
-
-		//buttons_bank_1[i]=
-
-	}
-
-}
 void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well, works good
 	uint8_t note_enabled=0;
 	uint8_t scene_select=scene_buttons[0]; // clear last two bits
@@ -120,6 +114,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 
 void bar_map_tracker(void){     // creates sound enable for notes from bar_map_edit
 	uint8_t enable[3];
+	bar_map_counter=(bar_map_counter+1)&511;
 	uint16_t counter=bar_map_counter;
 	uint32_t pointer=( uint32_t)&bar_map_1;
 	for(i=0;i<16;i++){
@@ -129,16 +124,13 @@ void bar_map_tracker(void){     // creates sound enable for notes from bar_map_e
 	enable[1]=VAR_GET_BIT(pointer+i,((counter>>3)&7));
 	pointer=( uint32_t)&bar_map_64;
 	enable[2]=VAR_GET_BIT(pointer+i,((counter>>6)&7));
-		if ((enable[0]+enable[1]+enable[2])!=3) enable[0]=0; else enable[0]=1;
+		if ((enable[1]+enable[2])!=2) enable[0]=0;
 
-	bar_map_sound_enable[i]=enable[0];
+	bar_map_sound_enable[i]=enable[0]; // off by one  bar ?
 
 	}
 
-
-		bar_map_counter=(bar_map_counter+1)&511;
 		}
-
 
 
 
@@ -151,6 +143,7 @@ void all_notes_off(void){
 	}
 	 HAL_UART_Transmit(&huart1,data,48,100); //   send all notes off on serial port
 	 HAL_Delay(100);
+	 bar_map_counter=511;
 	 pause=1;
 
 }
@@ -208,7 +201,8 @@ void step_recording(void)  {    // write keyboard notes to alt_pots  , but only 
 	if (keyboard_step_record>7) { keyboard_step_record=0;  button_states[rec_arm_button]=0;rec_arm=0;
 	} //reset rec_arm
 	else{		alt_pots[((selected_scene-8)*8)+keyboard_step_record]=(keyboard[0]);
-				keyboard_step_record++;}
+	alt_pots_octave[selected_scene]=(keyboard[0]>>2)/3;  // saves octave
+	keyboard_step_record++;}
 
 
 	}
@@ -247,71 +241,11 @@ void patch_screen(void)		{     // shows last loaded patch and save patch as well
 ///  gonna do away with all  this
 void loop_screen(void){  // always on now ,produces lights for notes,  16 notes and 8 bars , full redraw  , notes only   might remove this
 
-/*
-	//uint16_t current_scene=scene_buttons[0]*256;  // pattern select
-
-	//uint8_t current_scene_drums=((scene_buttons[0]&3)*4) + (pattern_select*16);  // pattern location
-	uint8_t selected_scene=scene_buttons[0];  // this wiil change to pattern select 0-15
-	uint16_t data_temp2;
-//	uint8_t accent_temp;
-	//uint16_t fast_bit;
-	uint8_t note_counter=0;
-	uint8_t drums=0;
-	//uint32_t drum_pattern;   // holds 4 bytes
-	//pattern_select=0;
-	uint16_t drum_byte_select;
-	uint8_t drum_byte;
-	//memset(button_states+24,0,16);
-	drums=0;    //always
-
-	if (loop_screen_disable) drums=0; //disable for rec arm
-*/
-
-/*	if(device) drums=0;  // disables loop screen
-
-		if (drums){  // for all sounds now
-
-			for (i=0;i<16;i++) {// drums fill  i=actual step 0-15
-
-				drum_byte_select= (i>>2)+(selected_scene*4)+(drum_store);  // select byte position
-				drum_byte=drum_store_one[drum_byte_select];  // get data
-
-				if (drum_byte & (1<<((i&3)*2))) data_temp2=1; else data_temp2=0;     // note test ok
-				if (drum_byte & (1<<(((i&3)*2)+1))) accent_temp=1; else accent_temp=0;  // accent test
-
-				if (data_temp2)    // read back on first loop select   , change button state colour
-				{
-					//if (accent_temp) button_states[square_buttons_list[i]]=red_button ;  else
-						button_states[square_buttons_list[i]]=yellow_button ;}
-				else button_states[square_buttons_list[i]]=0;
-
-				note_counter++;
-
-			} // end of loop
-		}*/ // end of drums
-
-		//loop_note_count[selected_scene]=note_counter;
 	}
 
 
 
 void note_buttons(void){  // always running only on notes though , might dump it
-
-
-/*
-	uint8_t selected_scene=scene_buttons[0];
-	uint8_t incoming_message[3];
-		memcpy(incoming_message,cdc_buf2, 3); // works off only receiving buffer , this might be changing
-
-		uint8_t incoming_data1 = incoming_message[1]&127;
-
-	last_button = square_buttons_list[incoming_data1];   // memory location  of note pressed 0-256(0-3 (16notes)   + sounds*4+(pattern_select*16)
-
-	uint8_t last_press = square_buttons_list[incoming_data1];  //0-32  ,uses the modified map from top to bottom
-
-	uint16_t drum_byte_select= (last_press>>2)+((selected_scene)*4)+(bar_playing*drum_store);  //
-	uint8_t drum_byte=drum_store_one[drum_byte_select];  // get data
-*/
 
 
 			for (i = 0; i < 40; i++){   // test for bad data
@@ -320,91 +254,11 @@ void note_buttons(void){  // always running only on notes though , might dump it
 			}
 
 
-
-/*
-	if ((!pan) && (last_press<16) && (!bar_map_screen_level))      //  normal screen  , draws notes on main screen
-
-			{ //  , only if enabled though ,
-
-
-
-				switch(button_states[incoming_data1]){    // change state
-							case 0 : drum_byte=drum_byte &~ (1<<((last_press&3)*2));  //turn off note
-							drum_byte=drum_byte &~ (1<<(((last_press&3)*2)+1));  // turn off accent
-							// ok on/off ,clear note and accent too
-							break;   // clear note and accent ,works
-							//	case 3 :drum_byte=drum_byte | (1<<((((last_press-(drum_byte_select*4))*2))+1));  break;		// add accent
-							case 5 :drum_byte=drum_byte + (1<<((last_press&3)*2));
-							if (shift) { drum_byte=drum_byte + (1<<(((last_press&3)*2)+1));}  // adds an accented note
-							break;		// note on ok
-
-				}
-
-				drum_store_one[drum_byte_select]=drum_byte; //write back info
-
-			}
-*/
-
-	if ((!pan) ) {
+	if ((!pan) && (!clip_stop)) {
 		{if (down_arrow) fx_map_screen();else bar_map_screen();}
 
-
-
-
-
-
-
 	}
-
-
-
-
-
-/*				if((last_press>15)&& (last_press<24) && (!select_bn) && (selected_scene<8)){    // pitch  change on first page  only
-											//uint8_t pattern=pattern_select;
-								memset(button_states+16, 0, 8);
-
-								pitch_selected_for_drums[selected_scene]=last_press-16; button_states[last_press]=yellow_button; // controls lights
-							//	if(rec_arm | pause) {   // might just drop this
-									//uint8_t pitch_byte_select=(bar_playing)+((selected_scene&7)*8);	// 0-3 + 0-28
-								//	uint8_t pitch_select=(bar_playing&7)+((selected_scene&7)*8); // 0-63
-
-
-								//	pitch_change_store[pitch_select]=last_press-16;  // 0-7 , stores in on the timeline
-									pitch_change_loop_position[selected_scene]=last_press-16;
-									//pitch_byte=(pitch_byte & (~pitch_mask)) | ((last_press-15)&7);   //clears bits then or in the new ones
-									//pitch_change_store[pitch_byte_select]=pitch_byte ;
-							//	}
-
-
-								pitch_change_flag=1+selected_scene; //enable pitch nrpn send , just count from current one maybe
-							//	punch_in[0]=last_press-15; // +1   doesnt do much
-
-								if(pause){
-
-								uint8_t pitch_byte=last_press-16;
-								uint8_t pitch_final=(pitch_list_for_drums[pitch_byte+(selected_scene*8)])&127; // there should always some data
-									pitch_selected_drum_value[selected_scene]=pitch_final;  // if missing data keep old value
-								}
-
-								//	button_states[punch_in[0]+16]=yellow_button;
-
-							} */  // pitch change end
-//////////////////////////////////////////////
-
-/*				if((last_press>23)){    // row 4 , changed to bar selection for now
-				//uint8_t pattern=pattern_select;
-				uint8_t new_bar=(last_press-24);
-				bar_selector=new_bar;
-				button_states[square_buttons_list[new_bar+24]]=green_blink_button; //enable blink
-					//if (shift) { button_states[square_buttons_list[new_bar+24]]=red_blink_button;  shift=0;}
-					//else button_states[square_buttons_list[new_bar+24]]=green_button; //enable blink
-
-					// new_pattern_select=new_pattern;  //add only to new pattern select,   disable pattern select for now !!!
-
-
-				}*/
-
+if (clip_stop) pitch_mode();
 
 		}
 
@@ -440,8 +294,9 @@ void buttons_store(void){    // incoming data from controller
 	{  note_off_flag[0]=0;
 
 
-	if (incoming_data1==98)    // shift related functions
+	if (incoming_data1==shift_button)    // shift related functions
 	{shift=0;
+	shift_hold_function();
 	play_list_write=0;
 	write_velocity=0;}
 	}   // note off buttons
@@ -536,11 +391,12 @@ void buttons_store(void){    // incoming data from controller
 		break;
 
 		case play_pause_button:pause=3;break;
-		case clip_stop_button: {clip_stop=1; lcd_downcount=10;lcd_messages_select=3;scene_solo=0;button_states[83]=0;  } break;
+		case clip_stop_button: {clip_stop=1; lcd_downcount=10;lcd_messages_select=3;scene_solo=0;button_states[83]=0; bar_map_screen_level=0; } break;
 		default:break;
 
 
 		}
+		if(clip_stop) bar_map_screen_level=0;  // disable function for pitch_mode
 		}
 
 
@@ -566,7 +422,7 @@ void buttons_store(void){    // incoming data from controller
 			case rec_arm_button:rec_arm=0;break;
 			case device_button:device=0;break;// shows midi channel , for now
 			case play_pause_button:{pause=0;button_states[stop_all_clips]=0;}break;
-			case clip_stop_button: {clip_stop=0;} break;
+			case clip_stop_button: {clip_stop=0;bar_map_screen();} break;
 			default:break;
 
 
@@ -579,12 +435,22 @@ void buttons_store(void){    // incoming data from controller
 		} // end of Note on for all buttons
 
 
-	if ((status == 176) && (clip_stop)&& (current_scene>7)){   // with clip stop on   , first detects moving fader then only adjustment is starts to track , if another pot it moves on
-		uint8_t old_pitch=alt_pots[(incoming_data1  - 48)+((current_scene-8)*8)] ;  // grabs old value of currently used pot
-		uint8_t continue_write=0;
+	if ((status == CC_Message) && (clip_stop)&& (current_scene>7)){   // pitch_mode enabled pto functions ,
+
+		// add extra pot functions here
+
+		switch(incoming_data1){
+
+		case pot_3:
+			if (current_scene>7) pitch_change_rate[current_scene]=8-(incoming_message[2]>>4);
+			 ;break;//
+		default:break;
+		}
+		//uint8_t continue_write=0;
+/*
 		if(last_pot_used==(incoming_data1-47))    // only if using the same pot as last time
 
-		{
+		{			// might disable this function
 
 			if(((old_pitch>(incoming_message[2]+2)) && ((old_pitch<(incoming_message[2]+10))))  ||  (((old_pitch+2)>incoming_message[2]) && (((old_pitch+10)<incoming_message[2])))  )
 						button_states[clip_stop_button]=green_blink_button;   // set to green blink  when close
@@ -600,27 +466,9 @@ void buttons_store(void){    // incoming data from controller
 
 
 		last_pot_used=(incoming_data1-47); // save last pot used
+*/
 
 
-
-
-
-
-
-
-
-
-
-
-
-	//if 	((!alt_pots_overwrite_enable[current_scene] ) && (old_pitch==incoming_message[2]))  {button_states[clip_stop_button]=red_button;  alt_pots_overwrite_enable[current_scene]=5; }
-//	if 	( (old_pitch==incoming_message[2]))  {button_states[clip_stop_button]=green_button;  alt_pots_overwrite_enable[current_scene]=5; }
-
-
-	//enables alt pots overwrite
-
-//	{if (alt_pots_overwrite_enable[current_scene] )  {alt_pots[(incoming_data1  - 48)+((current_scene-8)*8)] =((incoming_message[2]));}   // at zero setting velocity is off  , set for 4 banks for the last for 4 scenes
-	// maybe 16 values or about 2 octaves in scales
 
 		status=0; // clear
 	}
@@ -634,9 +482,9 @@ void buttons_store(void){    // incoming data from controller
 	}*/
 
 
-	if (status == 176) {//  controller data , store pot , clip stop off
+	if (status == CC_Message) {//  controller data , store pot , clip stop off
 
-
+		if(shift) shift_hold_function();
 
 		pot_states[incoming_data1  - 48] = (incoming_message[2]); // store pot all  // not always ok
 
@@ -652,20 +500,7 @@ void buttons_store(void){    // incoming data from controller
 		case pot_1:
 
 		if ((shift)){
-		// {if (midi_channel_list[current_scene]!=9)  {program_change[1]=incoming_message[2]; program_change[2]=1;}}}   // program change for channels other than drums  pot 1 , not owrking atm
 
-
-			//uint8_t pot_temp_in=((pot_states[0]>>4))&7;
-			//uint8_t pot_temp_old=LFO_delay_list[current_scene];
-		//	uint8_t current_lfo_pos=LFO_tracking_counter[current_scene];
-
-			//if(pot_temp_old>pot_temp_in){current_lfo_pos=(current_lfo_pos&48)+((current_lfo_pos&7)-(pot_temp_old-pot_temp_in));}   // modify lfo counter position
-
-			// else {current_lfo_pos=(current_lfo_pos&48)+((current_lfo_pos&7)+(pot_temp_in-pot_temp_old));}
-
-			//LFO_tracking_counter[current_scene]= current_lfo_pos;
-			//LFO_phase_list[current_scene]=((pot_states[0]>>5))&3;	 // lfo phase setting
-			//lcd_downcount=3;lcd_messages_select=0;
 
 		}
 		//else 	{LFO_low_list[current_scene]=((pot_states[0]>>4))&7;lcd_downcount=3;lcd_messages_select=6;}
@@ -764,7 +599,10 @@ void buttons_store(void){    // incoming data from controller
 			 //loop_selector=1; // redraw
 	
 		scene_select=0;
-		{if (down_arrow) fx_map_screen();else bar_map_screen();}
+		if (!clip_stop) {if (down_arrow) fx_map_screen();else bar_map_screen();}
+		if (clip_stop)  pitch_mode();
+
+
 	}// end of scene select
 	buffer_clear = 1;
 	//loop_screen();  // always run except when device on ,except when keyboard step
@@ -803,47 +641,8 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 
 
-/*
-		if ((!seq_step) || (seq_step==8)) { // program change automation ,modified to change twice on note 0 and 8
-		if (pc_set)     program_change[0] = (pc_set - 1) & 7; //change pc but only on fresh data
-
-	if (select_bn)	{memset(button_states + 16, 0, 8);   // sets lights for program change but only if select is on
-
-		if (current_scene<12) button_states[program_change[0] + 16] = red_button;
-		else button_states[alt_pots_selector + 16] = red_button;  //sets selected program change light
-
-
-
-
-	}
-	else {memset(button_states + 16, 0, 8);
-	button_states[pitch_selected_for_drums[scene_buttons[0]&7] + 16] = yellow_button;
-
-	}
-
-	} // end of program change
-*/
-
-
 ///////////bar section
-/*	if ((seq_pos==0) && (!pause)){memset(button_states+8,0,8);
 
-	//{ if (bar_playing!=bar_selector) bar_playing=bar_selector;  else bar_playing=(bar_playing+1)&7;   }
-	{ if (bar_playing!=bar_selector) bar_playing=bar_selector;   }  // disable bar advance for now
-
-	button_states[bar_playing+8]=green_button;
-	loop_screen();
-
-	bar_selector=bar_playing;
-
-	}// also changes bar postion
-
-
-	if ( (pause)){ memset(button_states+8,0,8);bar_playing=bar_selector;
-	button_states[bar_playing+8]=green_button;
-	loop_screen();
-
-	} */ // change current bar when in pause as well
 
 /////////////pitch section
 
@@ -873,30 +672,10 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 		}
 		pitch_change_flag=1;
-		//uint8_t pitch_byte=pitch_change_store[bar_playing+((current_scene&7)*8)];
 
-
-	/*	if (punch_in[0]) { punch_in[0]--; pitch_selected_drum_value[current_scene&7]=pitch_list_for_drums[((current_scene&7)*8)+punch_in[0]];
-		button_states[punch_in[0]+16]=red_button;
-
-		}// replace value with current selected only temp though*/
-
-		//punch_in[0]=0;
 
 	}
 
-/*	  	  	  	  uint8_t scene_high=0;   // scene buttons off if no data in bar
-				  uint8_t d;
-				 // memset(button_states,1,8); //scene lights
-
-				  if(button_states[64]) scene_high=8; // if up arrow
-				  for (d = 0; d < 8; d++) {   // clears scene light if no data in bar , seems to kill blinky lights ?
-
-				//	if (bar_note_register[bar_selector]&(1<<(d+scene_high))) button_states[d]=1; else button_states[d]=1;
-
-				}*/
-
-//	if (pause && (!pc_set)) memset(button_states+8,2,8);  // green blink in pause if no data in current bar
 
 	if (seq_step==15){
 
@@ -907,8 +686,78 @@ void pattern_settings(void){     // pattern change function , also program chang
 
 	}
 
+void shift_hold_function(void){   // this will autofill tracks with the last setting if shift is held down while a pot is turned
+
+	if(shift_hold_enable){
+		memcpy(cdc_buffer,shift_hold_buf,3);
+	buttons_store();
+	}
+	if (shift && (cdc_buffer[0]==CC_Message)&& (!shift_hold_enable)) {shift_hold_enable=1;memcpy(shift_hold_buf,cdc_buffer,3);}
+
+	if(!shift) { memset(shift_hold_buf,0,3); shift_hold_enable=0; } // clears buffer
+
+}
+
+void pitch_mode(void){  // changes display when in pitch mode , maybe diff note input too,entry only in pause
+
+	uint8_t selected_scene=scene_buttons[0];
+
+	uint8_t current_pitch_step=last_pitch_count[selected_scene]>>3;// shows selected pitch step 0-7
+	uint8_t current_pitch_playing;
+	uint8_t current_octave;
+	uint8_t alt_pots_selected= (current_pitch_step)+((selected_scene-8)*8);
+	uint8_t incoming_message[3];
+	uint8_t incoming_data1=0;
 
 
+	if(selected_scene>7) current_pitch_playing=alt_pots[(current_pitch_step)+((selected_scene-8)*8)];   // only works on last 8 scenes/keys
+	current_octave=(current_pitch_playing>>2)/3;
+	current_pitch_playing=current_pitch_playing-(current_octave*12);
+
+
+	if (pause) { // pitch entry during pause
+
+		//uint8_t accent_color=yellow_button;
+		memcpy(incoming_message,cdc_buf2, 3); // works off only receiving buffer , this might be changing
+		memset(cdc_buf2,0,3);
+		incoming_data1 = incoming_message[1]&127;
+		if (keyboard[0] && keyboard[1] ) { // pitch from keyboard
+
+			alt_pots[alt_pots_selected]=keyboard[0];
+			current_pitch_playing=keyboard[0];
+			current_octave=(current_pitch_playing>>2)/3;
+				current_pitch_playing=current_pitch_playing-(current_octave*12);
+				if(rec_arm) last_pitch_count[selected_scene]=((current_pitch_step+1)*8)&63; //step recording
+
+		}
+
+		if ((incoming_data1>23) && (incoming_data1<40)) { //select pitch of the currently paying note , only in pause
+			// modify button from incoming, no toggle
+			uint8_t alt_list=0;
+			button_states[incoming_data1 ]=green_button;
+			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-15
+			if (button_states[square_buttons_list[alt_list]]) alt_pots[alt_pots_selected]=alt_list+(current_octave*12);
+
+		} //end of mod
+
+
+	if ((incoming_data1>7) && (incoming_data1<16)) { // pitch step selector 0-7 , no toggle
+
+									button_states[incoming_data1 ]=red_button; //sets colour
+									last_pitch_count[selected_scene]=(incoming_data1-8)<<3;
+
+
+	} //end of mod
+	} // end of pause
+
+	memset(button_states+8,0,32);
+	if(current_pitch_playing<8) button_states[32+current_pitch_playing]=1;  // shows current pitch on first two bars
+	else button_states[24+current_pitch_playing-8]=1;
+
+	button_states[8+(current_pitch_step)]=3;  // shows current pitch step on forth bar
+
+	 USB_send();  // do full clear send before new data
+}
 
 
 

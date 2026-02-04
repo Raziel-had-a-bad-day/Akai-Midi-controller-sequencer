@@ -73,7 +73,7 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	if (bar_map_screen_level==2) {counter=(counter>>3)&7; send_temp[8+counter]&=6;send_temp[16+counter]&=6;
 		send_temp[24+counter]&=6;send_temp[32+counter]&=6;}
 	if (bar_map_screen_level==3) {counter=(counter>>6)&7; send_temp[8+counter]&=4;send_temp[16+counter]&=4;
-			send_temp[24+counter]&=4;send_temp[32+counter]&=4;}
+			send_temp[24+counter]&=4;send_temp[32+counter]&=4;}  // position light for bar map screens
 
 
 	//	if (record) send_temp[square_buttons_list[green_position[0]]]=3;   // add moving green light  ,off during pause
@@ -180,11 +180,12 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					//	if ((!seq_step)) first_step=1; // resets on seq_step , doenst seem to work
 						//memcpy(button_states_temp,button_states,8); // transfer bottom row data for blinky lights
 
+						uint8_t swing=1;
+						if (seq_step&1 ) swing=seq_pos_swing[0]; else swing=seq_pos_swing[1];
 
 
-
-				if ((seq_pos&7)==1) {    // fixed time for now runs only once per step , note generator
-
+				if ((seq_pos&7)==swing) {    // fixed time for now runs only once per step , note generator
+					//needs some swing
 
 
 					memset(serial_out,0,128);  //clear serial out
@@ -264,7 +265,10 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					note_midi[cue_counter] = midi_channel_select + MIDI_NOTE_ON; // add Note_on
 					note_midi[(cue_counter) + 1] = pitch_seq; // only first pitch set for now
 					note_midi[(cue_counter) + 2] = current_velocity;
-					if (current_velocity)  {cue_counter = cue_counter + 3; last_note_on_channel[i] = pitch_seq;} else last_note_on_channel[i] = 0; //skip sending on zero velocity
+					if (current_velocity)  {cue_counter = cue_counter + 3; last_note_on_channel[i] = pitch_seq;
+					pitch_counter=(pitch_counter+pitch_change_rate[i])&63;   // pitch change up count 8-1 for now
+
+					} else last_note_on_channel[i] = 0; //skip sending on zero velocity
 
 		/*			if ((note_timing[i]>1 )){    // in case old note hasnt finished ,Note_off
 						note_midi[cue_counter] =midi_channel_select+ MIDI_NOTE_OFF; // note off
@@ -275,7 +279,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					}*/
 					 // saves last pitch step
 
-					pitch_counter=(pitch_counter+pitch_change_rate[i])&63;   // pitch change up count 8-1 for now
+
 
 
 

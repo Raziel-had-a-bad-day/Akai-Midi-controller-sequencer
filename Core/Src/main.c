@@ -26,7 +26,7 @@
 #include"string.h"
 #include "stdio.h"
 #include <stdlib.h>
-#include "string.h"
+
 #include "variables.h"
 #include "usbd_cdc_if.h"
 
@@ -136,7 +136,7 @@ void midi_send_control(void); // runs midi send when needed
 void midi_extras(void);
 void flash_page_write(uint8_t page_select,uint8_t* data);
 uint8_t pattern_scale_process(uint8_t value, uint8_t selected_sound ); // midi in to scaled note
-
+void shift_hold_function(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -257,7 +257,7 @@ int main(void)
 	  uint8_t selected_scene=scene_buttons[0];
 
 	  if (seq_pos_mem!=seq_pos){     // runs  8 times /step  , control sequencer counting
-
+		  if((!seq_pos)&&(!pause) ) { bar_map_tracker(); fx_map_tracker();} // normal playing screen ,disabled for pitch mode
 
 		  if (!pause) seq_step = seq_pos>> 3; else seq_step=seq_step;
 		 				  green_position[0]=seq_step;
@@ -305,22 +305,23 @@ int main(void)
 
 		  accent_bit=((seq_step_long&3)<<3)+(seq_step>>1);   //0-32 ,32+32 for 8 bytes ,1 bit is 2 steps,
 		  accent_bit_shift=((seq_step_long>>2)&1)*4;
+		  if (clip_stop) pitch_mode();
 
-		  if((!seq_pos)&&(!pause) ) { bar_map_tracker(); fx_map_tracker();}
-		  if (!pause) {seq_step_long=bar_map_counter&63;
-		  if (!bar_map_screen_level) {
+
+
+		  if (!pause) {
+			  shift_hold_function(); // runs on every note
+			  seq_step_long=bar_map_counter&63;
+		  if ((!bar_map_screen_level)&&(!clip_stop)) {  // disp function for bar and accent ,disabled for pitch mode
 			  memset(button_states+8,0,8); button_states[8+(seq_step_long&7)]=3;  // shows current bar pos on first screen
 			  uint32_t accent_pointer=(uint32_t)&motion_record_buf;
 			  for(i=0;i<8;i++){
 			  		if	(VAR_GET_BIT(accent_pointer+(scene_buttons[0]*8)+accent_bit_shift,((accent_bit&24)+i))) 	 button_states[16+i]=5;
 			  		else button_states[16+i]=0;  // adds accent on/off bar on thrid row
-
-
 			  		}
 
-
 		  }
-		  } //
+		  } //end of pause off
 
 		  if(!seq_step_long) {HAL_RTC_SetTime(&hrtc, &set_Time, RTC_FORMAT_BIN);}  //resets rtc
 		  HAL_RTC_GetTime(&hrtc, &seq_clock, RTC_FORMAT_BIN);
@@ -510,8 +511,8 @@ int main(void)
 		  }  // end of cdc message
 
 				  if (keyboard[0])  {    // keyboard play live
-					  if (rec_arm && pause && (keyboard[1]>48)&& (scene_buttons[0]>7)) {loop_screen_disable=1;step_recording();}
-
+					//  if (rec_arm && pause && (keyboard[1]>48)&& (scene_buttons[0]>7)) {loop_screen_disable=1;step_recording();}
+					  if(pause) pitch_mode();
 						  uint8_t note_flag=144; // just use vel 0 for off
 						  if (!keyboard[1]) note_flag=128; // note off
 						  uint8_t incoming=keyboard[0]&127;
@@ -937,6 +938,7 @@ static void MX_GPIO_Init(void)
 	  I2C_transmit=1;
 	}*/
 
+
 /* USER CODE END 4 */
 
 /**
@@ -953,6 +955,10 @@ void Error_Handler(void)
 	  }
   /* USER CODE END Error_Handler_Debug */
 }
+
+
+
+
 #ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number

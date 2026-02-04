@@ -3,20 +3,13 @@ Akai APC key 25 midi controller based sequencer project with STM32F411+flash ,ca
 
 use left and right arrows to step through zoom levels : notes , bars , bars*8,bars*64 
  
-row 5 = select sound, 0-11 drums 12-16 keys
+row 5 = select sound, 0-7 drums 8-15 keys
 
-(Pot 1 + Shift =	program change only for non drum channels) disabled
-Pot 1 + Shift = LFO phase , 0=off,1=normal,2=out of phase
-Pot 1=play notes only after so many bars bar, LFO low, synced to bars low
-Pot 2 =repeat bar so many times when playing, LFO high
-Pot 3= set pitch for drums during pause , select preset first on row 3 
-Pot 4 = 	set musical scale type for notes,
-pot5=		LFO rate  sends NRPN only for filter, also modifies velocity for keys for now 
-pot6=		 LFO level
+
 pot 7+shift+device = 	sets midi channel for current sound 
 pot8=		velocity/accent ,  now default and red is velocity:96
 pot8 +shift+device=tempo
-pause =  shift + clip_stop : clear program changes on drums , also enter pitch info for bars on selected sound 
+pause =  shift + clip_stop : clear program changes on drums , 
 select=	enables program change 1-8 on drums , shows selected pitch bank for keys
 
 stop_all_clips = pause and jumps to start
@@ -26,19 +19,25 @@ send + shift = reload
 solo = solo uses top 4 pots to select between 4 sounds each muting the rest
 mute = select any part to mute, turns red 
 up arrow = select sounds 8-15, 
-record = allows overwriting program change for now
 
-keyboard =  also play notes on selected sound ,useful to set pitch on drums 
+
+keyboard =  also play notes on selected sound 
 Stop all clips = stops and jumps to start 
-clip_stop = enables all_pots to set pitch for 8 sequentual notes  on keys
+
 device =   shows current midi channel on top rows ,blinky yellow  
 
 down arrow = calls up fx menu , pots set cc send on 1-8 fx channels  , buttons set on/off per bar 1,8,64 ,0-3 level on , 4-7 level off, only single channel for now
 
 Pot 3 =sets pitch change advance rate on keys 
-Pause +arm_rec = allows pitch entry with keyboard in step mode , top bar shows progress , now default way for pitch entry
+
 Third row is accent on/off for avery 2 notes for 8 bars , can be recorded with shift+pot8 as well.
 Forth row is bar position of 8 bars.
-//Try to get a live mode screen with muting sounds and fx and maybe loops.
+
+////pitch entry mode ///
+clip stop on enables pitch screen
+bars 1 and 2 shows pitch in current octave  0-11 
+bar 4 shows pitch sequencer current step , adjust playback rate using pot 3 
+in pause enter pitch for steps using and these bars, can use keyboard also
+in pause + rec arm = step record mode using keyboard 
 
  

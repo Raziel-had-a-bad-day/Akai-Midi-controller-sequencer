@@ -46,17 +46,18 @@ void flash_page_write(uint8_t page_select,uint8_t* data){    // write single pag
 
 void settings_storage(void){   // runs to store setting and read back
 
-			uint8_t *settings[variable_count]={scene_transpose,pot_states,pot_tracking,mute_list,note_accent,midi_channel_list,
+			uint8_t *settings[]={scene_transpose,pot_states,pot_tracking,mute_list,note_accent,midi_channel_list,
 					pitch_list_for_drums,pattern_scale_list,
 					lfo_settings_list,single_settings_list,pitch_change_loop,LFO_low_list
 			,LFO_high_list,LFO_phase_list,pitch_change_rate,bar_map_1,bar_map_8,bar_map_64,bar_map_0, motion_record_buf};
-			uint8_t settings_multi[variable_count]={1,1,4,1,1,1,4,1,2,1,1,4,4,4,1,1,1,1,2,8};   // sets length,  sound_set*x ,512 atm
+			uint8_t settings_multi[]={1,1,4,1,1,1,4,1,2,1,1,4,4,4,1,1,1,1,2,8};   // sets length,  sound_set*x ,512 atm
 			uint8_t settings_temp[256];
 			uint16_t settings_total=0;  //adds up position , huge miss here retard alert
 			uint8_t length=0; // max 64 atm
 			tempo=single_settings_list[1];
+			flash_settings_count = sizeof(settings) / sizeof(settings[0]); // This gives 5
 
-			for (i=0;i<variable_count;i++){
+			for (i=0;i<flash_settings_count;i++){
 
 				length=(settings_multi[i]*sound_set);
 				if(settings_write_flag) {		memcpy(settings_temp,settings[i],length);	// copy bytes to temp
@@ -69,7 +70,7 @@ void settings_storage(void){   // runs to store setting and read back
 		settings_total=settings_total+length;
 
 			}
-
+			flash_settings_size=settings_total; // keep track of size here
 		//	for (i=0;i<1023;i++){if (all_settings[i]>127) all_settings[i]=0;}  // reset values just in case
 			settings_write_flag=0;
 
@@ -140,7 +141,8 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 			flash_page_write(patch_mem,all_settings+512);
 			patch_mem=patch_mem+1;
 			flash_page_write(patch_mem,all_settings+768);
-
+			patch_mem=patch_mem+1;
+			flash_page_write(patch_mem,all_settings+1024);
 
 
 		//  memcpy  (test_data3+4 ,drum_store_one,  256);  // drums
@@ -165,8 +167,8 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 void flash_read(void){     //can hang here
 	read_busy();
 
-	uint8_t test_data2[2560]={0,10,0,0};
-	uint8_t test_data3[2560]={0,10,0,0};
+	uint8_t test_data2[4096]={0,10,0,0};
+	uint8_t test_data3[4096]={0,10,0,0};
 	uint8_t patch_mem=(patch_save&15)<<4;    // 16*16 (4kbyte)   start location
 
 	test_data2[0]=0x03; //read ok , get notes
@@ -185,7 +187,7 @@ void flash_read(void){     //can hang here
 	memcpy(drum_store_one,test_data3+516,256);   // next block (+4)
 	memcpy(drum_store_one+512,test_data3+772,512); //
 	memcpy(alt_pots,test_data3+1284,256);
-	memcpy(all_settings+256,test_data3+1540,768); // second half of settings
+	memcpy(all_settings+256,test_data3+1540,1024); // second half of settings
 	memcpy(program_change_automation,alt_pots+128,32); // program change data
 
 
@@ -248,6 +250,10 @@ while (selected_bar<8){				// this tests for data in bars ,if none leaves scene 
 
 		  	TIM2->PSC=prescaler-1;
 		  	TIM2->ARR=timer_value;
+
+
+
+
 
 		  //	TIM2->CCR1=(timer_value/2) ;
 
