@@ -15,6 +15,8 @@
 #define VAR_GET_BIT(variables_addr, bit_number)       \
         (*(uint32_t *)(SRAM_BitB_BASE + ((variables_addr - RAM_BASE) * 32) + ((bit_number) * 4)))
 
+
+
 // access individual bits as byte addresses
 
 
@@ -61,6 +63,13 @@
 	// 73 -Attack ,   72 -Release ,71 -VCF REsonance , 74 -VCF cutoff freq,  91 -Reverb , 84-portamento, 94-detune, 95-phaser, 70-sound variation,
 	//92 -tremolo, 75-79 generic fx settings , may use it for delay unit
 
+uint8_t countSetBits(uint8_t number) { // count bits in byte
+	uint8_t count = 0;
+    while (number) {
+        count += number & 1; // Increment count if the last bit is 1
+        number >>= 1;        // Right shift n by 1
+    }
+    return count;}
 
 
 
@@ -344,7 +353,7 @@ uint8_t pitch_change_store[64];  //stores pitch changes 0-7 per bar ,per sound ,
 uint8_t pitch_selected_drum_value[8]; // holds outgoing drum value
 uint8_t pitch_change_loop[8]={0,0,0,0,0,0,0,0}; //sets the looping length of pitch changes may default to pressed button as the first in step
 uint8_t pitch_change_loop_position[8]={0,0,0,0,0,0,0,0};  // keeps track of pitch change loop
-uint8_t pitch_change_rate[16]; // sets alt_pots playback rate ie every note or change every bar etc , set with pot 3 on second screen , might need presets eventually
+uint8_t pitch_change_rate[16]; // sets alt_pots playback rate , 2 bars ,4 bars , 8 bars ,16bars,32 bars
 
 
 uint8_t lfo_settings_list[32]; //holds lfo settings 1 rate , 2 level , testing for now
@@ -387,7 +396,7 @@ uint8_t last_pot_used=0;
 uint8_t temp_midi_var=0;
 
 uint8_t fx_incoming[3];
-uint8_t fx_pot_settings[16]={4,75,4,72,4,5,4,76,3,74,3,71,3,74,3,71};      //  holds midi_channel and cc assignment for 8 pots  0-15 and 0-127 , fx list
+uint8_t fx_pot_settings[16]={3,71,3,74,3,5,3,76,3,74,3,71,3,74,3,71};      //  holds midi_channel and cc assignment for 8 pots  0-15 and 0-127 , fx list
 uint8_t fx_pot_values[32]={64,64,64,64,
 							64,64,64,64,
 							23,76,64,64,
@@ -406,6 +415,8 @@ uint8_t fx_pot_values[32]={64,64,64,64,
 }; // holds on and off values as well as transition speed for both , 8 tracks for now
 
 uint8_t fx_map_sound_enable[8]; //tracks if bar is enabled
+uint8_t control_change_buf[32];  // stores control change values
+
 uint8_t motion_record_buf[sound_set*8];  // holds 1 bit motion record when pressing shift and changing knob levels set elsewhere
 uint8_t motion_record_limits[sound_set*2]={64,127,64,127,64,127,64,127,64,127,64,127,64,127,
 		64,127,64,127,64,127,64,127,64,127,64,127,64,127}; // using for accent only atm so only using the low values , high is note_accent
@@ -414,12 +425,14 @@ uint8_t accent_bit_shift; // moves up one word
 
 uint8_t shift_hold_enable;  // this is enabled when shift is held while a pot is turned
 uint8_t shift_hold_buf[4]; // this holds the last message , for repeating at regular intervals until shift is released
-
-
-
-
-
-
+uint8_t note_on_tracking_buf[8];  // keeps tracking note-ons for 40 track buttons , for multitouch etc , 1 bit
+uint8_t bar_map_looping[2]={0,7}; //sets base looping length for 8 bars , can be changed
+uint8_t bar_map_lights[8];  // holds bar map light values for looping display
+uint8_t seq_play_buf[1024]; // holds  *16 time+notes+velocity   , recorder with arm_rec , one bar now, maybe more than one bar later
+uint16_t seq_record_timer;
+uint8_t seq_record_enable;
+uint8_t transpose_octave_modifier[sound_set];   // it changes base octave and transpose notes for cdc_send2 , calculated from alt_pots  ,octave shift, make sure always above 0
+int8_t transpose_pitch_modifier[sound_set];  // it changes base octave and transpose notes for cdc_send2 , calculated from alt_pots  ,-6-+6 notes , pitch shift ,
 
 
 

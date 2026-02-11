@@ -4,7 +4,7 @@
 uint8_t fx_map_1[sound_set]={255,255,255,255,255,255,255,255};  // these are set by midi and cc , not sound select
 uint8_t fx_map_8[sound_set]={255,255,255,255,255,255,255,255};
 uint8_t fx_map_64[sound_set]={255,255,255,255,255,255,255,255};
-
+void transpose_tracker(void);
 
 
 
@@ -61,8 +61,13 @@ void fx_cc_send(uint8_t send){   // sends cc for particular fx track
 	if (fx_map_sound_enable[send]) control_change[current_scene]=fx_pot_values[current_scene*4];
 	else control_change[current_scene]=fx_pot_values[(current_scene*4)+1];
 
+
+	if (control_change_buf[current_scene]!=control_change[current_scene])
+		{control_change_flag=current_scene+1;control_change_buf[current_scene]=control_change[current_scene];}
+			//only sends cc on change of value
+
 	//control_change[current_scene]=pot_states[current_scene];
-	control_change_flag=current_scene+1;
+
 
 
 
@@ -166,4 +171,31 @@ void fx_map_tracker(void){     // creates sound enable for notes from fx_map_scr
 
 		//bar_map_counter=(bar_map_counter+1)&511;
 		}
+void transpose_tracker(void){ // this runs every 2 bars , should finish after the last note off , hopefluffy
+	uint8_t pitch_counter=0;
+	uint8_t random_list[64];
+	 memcpy (random_list,alt_pots,64);  // 8*8  for now
+	 int8_t alt_pots_value=0;
+
+	for (i=0;i<8;i++){
+		//pitch_counter=last_pitch_count[i];
+
+
+		//pitch_counter=(pitch_counter+pitch_change_rate[i+8])&255;   // pitch change rate =  +1 +2 +4 +8 +16 +32
+		pitch_counter=((bar_map_counter/2)/pitch_change_rate[i+8])&7; // modify to fixed position
+
+		alt_pots_value=(random_list[(i*8)+(pitch_counter)])&127; // grab alt pots
+		transpose_octave_modifier[i]=(alt_pots_value/12)*12;  // holds base octave value
+		alt_pots_value= alt_pots_value-(transpose_octave_modifier[i]);
+		if (alt_pots_value<7) transpose_pitch_modifier[i]=0-(6-alt_pots_value);  else transpose_pitch_modifier[i]=alt_pots_value-6;
+		if (!transpose_octave_modifier[i]) transpose_octave_modifier[i]=1; // fix zero values
+
+
+
+
+		last_pitch_count[i]=pitch_counter;
+
+
+	}
+			}
 

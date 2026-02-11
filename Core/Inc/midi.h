@@ -1,4 +1,10 @@
 
+
+
+void seq_play_record(void);
+void cdc_send2(void);
+
+
 uint8_t pattern_scale_process(uint8_t value, uint8_t selected_sound ) {    // scale incoming notes from list
 
 	uint8_t note=0;
@@ -127,6 +133,7 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 
 void cdc_send(void){     // all midi runs often , need to separate  , will go back to the old way ,less confusing
 		// sometimes seem to miss note on message
+	// might remove this
 	//UART_HandleTypeDef huart1;
 			uint8_t len;  // note on
 			uint8_t send_temp[256];
@@ -180,11 +187,11 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					//	if ((!seq_step)) first_step=1; // resets on seq_step , doenst seem to work
 						//memcpy(button_states_temp,button_states,8); // transfer bottom row data for blinky lights
 
-						uint8_t swing=1;
+						uint8_t swing;
 						if (seq_step&1 ) swing=seq_pos_swing[0]; else swing=seq_pos_swing[1];
 
 
-				if ((seq_pos&7)==swing) {    // fixed time for now runs only once per step , note generator
+				if ((seq_pos&7)==swing) {    //  note generator
 					//needs some swing
 
 
@@ -210,7 +217,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 
 
-			if ((note_timing[i] >= 1) && (last_note_on_channel[i] )) { // creates note off  ,all notes ,just basic off ,modified
+			if ((note_timing[i] == 1) && (last_note_on_channel[i] )) { // creates note off  ,all notes ,just basic off ,modified
 				note_midi[cue_counter] = midi_channel_select + MIDI_NOTE_OFF; // note off
 				note_midi[(cue_counter) + 1] = last_note_on_channel[i]&127;
 				note_midi[(cue_counter) + 2] = 0;
@@ -248,16 +255,25 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 				//if (drum_byte & (1 << (((offset_pitch) & 3) * 2))) { //notes
 					if ((VAR_GET_BIT(pointer+(i*2),(offset_pitch)))==1) {
-					//current_velocity=note_velocities[i];   // get accent info
+
+						if ((note_timing[i]) && (last_note_on_channel[i] )) { // send note off in case it hasn't finished
+							note_midi[cue_counter] = midi_channel_select + MIDI_NOTE_OFF; // note off
+							note_midi[(cue_counter) + 1] = last_note_on_channel[i]&127;
+							note_midi[(cue_counter) + 2] = 0;
+							cue_counter = cue_counter + 3;
+							note_timing[i]=0;
+							last_note_on_channel[i] = 0; // clear note
+						}
+
+
+
+
 					if (!note_enable[i]) current_velocity=0; // disable if note enable is not zero
 					pitch_counter=last_pitch_count[i];
 					  if(i>7) pitch_seq=random_list[(pitch_counter>>3)+((i-8)*8)];   // only works on last 8 scenes/keys
 
 					  if (mute_list[i] || pause) {current_velocity=0;}
 
-					//current_velocity=(loop_lfo_out[i+32]+current_velocity)&127; //modify velocity with lfo , only temp
-
-				  //pitch_seq=pattern_scale_process(random_list[(pitch_counter)],i);  // note from alt_pots+scale ,disabled
 					if (!pitch_seq) current_velocity=0; // turn off note at full pitch
 					//if (high_row)
 					//	button_states_temp[i] = 0; // button blink
@@ -265,9 +281,11 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					note_midi[cue_counter] = midi_channel_select + MIDI_NOTE_ON; // add Note_on
 					note_midi[(cue_counter) + 1] = pitch_seq; // only first pitch set for now
 					note_midi[(cue_counter) + 2] = current_velocity;
-					if (current_velocity)  {cue_counter = cue_counter + 3; last_note_on_channel[i] = pitch_seq;
-					pitch_counter=(pitch_counter+pitch_change_rate[i])&63;   // pitch change up count 8-1 for now
 
+
+					if (current_velocity)  {cue_counter = cue_counter + 3; last_note_on_channel[i] = pitch_seq;
+					pitch_counter=(pitch_counter+pitch_change_rate[i])&63;   // pitch change up count 8-1 for now might use lut
+					note_timing[i] = 16; // resets counter
 					} else last_note_on_channel[i] = 0; //skip sending on zero velocity
 
 		/*			if ((note_timing[i]>1 )){    // in case old note hasnt finished ,Note_off
@@ -285,7 +303,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 					 last_pitch_count[i]=pitch_counter;
 
-					note_timing[i] = 4; // resets counter
+
 				}
 			}
 
@@ -614,8 +632,77 @@ void LFO_tracking(uint8_t selected_bar, uint8_t *pointer){ //0-7 15-23 , simple 
 
 	}
 
+void seq_play_record(void){ // this is triggered by keyboard when arm rec is enabled , will keep overdub if more than 8 keys
 
 
+	uint8_t current_scene=scene_buttons[0];
+	if (!seq_record_enable) {seq_record_enable=1;memset (seq_play_buf+(current_scene*48),0,24); seq_record_timer=1;}
+	//uint8_t time=seq_pos; // 127 count
+	uint8_t new_time=0;
+	uint16_t seq_play_pointer=(current_scene*48)+((seq_record_enable-1)*3);
+
+		if (seq_record_enable<17) {new_time=seq_record_timer&255;}
+
+
+
+
+		seq_play_buf[seq_play_pointer]=keyboard[0]&127;//note
+		seq_play_buf[seq_play_pointer+1]=keyboard[1]&127;// velocity
+		seq_play_buf[seq_play_pointer+2]=new_time&255;// relative time, nothing if zero
+
+		seq_record_enable++;
+		if (seq_record_enable>16) {seq_record_enable=0;seq_record_timer=1;}
+
+
+	}
+
+void cdc_send2(void){ // new midi send function
+
+		//uint8_t playback_offset=0;  // this will change per triggering time for playback
+	uint8_t time=seq_record_timer;// never 0
+	uint8_t cue_counter=0;
+	uint8_t note_midi[256];
+	uint16_t counter=0;
+	uint8_t status=MIDI_NOTE_OFF;
+	uint8_t velocity=0;
+	uint8_t pitch=6;
+	//uint8_t accent_select=0;
+
+	for (i=0;i<764;i+=3){
+
+		counter=i/48;
+
+
+		if ((seq_play_buf[i + 2 ]==time)){ // not on 0
+
+			if (seq_play_buf[i + 1]) {status=MIDI_NOTE_ON;
+			velocity=note_accent[counter];
+			//{if (VAR_GET_BIT(accent_pointer+(i*8)+accent_bit_shift,(accent_bit))) velocity=note_accent[counter];}  // note accents
+
+			}
+			note_midi[cue_counter] = midi_channel_list[counter] + status; // add Note_on only
+
+			pitch=seq_play_buf[i]&127; // pitch
+			if (counter>7) {if (pitch>6)  pitch=pitch+transpose_pitch_modifier[counter-8]; else pitch=12;} // pitch of note modify with in an octave
+			//pitch+=transpose_octave_modifier[counter]; // adds octave value
+			note_midi[(cue_counter) + 1] = pitch;
+			//note_midi[(cue_counter) + 2] = seq_play_buf[i + 1]&127;// velocity
+			note_midi[(cue_counter) + 2] = velocity;// velocity
+			if(bar_map_sound_enable[counter]) cue_counter+=3;
+		}
+
+	}
+	if(cue_counter>95) cue_counter=95;
+	if (pause) cue_counter=0;
+	serial_len=cue_counter;
+	//midi_extra_cue[28] = 0; // issues with sending , this helps somewhat
+	if( midi_extra_cue[28])	 memcpy(serial_out, midi_extra_cue, midi_extra_cue[28]); // extra stuff sent , anything
+
+	memcpy(serial_out + midi_extra_cue[28], note_midi, serial_len);
+	serial_len = serial_len + midi_extra_cue[28];
+
+	midi_extra_cue[28] = 0;  // reset    ,seems extra data coming from somewhere
+}
 
 
 

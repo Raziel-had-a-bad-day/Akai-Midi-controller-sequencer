@@ -49,8 +49,9 @@ void settings_storage(void){   // runs to store setting and read back
 			uint8_t *settings[]={scene_transpose,pot_states,pot_tracking,mute_list,note_accent,midi_channel_list,
 					pitch_list_for_drums,pattern_scale_list,
 					lfo_settings_list,single_settings_list,pitch_change_loop,LFO_low_list
-			,LFO_high_list,LFO_phase_list,pitch_change_rate,bar_map_1,bar_map_8,bar_map_64,bar_map_0, motion_record_buf};
-			uint8_t settings_multi[]={1,1,4,1,1,1,4,1,2,1,1,4,4,4,1,1,1,1,2,8};   // sets length,  sound_set*x ,512 atm
+			,LFO_high_list,LFO_phase_list,pitch_change_rate,bar_map_1,bar_map_8,bar_map_64,bar_map_0, motion_record_buf
+			,fx_map_1,fx_map_8,fx_map_64,fx_pot_values };
+			uint8_t settings_multi[]={1,1,4,1,1,1,4,1,2,1,1,4,4,4,1,1,1,1,2,8,1,1,1,2};   // sets length,  sound_set*x ,512 atm
 			uint8_t settings_temp[256];
 			uint16_t settings_total=0;  //adds up position , huge miss here retard alert
 			uint8_t length=0; // max 64 atm
@@ -114,7 +115,7 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 
 
 		  //sector erase works
-
+		 			memcpy(drum_store_one,seq_play_buf,1024); // for now store here
 		//  memcpy  (test_data3+4 ,scene_memory,  256);
 			  flash_page_write(patch_mem,drum_store_one+256);   // bit mixed up
 
@@ -190,6 +191,7 @@ void flash_read(void){     //can hang here
 	memcpy(all_settings+256,test_data3+1540,1024); // second half of settings
 	memcpy(program_change_automation,alt_pots+128,32); // program change data
 
+	memcpy(seq_play_buf,drum_store_one,1024); //for now
 
 	settings_storage(); // all settings read out
 

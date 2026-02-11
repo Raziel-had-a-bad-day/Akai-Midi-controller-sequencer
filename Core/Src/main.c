@@ -219,6 +219,11 @@ int main(void)
 
 	//  get flash data
 	flash_read();
+	for (i=0;i<16;i++){
+
+		if (pitch_change_rate[i]==0) pitch_change_rate[i]=1;
+
+	}
 	//other_buttons=1; // nothing
 	//uint16_t arr_cnt=(bpm_table[tempo]*1.333333)-1;
 	//TIM2->ARR= arr_cnt;   // -1
@@ -263,12 +268,13 @@ int main(void)
 		 				  green_position[0]=seq_step;
 
 		  green_position[1]=seq_step;
-
-		  cdc_send(); // all midi compiled for send  8/per note , sends on seq_pos=1 atm
-
+		  if (((bar_map_counter&1)==0) && (!seq_pos))    transpose_tracker();  // first change on second bar at the end
+		//  cdc_send(); // all midi compiled for send  8/per note , sends on seq_pos=1 atm
+		  seq_record_timer=(seq_record_timer+1)&255;
+		  if (seq_pos) { cdc_send2(); }
 		  if (serial_len)
 			  HAL_UART_Transmit(&huart1,serial_out,serial_len,100); // uart send disable if no info, sent seq_pos, going out data is clean here
-
+		  // skips
 
 
 		  //maybe dma if needed for now ok (2ms total for send )
@@ -303,9 +309,9 @@ int main(void)
 	  if ((s_temp) != (seq_pos>>3)) {			// runs on note steps 0-15
 
 
-		  accent_bit=((seq_step_long&3)<<3)+(seq_step>>1);   //0-32 ,32+32 for 8 bytes ,1 bit is 2 steps,
-		  accent_bit_shift=((seq_step_long>>2)&1)*4;
-		  if (clip_stop) pitch_mode();
+		  accent_bit=((seq_step_long&3)<<3)+(seq_step>>1);   //0-32 ,32+32 for 8 bytes ,1 bit is 2 steps, time reference
+		  accent_bit_shift=((seq_step_long>>2)&1)*4; // changes per bar , time reference
+		  if (clip_stop && (scene_buttons[0]>7)) pitch_mode(); // only when second page
 
 
 
@@ -313,7 +319,7 @@ int main(void)
 			  shift_hold_function(); // runs on every note
 			  seq_step_long=bar_map_counter&63;
 		  if ((!bar_map_screen_level)&&(!clip_stop)) {  // disp function for bar and accent ,disabled for pitch mode
-			  memset(button_states+8,0,8); button_states[8+(seq_step_long&7)]=3;  // shows current bar pos on first screen
+			  memcpy(button_states+8,bar_map_lights,8); button_states[8+(seq_step_long&7)]=3;  // shows current bar pos on first screen
 			  uint32_t accent_pointer=(uint32_t)&motion_record_buf;
 			  for(i=0;i<8;i++){
 			  		if	(VAR_GET_BIT(accent_pointer+(scene_buttons[0]*8)+accent_bit_shift,((accent_bit&24)+i))) 	 button_states[16+i]=5;
@@ -322,6 +328,11 @@ int main(void)
 
 		  }
 		  } //end of pause off
+
+
+
+
+
 
 		  if(!seq_step_long) {HAL_RTC_SetTime(&hrtc, &set_Time, RTC_FORMAT_BIN);}  //resets rtc
 		  HAL_RTC_GetTime(&hrtc, &seq_clock, RTC_FORMAT_BIN);
@@ -521,7 +532,7 @@ int main(void)
 						  uint8_t current_seq_pos=seq_pos&255;
 						//  if (incoming>>7)  {note_flag=128;velocity=0;}
 						  if (buffer_pos>23) buffer_pos=0;   // reset buffer in case
-
+						  if( rec_arm && (!clip_stop))  { seq_play_record();} // records live sequence from keyboard
 
 						  if (midi_channel_list[selected_scene]==9)   // drums send
 						  {  midi_extra_cue[0]=(note_flag+9);         // use drumlist for now
@@ -955,10 +966,6 @@ void Error_Handler(void)
 	  }
   /* USER CODE END Error_Handler_Debug */
 }
-
-
-
-
 #ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
