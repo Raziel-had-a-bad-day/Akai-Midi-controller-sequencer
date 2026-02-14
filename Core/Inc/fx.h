@@ -5,21 +5,28 @@ uint8_t fx_map_1[sound_set]={255,255,255,255,255,255,255,255};  // these are set
 uint8_t fx_map_8[sound_set]={255,255,255,255,255,255,255,255};
 uint8_t fx_map_64[sound_set]={255,255,255,255,255,255,255,255};
 void transpose_tracker(void);
-
-
-
+void bar_start(void);
+void bar_end(void);
+void bar_map_tracker(void);
 
 void fx_menu(uint8_t incoming){ // pot 1-8 control fx list 1-8 cc value ,, cc settings is stored in fx_pot _settings, shift+pot might set transition speed ,
 	//maybe pot1 is high level and pot4 is low
 	// for now just triggers a  cc send
 	uint8_t current_scene=incoming&7;   // this just selects which pot 0-3 high level 4-7 low level
+	uint8_t current_midi=midi_channel_list[scene_buttons[0]];
+	uint8_t scene_select=0;
+	if(current_midi==3) scene_select=0;
+	if(current_midi==4) scene_select=16;
+	if(current_midi==2) scene_select=32;
+
+
 
 	//uint8_t current_channel=0;
 	//uint8_t current_cc=0;
 
 	if (current_scene<4){
-		fx_pot_values[current_scene*4]=pot_states[current_scene];}
-	else fx_pot_values[((current_scene-4)*4)+1]=pot_states[current_scene];   // sets on /off values  , first 4 tracks
+		fx_pot_values[(current_scene*4)+scene_select]=pot_states[current_scene];}
+	else fx_pot_values[((current_scene-4)*4)+1+scene_select]=pot_states[current_scene];   // sets on /off values  , first 4 tracks
 
 
 
@@ -53,9 +60,9 @@ void fx_menu(uint8_t incoming){ // pot 1-8 control fx list 1-8 cc value ,, cc se
 
 
 }
-void fx_cc_send(uint8_t send){   // sends cc for particular fx track
+void fx_cc_send(uint8_t send){   // sends cc for particular fx track , not scene based
 
-	uint8_t current_scene=send&7;
+	uint8_t current_scene=send&15;  // 12 track for now
 	control_change_value=fx_pot_settings[(current_scene*2)+1]; // selects cc
 
 	if (fx_map_sound_enable[send]) control_change[current_scene]=fx_pot_values[current_scene*4];
@@ -72,9 +79,14 @@ void fx_cc_send(uint8_t send){   // sends cc for particular fx track
 
 
 }
-void fx_map_screen(void){    // fx screen functions
+void fx_map_screen(void){    // fx screen functions , 3 pages ,12 tracks
 	uint8_t note_enabled=0;
 	uint8_t scene_select=0; // this needs to change for fx , only once scene for now, 4 tracks with diff channel settings and cc
+	uint8_t current_midi=midi_channel_list[scene_buttons[0]];
+	if(current_midi==3) scene_select=0;
+	if(current_midi==4) scene_select=4;
+	if(current_midi==2) scene_select=8;
+
 	uint8_t i=0;
 	uint32_t pointer;   // this is the actual address
 	uint8_t incoming_message[3];
@@ -88,7 +100,7 @@ void fx_map_screen(void){    // fx screen functions
 		if (!bar_map_screen_level) bar_map_screen_level=1;  // no zero
 		switch(bar_map_screen_level){   // grab the pointer for the correct bar map screen
 
-		case 1: pointer=(uint32_t)&fx_map_1;color=red_button;break;
+		case 1: pointer=(uint32_t)&fx_map_1;color=red_button;break;		// room for 16 sets
 		case 2: pointer=(uint32_t)&fx_map_8;color=red_button;break;
 		case 3:pointer=(uint32_t)&fx_map_64;color=red_button;break;
 		default:break;}
@@ -155,7 +167,7 @@ void fx_map_tracker(void){     // creates sound enable for notes from fx_map_scr
 	uint8_t enable[3];
 	uint16_t counter=bar_map_counter;
 	uint32_t pointer=( uint32_t)&fx_map_1;
-	for(i=0;i<4;i++){
+	for(i=0;i<12;i++){
 	pointer=( uint32_t)&fx_map_1;
 	enable[0]=VAR_GET_BIT(pointer+i,(counter&7));
 	pointer=( uint32_t)&fx_map_8;
@@ -198,4 +210,20 @@ void transpose_tracker(void){ // this runs every 2 bars , should finish after th
 
 	}
 			}
+
+
+void bar_start(void){
+	if((!pause) ) { bar_map_tracker(); fx_map_tracker();} // normal playing screen ,disabled for pitch mode
+	  if (((bar_map_counter&1)==0) )    transpose_tracker();  // first change on second bar at the end
+	  bar_start_enable=0;bar_end_enable=1;
+}
+void bar_end(void){
+
+		if ((bar_map_counter&7)>=bar_map_looping[1]) bar_map_counter=bar_map_looping[0]+((bar_map_counter+8)&504); // skips to next start point
+		else bar_map_counter=(bar_map_counter+1)&511; // this needs to be elsewhere
+		  bar_start_enable=1;bar_end_enable=0;
+		  if (pause_delay) {pause=1;pause_delay=0;}  // pause enables at the end of bar
+
+}
+
 

@@ -4,7 +4,7 @@
 UART_HandleTypeDef huart1;
 void shift_hold_function(void); // declare first  here than it's happy
 void pitch_mode(void);
-
+void bar_map_tracker(void);
 
 void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well, works good
 	uint8_t note_enabled=0;
@@ -129,8 +129,7 @@ void bar_map_tracker(void){     // creates sound enable for notes from bar_map_e
 	uint8_t enable[3];
 	//bar_map_counter=(bar_map_counter+1)&511;
 
-	if ((bar_map_counter&7)>=bar_map_looping[1]) bar_map_counter=bar_map_looping[0]+((bar_map_counter+8)&504); // skips to next start point
-	else bar_map_counter=(bar_map_counter+1)&511;
+
 
 	uint16_t counter=bar_map_counter;
 	uint32_t pointer=( uint32_t)&bar_map_1;
@@ -160,8 +159,10 @@ void all_notes_off(void){
 	}
 	 HAL_UART_Transmit(&huart1,data,48,100); //   send all notes off on serial port
 	 HAL_Delay(100);
-	 bar_map_counter=511;
+	 bar_map_counter=0;
 	 pause=1;
+	 memset(bar_map_sound_enable,1,sound_set); // enable all sounds during off
+	 memset(fx_map_sound_enable,1,12);
 
 }
 
@@ -384,7 +385,7 @@ void buttons_store(void){    // incoming data from controller
 		 {memset(button_states,1,8);{if (down_arrow) fx_map_screen();else bar_map_screen();} }
 		break;
 
-		case solo_button: {scene_solo=1;clip_stop=0;button_states[82]=0; } //solo but with pots now ,turns off clip stop or mute
+		case solo_button: {solo=1;} //solo but with pots now ,turns off clip stop or mute
 		 if (shift) memset(mute_list,0,16); // clear all mute info when shift held
 		break;
 		case right_arrow_button:right_arrow=1; {if (bar_map_screen_level<3) bar_map_screen_level++; }
@@ -406,14 +407,16 @@ void buttons_store(void){    // incoming data from controller
 		case volume_button:volume=1;break;
 		case pan_button:pan=1;patch_screen();break;
 		case send_button:send=1;break;
-		case rec_arm_button:rec_arm=1;break; // set up for step record
+		case rec_arm_button:rec_arm=1;
+		if(shift && (!clip_stop)) memset (seq_play_buf+(current_scene*48),0,48); // clears midi notes
+		break; // set up for step record
 		case device_button:{device=1;}break;// shows midi channel , for now
 		case stop_all_clips:  {button_states[play_pause_button]=5;pause=5; seq_step=0;seq_step_long=0;play_position=0;bar_selector=0;button_states[stop_all_clips]=0; all_notes_off();
 		memset(LFO_tracking_counter,0,64);memset(last_pitch_count,0,16); memset(last_note_on_channel,0,16);current_playing_bar=0;  }// stop all clips, pause and reset to start
 		break;
 
-		case play_pause_button:pause=3;break;
-		case clip_stop_button: {clip_stop=1; lcd_downcount=10;lcd_messages_select=3;scene_solo=0;button_states[83]=0; bar_map_screen_level=0; } break;
+		case play_pause_button:pause_delay=1;break;
+		case clip_stop_button: {clip_stop=1; lcd_downcount=10;lcd_messages_select=3; bar_map_screen_level=0; } break;
 		default:break;
 
 
@@ -434,17 +437,18 @@ void buttons_store(void){    // incoming data from controller
 				loop_screen();}else{ memset(button_states,1,8);}  ;break;
 			case right_arrow_button:right_arrow=0;  break;//zoom out
 			case select_button: {select_bn=0;} ;break; // select enable
-			case down_arrow_button:down_arrow=0;bar_map_screen(); break;
+			case down_arrow_button:down_arrow=0;bar_map_screen_level=0;bar_map_screen(); break;
 			case left_arrow_button: left_arrow=0; break;// zoom in
 			case mute_button:scene_mute=0;break;
 			case record_button:record=0;overdub_enabled=0;break;
 			case volume_button:volume=0;break;
 			case pan_button:pan=0;break;
 			case send_button:send=0;break;
-			case rec_arm_button:rec_arm=0;seq_record_enable=0;break;
+			case rec_arm_button:rec_arm=0;seq_record_enable=0;seq_record_timer=0;break;
 			case device_button:device=0;break;// shows midi channel , for now
 			case play_pause_button:{pause=0;button_states[stop_all_clips]=0;}break;
-			case clip_stop_button: {clip_stop=0;bar_map_screen();} break;
+			case clip_stop_button: {clip_stop=0;bar_map_screen_level=0;bar_map_screen();} break;
+			case solo_button:solo=0;break;
 			default:break;
 
 

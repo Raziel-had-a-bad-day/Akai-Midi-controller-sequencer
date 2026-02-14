@@ -71,7 +71,7 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 		send_buffer_sent = 2;
 	}
 	////  temporary lights , not stored
-	if ((!pause)  && (!bar_map_screen_level)) { send_temp[square_buttons_list[green_position[0]]]=5;
+	if ( (!bar_map_screen_level)) { send_temp[square_buttons_list[green_position[0]]]=5;
 	 //send_temp[counter&7]=3;   // draws green runner and bar position on first screen
 	}
 	if (bar_map_screen_level==1) {counter=(counter&7); send_temp[8+counter]*=2;send_temp[16+counter]*=2;
@@ -558,7 +558,7 @@ void midi_send_control(void){   // 16notes 1/8 res , 16 pattern , for one patter
 void midi_extras(void){    // extra midi data added here , program change , cc
 
 	//  if (((seq_pos>>5)&1) && (!pause))   // send cc , off during pause , dont disable
-		  if (!pause)  // send cc , off during pause , dont disable
+		//  if (!pause)  // send cc , off during pause , dont disable
 	  {
 		  uint8_t extras=midi_extra_cue[28];
 /*		  midi_extra_cue[extras]=176+midi_channel_list[12];  // cc ch3
@@ -632,26 +632,32 @@ void LFO_tracking(uint8_t selected_bar, uint8_t *pointer){ //0-7 15-23 , simple 
 
 	}
 
-void seq_play_record(void){ // this is triggered by keyboard when arm rec is enabled , will keep overdub if more than 8 keys
+void seq_play_record(void){ // this is triggered by keyboard when arm rec is enabled , will keep overdub if more than 8 keys, note offs seem to track ok , notes stuck on from elsewhere
 
 
 	uint8_t current_scene=scene_buttons[0];
-	if (!seq_record_enable) {seq_record_enable=1;memset (seq_play_buf+(current_scene*48),0,24); seq_record_timer=1;}
-	//uint8_t time=seq_pos; // 127 count
 	uint8_t new_time=0;
+
+
+	if (!seq_record_enable) {seq_record_enable=1;memset (seq_play_buf+(current_scene*48),0,48); seq_record_timer=1;}  // will delete if started while running
+	if( (!pause) )  { seq_record_timer=seq_pos;} // reads seq_pos if running, will disable at end
+
+
 	uint16_t seq_play_pointer=(current_scene*48)+((seq_record_enable-1)*3);
 
-		if (seq_record_enable<17) {new_time=seq_record_timer&255;}
+		new_time=seq_record_timer&255;
 
 
 
 
 		seq_play_buf[seq_play_pointer]=keyboard[0]&127;//note
 		seq_play_buf[seq_play_pointer+1]=keyboard[1]&127;// velocity
-		seq_play_buf[seq_play_pointer+2]=new_time&255;// relative time, nothing if zero
+		seq_play_buf[seq_play_pointer+2]=new_time;// relative time, nothing if zero
 
 		seq_record_enable++;
-		if (seq_record_enable>16) {seq_record_enable=0;seq_record_timer=1;}
+
+		if (seq_record_timer>250) {seq_record_enable=0;seq_record_timer=0;rec_arm=0;}
+		if (seq_record_enable>16) {seq_record_enable=0;seq_record_timer=0;rec_arm=0;}
 
 
 	}
@@ -659,22 +665,28 @@ void seq_play_record(void){ // this is triggered by keyboard when arm rec is ena
 void cdc_send2(void){ // new midi send function
 
 		//uint8_t playback_offset=0;  // this will change per triggering time for playback
-	uint8_t time=seq_record_timer;// never 0
+	uint8_t time=seq_pos;
 	uint8_t cue_counter=0;
 	uint8_t note_midi[256];
 	uint16_t counter=0;
 	uint8_t status=MIDI_NOTE_OFF;
 	uint8_t velocity=0;
 	uint8_t pitch=6;
+	uint8_t midi_extra=midi_extra_cue[28];
 	//uint8_t accent_select=0;
+	//midi_extra_cue[28]=0; //sending junk even wehn off
 
-	for (i=0;i<764;i+=3){
+
+
+	for (i=0;i<764;i+=3){ //does only one round
 
 		counter=i/48;
 
 
-		if ((seq_play_buf[i + 2 ]==time)){ // not on 0
+		if ((seq_play_buf[i + 2 ]==time) && (seq_play_buf[i])){ //
 
+			velocity=0;
+			status=MIDI_NOTE_OFF;
 			if (seq_play_buf[i + 1]) {status=MIDI_NOTE_ON;
 			velocity=note_accent[counter];
 			//{if (VAR_GET_BIT(accent_pointer+(i*8)+accent_bit_shift,(accent_bit))) velocity=note_accent[counter];}  // note accents
@@ -688,7 +700,7 @@ void cdc_send2(void){ // new midi send function
 			note_midi[(cue_counter) + 1] = pitch;
 			//note_midi[(cue_counter) + 2] = seq_play_buf[i + 1]&127;// velocity
 			note_midi[(cue_counter) + 2] = velocity;// velocity
-			if(bar_map_sound_enable[counter]) cue_counter+=3;
+			if(bar_map_sound_enable[counter] ||  (!velocity)) cue_counter+=3;  // sends on note enable but also all note offs
 		}
 
 	}
@@ -696,10 +708,9 @@ void cdc_send2(void){ // new midi send function
 	if (pause) cue_counter=0;
 	serial_len=cue_counter;
 	//midi_extra_cue[28] = 0; // issues with sending , this helps somewhat
-	if( midi_extra_cue[28])	 memcpy(serial_out, midi_extra_cue, midi_extra_cue[28]); // extra stuff sent , anything
-
-	memcpy(serial_out + midi_extra_cue[28], note_midi, serial_len);
-	serial_len = serial_len + midi_extra_cue[28];
+	if( midi_extra && (!cue_counter) )	{ memcpy(serial_out, midi_extra_cue, midi_extra); // extra stuff sent only when no notes are sent
+	serial_len =  midi_extra;}
+	else 	memcpy(serial_out, note_midi, serial_len);
 
 	midi_extra_cue[28] = 0;  // reset    ,seems extra data coming from somewhere
 }

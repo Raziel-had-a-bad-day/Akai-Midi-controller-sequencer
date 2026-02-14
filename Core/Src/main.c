@@ -261,19 +261,27 @@ int main(void)
 	 // uint8_t seq_step_mod;
 	  uint8_t selected_scene=scene_buttons[0];
 
+
 	  if (seq_pos_mem!=seq_pos){     // runs  8 times /step  , control sequencer counting
-		  if((!seq_pos)&&(!pause) ) { bar_map_tracker(); fx_map_tracker();} // normal playing screen ,disabled for pitch mode
 
-		  if (!pause) seq_step = seq_pos>> 3; else seq_step=seq_step;
-		 				  green_position[0]=seq_step;
 
-		  green_position[1]=seq_step;
-		  if (((bar_map_counter&1)==0) && (!seq_pos))    transpose_tracker();  // first change on second bar at the end
+		  if((seq_pos<10 ) && (bar_start_enable)  && (!bar_end_enable) ) bar_start(); // a little time buffer  just in case
+
+		  if((seq_pos>250 ) && (!bar_start_enable)  && (bar_end_enable) ) bar_end();
+
+
+
+		  if (!pause) seq_step = seq_pos>> 4; else seq_step=seq_step; // changed seq_pos to 255 count
+		  if(pause) green_position[0]=seq_record_timer>>5;  else green_position[0]=seq_step>>1;
+
+		  green_position[1]=seq_step>>1;
+
 		//  cdc_send(); // all midi compiled for send  8/per note , sends on seq_pos=1 atm
-		  seq_record_timer=(seq_record_timer+1)&255;
-		  if (seq_pos) { cdc_send2(); }
-		  if (serial_len)
-			  HAL_UART_Transmit(&huart1,serial_out,serial_len,100); // uart send disable if no info, sent seq_pos, going out data is clean here
+		  if (seq_record_timer) seq_record_timer=(seq_record_timer+1)&255;  // runs only when started till the end then stops on 0
+		 if(solo) {	memset(bar_map_sound_enable,0,16); bar_map_sound_enable[scene_buttons[0]]=1;	} // enable one sound for solo
+		 if(rec_arm) {	 bar_map_sound_enable[scene_buttons[0]]=1;	} // lock on selected channel when recording
+		 if (seq_pos) { cdc_send2(); }
+
 		  // skips
 
 
@@ -281,7 +289,7 @@ int main(void)
 
 		  // USB_send();
 
-		  if ((seq_pos&7)==5){
+/*		  if ((seq_pos&7)==5){
 				uint8_t sound_select=4;  // select sound to gate
 
 				nrpn_gating_switch[sound_select]=nrpn_gating_sequence[seq_step];
@@ -291,12 +299,12 @@ int main(void)
 				//if(nrpn_gating_switch[sound_select]) nrpn_gating_switch[sound_select]=0; else nrpn_gating_switch[sound_select]=127;    // might enable some presets here
 
 					 // cdc_send();
-				  }
+				  }*/
 
-		  if (seq_pos==1) fx_cc_send(0);   // send cc values
-		  if (seq_pos==2) fx_cc_send(1);
-		  if (seq_pos==3) fx_cc_send(2);
-		  if (seq_pos==4) fx_cc_send(3);
+
+		  if(seq_pos&&1) {{ if (fx_counter>11) fx_counter=0; else fx_counter++; } fx_cc_send(fx_counter);}// sending midi cc, sends only on change so can be called often
+
+
 		  midi_extras();
 
 
@@ -306,7 +314,7 @@ int main(void)
 
 
 
-	  if ((s_temp) != (seq_pos>>3)) {			// runs on note steps 0-15
+	  if ((s_temp) != (seq_pos>>3)) {			// runs on note steps 0-31
 
 
 		  accent_bit=((seq_step_long&3)<<3)+(seq_step>>1);   //0-32 ,32+32 for 8 bytes ,1 bit is 2 steps, time reference
@@ -383,7 +391,7 @@ int main(void)
 			  memcpy (crap,cdc_buffer,12);
 
 		//////////////PRINT///////////////////
-			  for (i=0;i<16;i++){  // i=scene
+/*			  for (i=0;i<16;i++){  // i=scene
 
 				//  printf(" %d",crap[i] );
 
@@ -403,7 +411,7 @@ int main(void)
 
 			  printf("   %d",midi_cue_time[midi_cue_count] );
 			  printf("   %d",midi_cue_count );
-			  printf(" \n" );
+			  printf(" \n" );*/
 		//	  printf(" incoming=%d ",square_buttons_list[test_byte[11]]);  printf(" step=%d ",seq_step_list[0]);
 			//  printf(" cdc=%d\n ",cdc_len_temp);
 
@@ -436,13 +444,29 @@ int main(void)
  			}   // blink steps , end of s_temp
 
 
-	 if (ppq_temp!=ppq_send) { USB_send(); ppq_temp=ppq_send;// need to limit rate or it crashes the controlled/midi stack
+	 if ((ppq_temp!=ppq_send) ){ USB_send(); ppq_temp=ppq_send;// need to limit rate or it crashes the controlled/midi stack
 
 
 		  }
 
 	  //USB_send();
 	  lcd_mem(); // this sends too fast when run constant
+
+
+	  /////////////// MIDI SEND ////////////////
+
+	  if (serial_len>12) // send 12bytes at a time on large sends
+
+	  { HAL_UART_Transmit(&huart1,serial_out,serial_len,100); // uart send disable if no info,
+	  uint8_t mem_temp[128];
+	  serial_len-=12;
+	  memcpy(mem_temp,serial_out+serial_len,12);
+	  memcpy(serial_out,mem_temp,serial_len);
+
+	  }
+	  if (serial_len<=12) {HAL_UART_Transmit(&huart1,serial_out,serial_len,100); serial_len=0;} //serial send
+
+
 
 
 /*
@@ -508,8 +532,8 @@ int main(void)
 				//  if (first_message) {first_message=0;  memset(other_buttons_hold,9,70);} // only runs after getting a midi message from usb
 
 
-				  if ((cdc_buffer[0]==145)) {keyboard[0]=cdc_buffer[1];keyboard[1]=127;memset(cdc_buffer,0,9); } // works ,keyboard send ,quick
-				  if ((cdc_buffer[0]==129)) {keyboard[0]=cdc_buffer[1];keyboard[1]=0;memset(cdc_buffer,0,9); }
+				  if ((cdc_buffer[cdc_start]==145)) {keyboard[0]=cdc_buffer[cdc_start+1];keyboard[1]=127;memset(cdc_buffer+cdc_start,0,3); } // works ,keyboard send ,quick
+				  if ((cdc_buffer[cdc_start]==129)) {keyboard[0]=cdc_buffer[1];keyboard[cdc_start+1]=0;memset(cdc_buffer+cdc_start,0,3); }
 
 				  // sends straight to keyboard on receive
 			 // printf(" 1=%d ",cdc_buffer[0] ); printf(" 2=%d ",cdc_buffer[1] ); printf(" 3=%d \n ",cdc_buffer[2] );
@@ -530,21 +554,22 @@ int main(void)
 						  uint8_t velocity=keyboard[1]&127;
 						  uint8_t buffer_pos=keyboard_buffer[31];
 						  uint8_t current_seq_pos=seq_pos&255;
+						  uint8_t extra_start=midi_extra_cue[28];  //start from last byte
 						//  if (incoming>>7)  {note_flag=128;velocity=0;}
 						  if (buffer_pos>23) buffer_pos=0;   // reset buffer in case
 						  if( rec_arm && (!clip_stop))  { seq_play_record();} // records live sequence from keyboard
 
 						  if (midi_channel_list[selected_scene]==9)   // drums send
-						  {  midi_extra_cue[0]=(note_flag+9);         // use drumlist for now
+						  {  midi_extra_cue[extra_start]=(note_flag+9);         // use drumlist for now
 
-						  midi_extra_cue[1]=(drum_list[selected_scene]);midi_extra_cue[2]=velocity; midi_extra_cue[28]=midi_extra_cue[28]+3;   // send midi
+						  midi_extra_cue[1+extra_start]=(drum_list[selected_scene]);midi_extra_cue[2+extra_start]=velocity; midi_extra_cue[28]=extra_start+3;   // send midi
 
 						  incoming=0;}
-						  else  {midi_extra_cue[0]=note_flag+midi_channel_list[selected_scene];  midi_extra_cue[1]=((incoming))&127 ;
-						  midi_extra_cue[2]=velocity; midi_extra_cue[28]=midi_extra_cue[28]+3;incoming=0;}  // send normal then keyboard off
+						  else  {midi_extra_cue[extra_start]=note_flag+midi_channel_list[selected_scene];  midi_extra_cue[1+extra_start]=((incoming))&127 ;
+						  midi_extra_cue[2+extra_start]=velocity; midi_extra_cue[28]=extra_start+3;incoming=0;}  // send normal then keyboard off
 						  keyboard[0]=incoming;
 
-						  memcpy(keyboard_buffer+buffer_pos,midi_extra_cue+1,2); keyboard_buffer[buffer_pos+2]=current_seq_pos; keyboard_buffer[31]=buffer_pos+3;  // store in buffer
+						  memcpy(keyboard_buffer+buffer_pos,midi_extra_cue+(1+extra_start),2); keyboard_buffer[buffer_pos+2]=current_seq_pos; keyboard_buffer[31]=buffer_pos+3;  // store in buffer
 
 
 
@@ -897,7 +922,7 @@ static void MX_GPIO_Init(void)
 
 				if (!skip_enable) skip_enable=skip_setting; else {skip_enable--;} // 48 ppq here
 
-				if (ppq_count>5) {ppq_count=0; seq_pos=(seq_pos+1)&127;}   // 32 ppq
+				if (ppq_count>5) {ppq_count=0; seq_pos=(seq_pos+1)&255;}   // 32 ppq
 				 ppq_count++;
 				 if (ppq_send>95) ppq_send=0;  else ppq_send++;   // 96 ppq
 

@@ -4,7 +4,8 @@ Akai APC key 25 midi controller based sequencer project with STM32F411+flash ,ca
 use left and right arrows to step through zoom levels : notes , bars , bars*8,bars*64 
 
 
-rec_arm on default screen , records midi notes played on keyboard , lasts for 2 bars , live or in pause , only way to enter notes now , 12 notes buffer 
+rec_arm on default screen , records midi notes played on keyboard , live or in pause , only way to enter notes now , 12 notes buffer 
+ shift+rec_arm  = clears notes
  
 row 5 = select sound, 0-7 drums 8-15 keys
 
@@ -17,16 +18,16 @@ stop_all_clips = pause and jumps to start
 
 send = write to flash , 
 send + shift = reload 
-solo = solo uses top 4 pots to select between 4 sounds each muting the rest
+solo = solo single channel
 mute = select any part to mute, turns red 
 up arrow = select sounds 8-15, 
-
+pause= stops at the end of bar 
 keyboard =  also play notes on selected sound 
 Stop all clips = stops and jumps to start 
 
 device =   shows current midi channel on top rows ,blinky yellow  
 
-down arrow = calls up fx menu , pots set cc send on 1-8 fx channels  , buttons set on/off per bar 1,8,64 ,0-3 level on , 4-7 level off, only single channel for now
+down arrow = calls up fx menu , pots set cc send on keys  , buttons set on/off per bar 1,8,64 ,0-3 level on , 4-7 level off, 3 channels * 4 settings 
 
 Pot 3 =sets transpose pitch change advance rate on keys 
 

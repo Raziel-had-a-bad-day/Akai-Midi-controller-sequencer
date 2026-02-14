@@ -92,14 +92,16 @@ uint8_t pause; // enable pause mode
 uint8_t select_bn; //select button
 uint8_t right_arrow;
 uint8_t left_arrow;
-uint8_t up_arrow;
+uint8_t up_arrow=1; // on by default
 uint8_t down_arrow;
+uint8_t solo;
 
 uint8_t device;
 uint8_t clip_stop;
 uint8_t send;
 uint8_t record;
 uint8_t sustain;
+uint8_t pause_delay=0;
 
 uint8_t serial1_temp;
 uint8_t temp;
@@ -388,6 +390,9 @@ uint8_t bar_map_1[sound_set]={255,255,255,255,255,255,255,255};  // bit mapped e
 uint8_t bar_map_8[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 8 bar
 uint8_t bar_map_64[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 8*8 bar   , for now might change to diff values
 uint8_t bar_map_screen_level=1;  //selects which zoom is displayed 0-3   , 0=none 1=8 2=32
+uint8_t bar_end_enable=0;  // if enabled runs everything needed on seq_pos=0
+uint8_t bar_start_enable=1; // if enabled runs everything for seq_pos=255
+
 uint8_t clear_rows=0;   // clear_top 4 rows only on USB send
 uint8_t bar_map_sound_enable[sound_set]; // output from bar map editor
 uint16_t bar_map_counter=0;  // keeps total bar count
@@ -396,8 +401,8 @@ uint8_t last_pot_used=0;
 uint8_t temp_midi_var=0;
 
 uint8_t fx_incoming[3];
-uint8_t fx_pot_settings[16]={3,71,3,74,3,5,3,76,3,74,3,71,3,74,3,71};      //  holds midi_channel and cc assignment for 8 pots  0-15 and 0-127 , fx list
-uint8_t fx_pot_values[32]={64,64,64,64,
+uint8_t fx_pot_settings[24]={3,71,3,74,3,5,3,76,4,72,4,5,4,76,4,77,2,71,2,72,2,73,2,74 };      //  holds midi_channel and cc assignment for 8 pots  0-15 and 0-127 , fx list cha 3 ,4,2
+uint8_t fx_pot_values[48]={64,64,64,64,
 							64,64,64,64,
 							23,76,64,64,
 							23,76,64,64,
@@ -414,8 +419,9 @@ uint8_t fx_pot_values[32]={64,64,64,64,
 
 }; // holds on and off values as well as transition speed for both , 8 tracks for now
 
-uint8_t fx_map_sound_enable[8]; //tracks if bar is enabled
+uint8_t fx_map_sound_enable[16]; //tracks if bar is enabled
 uint8_t control_change_buf[32];  // stores control change values
+uint8_t fx_counter=0;
 
 uint8_t motion_record_buf[sound_set*8];  // holds 1 bit motion record when pressing shift and changing knob levels set elsewhere
 uint8_t motion_record_limits[sound_set*2]={64,127,64,127,64,127,64,127,64,127,64,127,64,127,
@@ -433,6 +439,7 @@ uint16_t seq_record_timer;
 uint8_t seq_record_enable;
 uint8_t transpose_octave_modifier[sound_set];   // it changes base octave and transpose notes for cdc_send2 , calculated from alt_pots  ,octave shift, make sure always above 0
 int8_t transpose_pitch_modifier[sound_set];  // it changes base octave and transpose notes for cdc_send2 , calculated from alt_pots  ,-6-+6 notes , pitch shift ,
+
 
 
 

@@ -51,7 +51,7 @@ void settings_storage(void){   // runs to store setting and read back
 					lfo_settings_list,single_settings_list,pitch_change_loop,LFO_low_list
 			,LFO_high_list,LFO_phase_list,pitch_change_rate,bar_map_1,bar_map_8,bar_map_64,bar_map_0, motion_record_buf
 			,fx_map_1,fx_map_8,fx_map_64,fx_pot_values };
-			uint8_t settings_multi[]={1,1,4,1,1,1,4,1,2,1,1,4,4,4,1,1,1,1,2,8,1,1,1,2};   // sets length,  sound_set*x ,512 atm
+			uint8_t settings_multi[]={1,1,4,1,1,1,4,1,2,1,1,4,4,4,1,1,1,1,2,8,1,1,1,3};   // sets length,  sound_set*x ,512 atm
 			uint8_t settings_temp[256];
 			uint16_t settings_total=0;  //adds up position , huge miss here retard alert
 			uint8_t length=0; // max 64 atm
