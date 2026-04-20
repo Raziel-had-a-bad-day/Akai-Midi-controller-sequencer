@@ -1,7 +1,8 @@
 
+//#include "variables.h"
 
-
-
+typedef struct {  uint8_t *var; char *name;} LCD_item;    // creates lcd menu items to make it a bit easier
+LCD_item lcd_item[12];
 
 uint8_t lcd_init[20]={3,3,3,2,2,8,0,8,0,12,0,6,0,1,0,2 };  // 4 bit initialize code ,starting at DB4  ,0-3 send straight  ignore finish  + add delay ,   then send double and wait for finish no delay , no cursor or blinking (12)
 uint8_t lcd_delay[20]={100,100,100,10,10,10,10,10,10,100,10,10,10,10,10};  //top then bottom
@@ -90,7 +91,7 @@ int8_t var_size; // track size of variables for lcd
 	}
 
 
-void lcd_mem(void){   // updates lcd buffer , v
+void lcd_mem(void){   // updates lcd buffer , works but don't send too fast
 	lcd_buffer_counter=0;
 
  	for (lcd_pos=0;lcd_pos<32;lcd_pos++){   // one character at a time
@@ -98,13 +99,13 @@ void lcd_mem(void){   // updates lcd buffer , v
 
 			lcd_print(lcd_pos,lcd_buffer[lcd_pos]);
 			lcd_buffer_mem[lcd_pos]=lcd_buffer[lcd_pos];
-
+			//lcd_pos=32;
 		//	HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, lcd_buffer_counter, 100);lcd_buffer_counter=0;`
 		}
-
+		//lcd_buffer_full=1;
 
 	}
-	lcd_buffer_full=1;
+	//lcd_buffer_full=1;
 
 //	{HAL_I2C_Master_Transmit ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, lcd_buffer_counter, 100); lcd_buffer_full=0;}// keep it short or eventually it breaks
 	  if (HAL_I2C_GetState(&hi2c1))		{HAL_I2C_Master_Transmit_IT ( &hi2c1, (uint16_t) 0x4E , I2C_buffer, lcd_buffer_counter); lcd_buffer_full=0;}     // works ok with normal cdc running
@@ -114,77 +115,76 @@ void lcd_mem(void){   // updates lcd buffer , v
 }
 
 
-void lcd_menu_vars(uint8_t selected_var ,uint8_t var_position){     // print vars to selected position on lcd , remember to add digit length to var_position
+void lcd_menu_vars(uint8_t selected_var, uint8_t var_position) {
+    // Print variable value to selected position on LCD
+    if (var_position > 29) var_position = 29;
 
-//	if (lcd_downcount) return; // exit if downcount is enabled
-	uint8_t digits=1; //actual number of ridigtis
-	uint8_t scene=scene_buttons[0];
-	uint8_t custom_characters=0;
-	//uint8_t custom_pos=0;
-	uint8_t blank=0;  // prints blank if value is 0
-	const char* list_ch=" :+=-_()^&$#@#@!*"    ;
+    uint8_t digits = 1;
+    uint8_t scene = scene_buttons[0];
+    uint8_t custom_characters = 0;
+    uint8_t blank = 0;
+    const char* list_ch = " :+=-_()^&$#@#@!*";
 
+#define LCD_MENU_ITEMS 13
 
+    if (selected_var > LCD_MENU_ITEMS) {
+        custom_characters = selected_var - LCD_MENU_ITEMS;
+        selected_var = LCD_MENU_ITEMS;
+    }
 
-#define lcd_menu_items 13
+    // === Menu variable mapping ===
+    switch (selected_var) {
+        case 0:  lcd_item[0].var = &LFO_phase_list[scene];      lcd_item[0].name = "LFO_phase";     digits = 1; break;
+        case 1:  lcd_item[1].var = &seq_step_long;             lcd_item[1].name = "Bar_count";     digits = 2; break;
+        case 2:  lcd_item[2].var = &loop_lfo_out[scene + 32];  lcd_item[2].name = "LFO_out";       digits = 3; break;
+        case 3:  lcd_item[3].var = &pattern_scale_list[scene]; lcd_item[3].name = "Scale_select";  digits = 2; break;
+        case 4:  lcd_item[4].var = &midi_channel_list[scene];  lcd_item[4].name = "Midi channel";  digits = 2; break;
+        case 5:  lcd_item[5].var = &tempo;                     lcd_item[5].name = "Tempo";         digits = 3; break;
+        case 6:  lcd_item[6].var = &note_enable_list_selected; lcd_item[6].name = "LFO_low_high";  digits = 2; break;
+        case 7:  lcd_item[7].var = &pitch_list_for_drums[pitch_selected_for_drums[scene] + (scene * 8)];
+                 lcd_item[7].name = "Pitch_adjust"; digits = 3; break;
+        case 8:  lcd_item[8].var = &note_accent[scene];        lcd_item[8].name = "Note_accent";   digits = 3; break;
+        case 9:  lcd_item[9].var = &LFO_low_list[scene];       lcd_item[9].name = "filter_rate";   digits = 1; break;
+        case 10: lcd_item[10].var = &LFO_high_list[scene];     lcd_item[10].name = "filter_gain";  digits = 1; break;
+        case 11: lcd_item[11].var = &seq_clock.Minutes;        lcd_item[11].name = "minutes";      digits = 1; blank = 1; break;
+        case 12: lcd_item[12].var = &seq_clock.Seconds;        lcd_item[12].name = "seconds";      digits = 2; break;
+        case 13: lcd_item[13].var = &last_note_on_channel[scene];
+                 lcd_item[13].name = "last note pitch"; digits = 3; blank = 1; break;
+        default: break;
+    }
 
-	//uint8_t *lcd_page1 []={ // need to enable more pages,this needs to be here,  also letters etc
+    if (custom_characters) {
+        lcd_buffer[var_position] = list_ch[custom_characters];
+        return;
+    }
 
-	if (selected_var>lcd_menu_items) {custom_characters=selected_var-lcd_menu_items;selected_var=lcd_menu_items;  }  // only vars
-		if (var_position>29) var_position=29;  // position max
+    // === Print numeric value ===
+    char lcd_char[4];
+    int dec_hold = *lcd_item[selected_var].var;
 
-		// works , menu data section , variables need to be here  // can be somewhere else but it needs to run sommetime
+    // Format number with proper spacing
+    if (dec_hold == 0 && blank) {
+        sprintf(lcd_char, "   ");
+    } else if (dec_hold < 10) {
+        sprintf(lcd_char, "  %d", dec_hold);
+    } else if (dec_hold < 100) {
+        sprintf(lcd_char, " %d", dec_hold);
+    } else {
+        sprintf(lcd_char, "%d", dec_hold);
+    }
 
-		switch(selected_var){   //select only needed vars
-
-
-		case 0:lcd_item[0].var=	&LFO_phase_list[scene];  lcd_item[0].name="LFO_phase";digits=1;break;  // make sure digits is correct
-		case 1:lcd_item[1].var=&seq_step_long;lcd_item[1].name="Bar_count";digits=2;break;
-
-		case 2:lcd_item[2].var=&loop_lfo_out[scene+32];lcd_item[2].name="LFO_out";digits=3;break;
-		case 3:lcd_item[3].var=&pattern_scale_list[scene];lcd_item[3].name="Scale_select";digits=2;;break;
-		case 4:lcd_item[4].var=&midi_channel_list[scene];lcd_item[4].name="Midi channel";digits=2;break;
-
-		case 5:lcd_item[5].var=&tempo;lcd_item[5].name="Tempo";digits=3;break;
-		case 6:lcd_item[6].var=&note_enable_list_selected;lcd_item[6].name="LFO_low_high";digits=2;break;
-		case 7:lcd_item[7].var=&pitch_list_for_drums[pitch_selected_for_drums[scene]+(scene*8)];lcd_item[7].name="Pitch_adjust";digits=3;break;
-		case 8:lcd_item[8].var=&note_accent[scene];lcd_item[8].name="Note_accent";digits=3;break;
-		case 9:lcd_item[9].var=&LFO_low_list[(scene)];lcd_item[9].name="filter_rate";digits=1;break;
-		case 10:lcd_item[10].var=&LFO_high_list[(scene)];lcd_item[10].name="filter_gain";digits=1;break;
-		case 11:lcd_item[11].var=&seq_clock.Minutes;lcd_item[11].name="minutes";digits=1;blank=1;break;
-		case 12:lcd_item[12].var=&seq_clock.Seconds;lcd_item[12].name="seconds";digits=2;break;
-		case 13:lcd_item[13].var=&last_note_on_channel[scene];lcd_item[13].name="last note pitch";digits=3;blank=1;break;
-		default:break;}
-
-
-
-		if(!custom_characters){
-
-		char lcd_char[4];    // string   to print ,, remember the terminating character
-
-		int dec_hold;
-
-			dec_hold=*lcd_item[selected_var].var;   //  hold numbers only for now, migth do 16 bit or strings
-
-			if (dec_hold<10)  {sprintf (lcd_char,"  %d", dec_hold) ;var_size=1;}  else if (dec_hold<100)  {sprintf (lcd_char," %d", dec_hold) ;var_size=0;}  //sort digits for number
-			else if (dec_hold>99)  {sprintf (lcd_char,"%d", dec_hold) ;var_size=0;}   // check length and add space
-			if ((!dec_hold)&&(blank))  {sprintf (lcd_char,"   ") ;var_size=1;}  // option to print nothing if zero
-		/*	if (var_size==1)  {lcd_buffer[var_position+2]=lcd_char[0];lcd_buffer[var_position]=32;lcd_buffer[var_position+1]=32;}   // 32=space 48=0 65=A
-			if (var_size==2)  {lcd_buffer[var_position+1]=lcd_char[0]; lcd_buffer[var_position+2]=lcd_char[1]; lcd_buffer[var_position]=32;}
-			if (var_size==3)  {lcd_buffer[var_position]=lcd_char[0];lcd_buffer[var_position+1]=lcd_char[1]; lcd_buffer[var_position+2]=lcd_char[2];  }
-			var_size=1;*/
-
-
-			if (digits==1)  {lcd_buffer[var_position]=lcd_char[2];}   // 32=space 48=0 65=A
-			if (digits==2)  {lcd_buffer[var_position]=lcd_char[1]; lcd_buffer[var_position+1]=lcd_char[2]; }
-			if (digits==3)  {lcd_buffer[var_position]=lcd_char[0];lcd_buffer[var_position+1]=lcd_char[1]; lcd_buffer[var_position+2]=lcd_char[2];  }
-			var_size=0;}
-
-			if (custom_characters)
-
-				lcd_buffer[var_position]=  list_ch[custom_characters];  // replace var with a character  ,
-			//lcd_buffer[var_position]= 43;
-			}
+    // Copy digits to LCD buffer according to requested digit width
+    if (digits == 1) {
+        lcd_buffer[var_position] = lcd_char[2];
+    } else if (digits == 2) {
+        lcd_buffer[var_position]     = lcd_char[1];
+        lcd_buffer[var_position + 1] = lcd_char[2];
+    } else if (digits == 3) {
+        lcd_buffer[var_position]     = lcd_char[0];
+        lcd_buffer[var_position + 1] = lcd_char[1];
+        lcd_buffer[var_position + 2] = lcd_char[2];
+    }
+}
 
 
 
@@ -219,18 +219,36 @@ void lcd_message(void){    // prints pot used
 
 void lcd_menu_pages(uint8_t page){  // various setups for different pages  ,0-3 for now ,position needs to be around every 3 digits or it might miss some of the digits
 
-	memset(lcd_buffer,32,32); //clear
+	//memset(lcd_buffer,32,32); //clear
 	switch (page){    // var ,  postiion
 	case 1:lcd_menu_vars(1,0); lcd_menu_vars(11,4);lcd_menu_vars(12,6);lcd_menu_vars(4,14);lcd_menu_vars(0,16);lcd_menu_vars(9,18);
 	lcd_menu_vars(10,20);lcd_menu_vars(14,5); lcd_menu_vars(13,23);   break;
-	case 2:break;
+	case 2:lcd_menu_vars(12,0);lcd_menu_vars(12,6);break;
 	case 3:break;
 	default:break;
 
 	}
 
 }
+void lcd_number (uint8_t num) {
 
+	 // string to return
+	    uint8_t dec_hold = num;
+
+	    // Format number with proper spacing
+	    if (dec_hold == 0 ) {
+	        sprintf(lcd_char, "   ");
+	    } else if (dec_hold < 10) {
+	        sprintf(lcd_char, "  %d", dec_hold);
+	    } else if (dec_hold < 100) {
+	        sprintf(lcd_char, " %d", dec_hold);
+	    } else {
+	        sprintf(lcd_char, "%d", dec_hold);
+	    }
+
+	//return (char*) lcd_char;
+
+}
 
 
 

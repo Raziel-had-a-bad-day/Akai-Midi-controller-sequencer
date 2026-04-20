@@ -7,6 +7,7 @@ use left and right arrows to step through zoom levels : notes , bars , bars*8,ba
 rec_arm on default screen , records midi notes played on keyboard , live or in pause , only way to enter notes now , 12 notes buffer 
  shift+rec_arm  = clears notes
  
+shift+pause = loops current bar , can be changed with bar selector (fourth row) 
 row 5 = select sound, 0-7 drums 8-15 keys
 
 
@@ -39,6 +40,7 @@ clip stop on enables pitch screen , only used for transpose !  synced to bar pos
 bars 1 and 2 shows pitch in current octave  0-11 
 bar 4 shows pitch sequencer current step , adjust playback rate using pot 3 
 in pause enter pitch for steps using and these bars, can use keyboard also
+keyboard transpose enter while playing live 
 in pause + rec arm = step record mode using keyboard 
 
  

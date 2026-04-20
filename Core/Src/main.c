@@ -39,8 +39,9 @@
 //#include "usbd_cdc_if.h"
 #include "midi.h"
 #include "fx.h"
-#include "notes.h"
 #include "lcd.h"
+#include "notes.h"
+
 
 
 /* USER CODE END Includes */
@@ -224,6 +225,18 @@ int main(void)
 		if (pitch_change_rate[i]==0) pitch_change_rate[i]=1;
 
 	}
+
+
+	uint8_t count_div;
+	for (i=0;i<256;i++){
+		count_div=i/16;
+	seq_play_buf_time[i]=seq_play_buf[(i*3)+2]; // saves time of messages
+
+
+	if(seq_play_buf_end[count_div]<seq_play_buf_time[i]) seq_play_buf_end[count_div]=seq_play_buf_time[i]; // save last message time per track
+
+	}
+
 	//other_buttons=1; // nothing
 	//uint16_t arr_cnt=(bpm_table[tempo]*1.333333)-1;
 	//TIM2->ARR= arr_cnt;   // -1
@@ -260,18 +273,18 @@ int main(void)
 	 // uint16_t step_temp=0;
 	 // uint8_t seq_step_mod;
 	  uint8_t selected_scene=scene_buttons[0];
+	  uint16_t seq_t=seq_pos;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	  if (seq_pos_mem!=seq_t){     // runs  8 times /step  , control sequencer counting
 
 
-	  if (seq_pos_mem!=seq_pos){     // runs  8 times /step  , control sequencer counting
+		  if((seq_t<10 ) && (bar_start_enable)  && (!bar_end_enable) ) bar_start(); // a little time buffer  just in case
 
-
-		  if((seq_pos<10 ) && (bar_start_enable)  && (!bar_end_enable) ) bar_start(); // a little time buffer  just in case
-
-		  if((seq_pos>250 ) && (!bar_start_enable)  && (bar_end_enable) ) bar_end();
+		  if((seq_t>245 ) && (!bar_start_enable)  && (bar_end_enable) ) bar_end(); // this needs to change
 
 
 
-		  if (!pause) seq_step = seq_pos>> 4; else seq_step=seq_step; // changed seq_pos to 255 count
+		  if (!pause) seq_step = seq_t>> 4; else seq_step=seq_step; // changed seq_pos to 255 count
 		  if(pause) green_position[0]=seq_record_timer>>5;  else green_position[0]=seq_step>>1;
 
 		  green_position[1]=seq_step>>1;
@@ -280,8 +293,21 @@ int main(void)
 		  if (seq_record_timer) seq_record_timer=(seq_record_timer+1)&255;  // runs only when started till the end then stops on 0
 		 if(solo) {	memset(bar_map_sound_enable,0,16); bar_map_sound_enable[scene_buttons[0]]=1;	} // enable one sound for solo
 		 if(rec_arm) {	 bar_map_sound_enable[scene_buttons[0]]=1;	} // lock on selected channel when recording
-		 if (seq_pos) { cdc_send2(); }
 
+
+		 if (seq_t) {   cdc_send2(); }
+/*		 if (seq_pos_out[10]==1) seq_pos_rate(10 ,seq_play_buf , seq_play_buf_time, seq_play_buf_end ); // this is ok
+		 for (i=0;i<sound_set;i++)
+		 {seq_pos_out[i]=(seq_pos_out[i]+1)&511;*/
+
+
+
+
+		// if (seq_reset_flag[i]) {seq_pos_out[i]=1; seq_reset_flag[i]=0;}  // leave this ,problems
+
+		// if (seq_pos_flag[i]==0) seq_pos_out[i]=seq_pos_out[i]&255;
+
+	//	 }// position timer , can be modified
 		  // skips
 
 
@@ -302,24 +328,33 @@ int main(void)
 				  }*/
 
 
-		  if(seq_pos&&1) {{ if (fx_counter>11) fx_counter=0; else fx_counter++; } fx_cc_send(fx_counter);}// sending midi cc, sends only on change so can be called often
+		  if(seq_t&&1) {{ if (fx_counter>11) fx_counter=0; else fx_counter++; } fx_cc_send(fx_counter);}// sending midi cc, sends only on change so can be called often
 
 
-		  midi_extras();
+		  midi_extras(); // sends cc and pc , not a problem
 
 
 
-			 seq_pos_mem=seq_pos;
+			 seq_pos_mem=seq_t;
 		 } // end of seq_pos ,fast step 8/step
 
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	  if ((s_temp) != (seq_t>>3)) {			// runs on note steps 0-31
 
-	  if ((s_temp) != (seq_pos>>3)) {			// runs on note steps 0-31
-
-
+		//  lcd_menu_pages(2); // seems to mess up printing now
+		  lcd_mem(); // this sends too fast when run constant
 		  accent_bit=((seq_step_long&3)<<3)+(seq_step>>1);   //0-32 ,32+32 for 8 bytes ,1 bit is 2 steps, time reference
 		  accent_bit_shift=((seq_step_long>>2)&1)*4; // changes per bar , time reference
 		  if (clip_stop && (scene_buttons[0]>7)) pitch_mode(); // only when second page
+
+		  if(s_temp==31){ seq_record_enable=0;
+
+		  for (i=0;i<16;i++){  // advance short record playback
+			  if ((short_repeat_counter[i])>=4) {memset (short_repeat_buf+(i*48),0,48);memset (short_repeat_time+(i*16),0,16);short_repeat_counter[i]=0;};
+			  if ((short_repeat_counter[i]) && ((short_repeat_counter[i]))<4) short_repeat_counter[i]++;
+
+		  }}
 
 
 
@@ -356,9 +391,9 @@ int main(void)
 			  loop_current_speed=pattern_scale_list[current_scene];
 
 
-			  if (!seq_pos) current_playing_bar=(current_playing_bar+1)&31;  // resets on a stop
+			  if (!seq_t) current_playing_bar=(current_playing_bar+1)&31;  // resets on a stop
 			//  if (seq_pos==1)
-			  if (!seq_pos){ LFO_tracking(current_playing_bar,LFO_tracking_out); // runs once per bar ,after a full stop resets to zero
+			  if (!seq_t){ LFO_tracking(current_playing_bar,LFO_tracking_out); // runs once per bar ,after a full stop resets to zero
 			  LFO_tracking(current_playing_bar,LFO_tracking_bank);
 			  LFO_tracking((current_playing_bar+1),(LFO_tracking_bank+16));
 			  LFO_tracking((current_playing_bar+2),(LFO_tracking_bank+32));
@@ -421,7 +456,7 @@ int main(void)
 
 			  //if (lcd_downcount) { lcd_message();lcd_downcount--; }
 
- 				lcd_menu_pages(1);
+ 			//	lcd_menu_pages(1);
 
 
  				//		printf(" %d ", midi_cue[3]);
@@ -439,7 +474,7 @@ int main(void)
 
  			//	  if (!midi_channel_list[0]) flash_read(); // in case flash didn't load
 
- 				  s_temp = seq_pos>>3;
+ 				  s_temp = seq_t>>3;
 
  			}   // blink steps , end of s_temp
 
@@ -450,7 +485,7 @@ int main(void)
 		  }
 
 	  //USB_send();
-	  lcd_mem(); // this sends too fast when run constant
+
 
 
 	  /////////////// MIDI SEND ////////////////
@@ -545,31 +580,41 @@ int main(void)
 
 		  }  // end of cdc message
 
-				  if (keyboard[0])  {    // keyboard play live
-					//  if (rec_arm && pause && (keyboard[1]>48)&& (scene_buttons[0]>7)) {loop_screen_disable=1;step_recording();}
-					  if(pause) pitch_mode();
-						  uint8_t note_flag=144; // just use vel 0 for off
-						  if (!keyboard[1]) note_flag=128; // note off
-						  uint8_t incoming=keyboard[0]&127;
-						  uint8_t velocity=keyboard[1]&127;
-						  uint8_t buffer_pos=keyboard_buffer[31];
-						  uint8_t current_seq_pos=seq_pos&255;
-						  uint8_t extra_start=midi_extra_cue[28];  //start from last byte
-						//  if (incoming>>7)  {note_flag=128;velocity=0;}
-						  if (buffer_pos>23) buffer_pos=0;   // reset buffer in case
-						  if( rec_arm && (!clip_stop))  { seq_play_record();} // records live sequence from keyboard
+		  if (keyboard[0])  {    // keyboard play live
+			//  if (rec_arm && pause && (keyboard[1]>48)&& (scene_buttons[0]>7)) {loop_screen_disable=1;step_recording();}
+			   if (clip_stop) {pitch_mode();keyboard[0]=0;} // disable send in pitch mode
+				uint8_t note_flag=144; // just use vel 0 for off
+				short_track_disable=scene_buttons[0]+1;
 
-						  if (midi_channel_list[selected_scene]==9)   // drums send
-						  {  midi_extra_cue[extra_start]=(note_flag+9);         // use drumlist for now
+				  if (!keyboard[1]) note_flag=128; // note off
 
-						  midi_extra_cue[1+extra_start]=(drum_list[selected_scene]);midi_extra_cue[2+extra_start]=velocity; midi_extra_cue[28]=extra_start+3;   // send midi
+				  uint8_t buffer_pos=keyboard_buffer[31];
 
-						  incoming=0;}
-						  else  {midi_extra_cue[extra_start]=note_flag+midi_channel_list[selected_scene];  midi_extra_cue[1+extra_start]=((incoming))&127 ;
-						  midi_extra_cue[2+extra_start]=velocity; midi_extra_cue[28]=extra_start+3;incoming=0;}  // send normal then keyboard off
-						  keyboard[0]=incoming;
+				//  if (incoming>>7)  {note_flag=128;velocity=0;}
+				  if (buffer_pos>23) buffer_pos=0;   // reset buffer in case
+				  if( rec_arm && (!clip_stop))  { seq_play_record(seq_play_buf, seq_play_buf_time );} // records live sequence from keyboard[0]
+				  if ((!rec_arm) && (!clip_stop)){ seq_play_record(short_repeat_buf, short_repeat_time );} //being skipped ?
 
-						  memcpy(keyboard_buffer+buffer_pos,midi_extra_cue+(1+extra_start),2); keyboard_buffer[buffer_pos+2]=current_seq_pos; keyboard_buffer[31]=buffer_pos+3;  // store in buffer
+
+ 	  	  	  	  uint8_t incoming=keyboard[0]&127;
+   	   	   	   	   uint8_t velocity=keyboard[1]&127;
+				  				 // uint8_t current_seq_pos=seq_pos&255;
+				  uint8_t extra_start=midi_extra_cue[28];  //start from last byte
+
+				  if (midi_channel_list[selected_scene]==9)   // drums send
+
+
+				  {  midi_extra_cue[extra_start]=(note_flag+9);         // use drumlist for now
+
+				  midi_extra_cue[1+extra_start]=(drum_list[selected_scene]);midi_extra_cue[2+extra_start]=velocity; midi_extra_cue[28]=extra_start+3;   // send midi
+
+				  incoming=0;}
+				  else  {midi_extra_cue[extra_start]=note_flag+midi_channel_list[selected_scene];  midi_extra_cue[1+extra_start]=((incoming))&127 ;
+				  midi_extra_cue[2+extra_start]=velocity; midi_extra_cue[28]=extra_start+3;incoming=0;}  // send normal then keyboard off
+				  keyboard[0]=incoming;
+
+				//  memcpy(keyboard_buffer+buffer_pos,midi_extra_cue+(1+extra_start),2); keyboard_buffer[buffer_pos+2]=current_seq_pos; keyboard_buffer[31]=buffer_pos+3;  // store in buffer
+
 
 
 

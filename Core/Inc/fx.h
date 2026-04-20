@@ -10,26 +10,19 @@ void bar_end(void);
 void bar_map_tracker(void);
 
 void fx_menu(uint8_t incoming){ // pot 1-8 control fx list 1-8 cc value ,, cc settings is stored in fx_pot _settings, shift+pot might set transition speed ,
-	//maybe pot1 is high level and pot4 is low
+	//called always when down arrow enabled
 	// for now just triggers a  cc send
 	uint8_t current_scene=incoming&7;   // this just selects which pot 0-3 high level 4-7 low level
-	uint8_t current_midi=midi_channel_list[scene_buttons[0]];
+	uint8_t current_midi=midi_channel_list[scene_buttons[0]]; // midi channel of currently selected track
 	uint8_t scene_select=0;
 	if(current_midi==3) scene_select=0;
-	if(current_midi==4) scene_select=16;
-	if(current_midi==2) scene_select=32;
+	if(current_midi==4) scene_select=8;
+	if(current_midi==2) scene_select=16;
+
+ // 8 pot values per channel
 
 
-
-	//uint8_t current_channel=0;
-	//uint8_t current_cc=0;
-
-	if (current_scene<4){
-		fx_pot_values[(current_scene*4)+scene_select]=pot_states[current_scene];}
-	else fx_pot_values[((current_scene-4)*4)+1+scene_select]=pot_states[current_scene];   // sets on /off values  , first 4 tracks
-
-
-
+		fx_pot_values[(current_scene)+scene_select]=pot_states[current_scene];   // saves pot setting on fx screen
 
 
 	//current_channel=fx_pot_settings[current_scene*2];
@@ -62,16 +55,18 @@ void fx_menu(uint8_t incoming){ // pot 1-8 control fx list 1-8 cc value ,, cc se
 }
 void fx_cc_send(uint8_t send){   // sends cc for particular fx track , not scene based
 
-	uint8_t current_scene=send&15;  // 12 track for now
-	control_change_value=fx_pot_settings[(current_scene*2)+1]; // selects cc
+	uint8_t current_scene=send&15;  // 12 track of cc for now
 
-	if (fx_map_sound_enable[send]) control_change[current_scene]=fx_pot_values[current_scene*4];
-	else control_change[current_scene]=fx_pot_values[(current_scene*4)+1];
+
+	control_change_value=fx_pot_settings[(current_scene*2)+1]; // selects cc   , midi channel then cc
+
+	if (fx_map_sound_enable[send]) control_change[current_scene]=fx_pot_values[current_scene];
+//	else control_change[current_scene]=fx_pot_values[(current_scene*4)+1]; // send onor off
 
 
 	if (control_change_buf[current_scene]!=control_change[current_scene])
 		{control_change_flag=current_scene+1;control_change_buf[current_scene]=control_change[current_scene];}
-			//only sends cc on change of value
+			//only sends cc on change of value , nothing otherwise
 
 	//control_change[current_scene]=pot_states[current_scene];
 
@@ -79,7 +74,7 @@ void fx_cc_send(uint8_t send){   // sends cc for particular fx track , not scene
 
 
 }
-void fx_map_screen(void){    // fx screen functions , 3 pages ,12 tracks
+void fx_map_screen(void){    // fx screen functions , 3 pages ,12 tracks  , disabled for now
 	uint8_t note_enabled=0;
 	uint8_t scene_select=0; // this needs to change for fx , only once scene for now, 4 tracks with diff channel settings and cc
 	uint8_t current_midi=midi_channel_list[scene_buttons[0]];
@@ -111,8 +106,8 @@ void fx_map_screen(void){    // fx screen functions , 3 pages ,12 tracks
 
 			uint8_t alt_list=	 button_states[incoming_data1 ];
 			switch(alt_list){    // change state of button
-			case 0 :alt_list = color;break;   //
-			default:alt_list = 0; ;break; }
+			case 0 :alt_list = 0;break;   //
+			default:alt_list = color; ;break; }
 
 			button_states[incoming_data1 ]=alt_list;
 			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
@@ -122,13 +117,13 @@ void fx_map_screen(void){    // fx screen functions , 3 pages ,12 tracks
 			else {VAR_RESET_BIT((pointer+(scene_select&12)+((alt_list>>3))),(alt_list&7));}
 
 	} //end of mod
-	if ((incoming_data1>23) && (incoming_data1<40) && (!bar_map_screen_level)  ) {
+	if ((incoming_data1>23) && (incoming_data1<40) && (!bar_map_screen_level)  ) { // only on zero
 	// modify button from incoming
 
 			uint8_t alt_list=	 button_states[incoming_data1 ];
 			switch(alt_list){    // change state of button
-			case 0 :alt_list = color;break;   //
-			default:alt_list = 0; ;break; }
+			case 0 :alt_list = 0;break;   //
+			default:alt_list = color; ;break; }
 
 			button_states[incoming_data1 ]=alt_list;
 			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
@@ -147,7 +142,7 @@ void fx_map_screen(void){    // fx screen functions , 3 pages ,12 tracks
 			pointer+=(scene_select&12);
 			for(i=0;i<32;i++){
 				note_enabled=VAR_GET_BIT((pointer+(i>>3)),(i&7));
-				note_enabled*=color;
+				note_enabled*=0;
 				button_states[square_buttons_list[i]]=note_enabled;   // set light
 			}}
 
@@ -155,7 +150,7 @@ void fx_map_screen(void){    // fx screen functions , 3 pages ,12 tracks
 			pointer+=(scene_select*2);
 				for(i=0;i<16;i++){
 					note_enabled=VAR_GET_BIT(pointer,(i&15));
-					note_enabled*=color;
+					note_enabled*=0;
 					button_states[square_buttons_list[i]]=note_enabled;   // set light
 				}
 					memset(button_states+8,0,16);}   // clear last two rows
@@ -163,7 +158,7 @@ void fx_map_screen(void){    // fx screen functions , 3 pages ,12 tracks
 			USB_send();  // do full clear send before new data
 		} // end of bar map screen
 
-void fx_map_tracker(void){     // creates sound enable for notes from fx_map_screen
+void fx_map_tracker(void){     // creates sound enable for notes from fx_map_screen , might just dump this , not very useful
 	uint8_t enable[3];
 	uint16_t counter=bar_map_counter;
 	uint32_t pointer=( uint32_t)&fx_map_1;
@@ -183,18 +178,22 @@ void fx_map_tracker(void){     // creates sound enable for notes from fx_map_scr
 
 		//bar_map_counter=(bar_map_counter+1)&511;
 		}
-void transpose_tracker(void){ // this runs every 2 bars , should finish after the last note off , hopefluffy
+void transpose_tracker(void){ // this runs every bar , should finish after the last note off , hopefluffy, maybe run at the end of each track
 	uint8_t pitch_counter=0;
 	uint8_t random_list[64];
 	 memcpy (random_list,alt_pots,64);  // 8*8  for now
 	 int8_t alt_pots_value=0;
+	 uint16_t bar_temp=0;
+
 
 	for (i=0;i<8;i++){
 		//pitch_counter=last_pitch_count[i];
 
 
 		//pitch_counter=(pitch_counter+pitch_change_rate[i+8])&255;   // pitch change rate =  +1 +2 +4 +8 +16 +32
-		pitch_counter=((bar_map_counter/2)/pitch_change_rate[i+8])&7; // modify to fixed position
+
+		if (seq_pos_flag[i+8])  bar_temp=(bar_map_counter>>1); else bar_temp=bar_map_counter;// halve rate if seq_pos is double length
+		pitch_counter=((bar_temp)/pitch_change_rate[i+8])&7; // modify to fixed position
 
 		alt_pots_value=(random_list[(i*8)+(pitch_counter)])&127; // grab alt pots
 		transpose_octave_modifier[i]=(alt_pots_value/12)*12;  // holds base octave value
@@ -213,17 +212,36 @@ void transpose_tracker(void){ // this runs every 2 bars , should finish after th
 
 
 void bar_start(void){
-	if((!pause) ) { bar_map_tracker(); fx_map_tracker();} // normal playing screen ,disabled for pitch mode
-	  if (((bar_map_counter&1)==0) )    transpose_tracker();  // first change on second bar at the end
+	if((!pause) ) { bar_map_tracker();}  // might drop all this
+
+	//fx_map_tracker();} // normal playing screen ,disabled for pitch mode
+	   transpose_tracker();  // first change on second bar at the end
 	  bar_start_enable=0;bar_end_enable=1;
 }
 void bar_end(void){
 
-		if ((bar_map_counter&7)>=bar_map_looping[1]) bar_map_counter=bar_map_looping[0]+((bar_map_counter+8)&504); // skips to next start point
+		if(!bar_loop_current){  // stop advancing in shift + play
+	if ((bar_map_counter&7)>=bar_map_looping[1]) bar_map_counter=bar_map_looping[0]+((bar_map_counter+8)&504); // skips to next start point
 		else bar_map_counter=(bar_map_counter+1)&511; // this needs to be elsewhere
-		  bar_start_enable=1;bar_end_enable=0;
+		}
+
+		bar_start_enable=1;bar_end_enable=0;
 		  if (pause_delay) {pause=1;pause_delay=0;}  // pause enables at the end of bar
+			short_track_disable=0;
 
 }
+void cc_lut(uint8_t cc_number){
+	for (i=0;i<43;i++){
+		if(cc_number==microkorg_cc_numbers[i])
 
+		{
+			uint8_t length=strlen(microkorg_cc_list[i]);
+			memset(cc_string,32,16);
+			memcpy(cc_string,microkorg_cc_list[i],length);
+			i=43;
+		}
+
+	}
+
+}
 
