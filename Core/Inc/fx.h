@@ -13,7 +13,7 @@ void fx_menu(uint8_t incoming){ // pot 1-8 control fx list 1-8 cc value ,, cc se
 	//called always when down arrow enabled
 	// for now just triggers a  cc send
 	uint8_t current_scene=incoming&7;   // this just selects which pot 0-3 high level 4-7 low level
-	uint8_t current_midi=midi_channel_list[scene_buttons[0]]; // midi channel of currently selected track
+	uint8_t current_midi=midi_channel_list[voice_list[scene_buttons[0]]]; // midi channel of currently selected track
 	uint8_t scene_select=0;
 	if(current_midi==3) scene_select=0;
 	if(current_midi==4) scene_select=8;

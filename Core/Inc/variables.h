@@ -389,7 +389,7 @@ extern uint8_t note_on_tracking_buf[8];  // keeps tracking note-ons for 40 track
 extern uint8_t bar_map_looping[2] ;  //sets base looping length for 8 bars , can be changed
 extern uint8_t bar_map_lights[8];  // holds bar map light values for looping display
 extern uint8_t bar_loop_current;
-extern uint8_t seq_play_buf[1024]; // holds  *16 note+velocity+time   , recorder with arm_rec , one bar now, maybe more than one bar later
+extern uint8_t seq_play_buf[2048]; // holds  *16 note+velocity+time   , recorder with arm_rec , one bar now, maybe more than one bar later
 extern uint16_t seq_record_timer;
 extern uint8_t seq_record_enable;
 extern uint8_t transpose_octave_modifier[sound_set];   // it changes base octave and transpose notes for cdc_send2 , calculated from alt_pots  ,octave shift, make sure always above 0
@@ -397,14 +397,14 @@ extern int8_t transpose_pitch_modifier[sound_set];  // it changes base octave an
 extern uint16_t seq_pos_out[sound_set]; // output from seq_pos_set
 extern float seq_pos_set[sound_set] ;   // seq_pos multiplier
 extern uint8_t last_note_time[sound_set];
-extern uint8_t seq_play_buf_time[256]; // holds time values of seq_play_buf , for modification
+extern uint8_t seq_play_buf_time[512]; // holds time values of seq_play_buf , for modification
 extern uint16_t seq_play_buf_end[sound_set]; // records the last midi message time
 extern uint8_t seq_pos_flag[sound_set]; // enables longer than 255 count on seq_pos
 extern uint8_t seq_reset_flag[sound_set]; // allows reset
 
 uint8_t short_repeat_counter[sound_set];  // counts triggered playback //1-8 bars
-uint8_t short_repeat_buf[1024]; // this holds temp notes when played during run
-uint8_t short_repeat_time[256]; // holds time values for short playback
+uint8_t short_repeat_buf[2048]; // this holds temp notes when played during run
+uint8_t short_repeat_time[512]; // holds time values for short playback
 uint8_t short_play_buf_end[sound_set]; // end of
 uint8_t short_track_disable=0; // disables playback on track for one bar while recording to avoid notes hanging
 char lcd_char[4];
@@ -412,8 +412,8 @@ extern uint8_t microkorg_cc_numbers[43];
 extern const char *microkorg_cc_list[];
 char cc_string[16];  // holds outgoing string for lcd
 
-
-
+uint8_t note_recording_set_current[8];  // currently playing recording set ,only 4 for now
+extern uint8_t voice_list[sound_set]; // tracks assigned to voice channels , related to midi channel
 
 
 

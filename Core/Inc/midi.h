@@ -137,6 +137,299 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 }
 
 
+
+
+
+
+void loop_lfo(void) {  // 0-64-0(default)  >>  127-(lfo*gain)
+
+			uint16_t temp_hold=0;
+			int8_t lfo_out[sound_set*3];
+			memcpy(lfo_out,loop_lfo_out,sound_set*3);
+			uint8_t mem;
+			uint8_t lfo_rate=1;
+
+
+			for (i=0;i<sound_set;i++){
+				 mem=i+sound_set;  // bytes 16-31 ,tracks lfo info
+				 lfo_rate=lfo_settings_list[(i*2)];
+
+				if ((lfo_out[mem]==0) && (lfo_out[i]>=63))	lfo_out[mem]=2;
+				if (lfo_out[mem]==0) lfo_out[i]= (lfo_out[i]+lfo_rate);
+				if ((lfo_out[mem]==2) && (lfo_out[i]<=0))	lfo_out[mem]=0;
+				if (lfo_out[mem]==2) lfo_out[i]= (lfo_out[i]-lfo_rate);
+				if (lfo_out[i]<0) lfo_out[i]=0;
+
+				temp_hold=((lfo_out[i]*lfo_settings_list[(i*2)+1])>>6);   // level  64*lfo level
+						if (temp_hold>127) temp_hold=127;
+						lfo_out[i+32]=127-temp_hold;  // bytes 32-48 ,lfo output
+			}
+
+			memcpy(loop_lfo_out,lfo_out,sound_set*3);
+
+		}
+
+void midi_send_control(void){   // 16notes 1/8 res , 16 pattern , for one pattern only for now testing
+
+			midi_send_time=(midi_send_time+1)&2047; // counts up every
+			//if (!midi_send_time) midi_send_current=0; // reset counter when time on zero
+
+
+
+		}
+
+void midi_extras(void){    // extra midi data added here , program change , cc
+
+	//  if (((seq_pos>>5)&1) && (!pause))   // send cc , off during pause , dont disable
+		//  if (!pause)  // send cc , off during pause , dont disable
+	  {
+		  uint8_t extras=midi_extra_cue[28];
+/*		  midi_extra_cue[extras]=176+midi_channel_list[12];  // cc ch3
+		  midi_extra_cue[extras+1]=74;  // filter cutoff ,correct
+		  midi_extra_cue[extras+2]=(((loop_lfo_out[44]*2)+32)+pot_states[0])&127;  // lfo out , use pot 0 for offset
+		  // midi_extra_cue[extras+2]=64;
+		  midi_extra_cue[28]=extras+3;*/
+
+
+	/*	  { midi_extra_cue[extras+3]=192+midi_channel_list[0];     // program change data,always runs,  mainly used only for changing program on es1
+		  midi_extra_cue[extras+4]=program_change[0];
+		  midi_extra_cue[extras+5]=program_change[0];
+		  midi_extra_cue[28]=extras+6;}*/
+
+		  if (program_change_flag){midi_extra_cue[extras]=192+midi_channel_list[program_change_flag-1];   // program change for non drums
+		  midi_extra_cue[extras+1]=program_change[program_change_flag-1];
+		  midi_extra_cue[extras+2]=0;
+		  midi_extra_cue[28]=extras+3;
+		  program_change_flag=0; //clear
+
+		  }
+		  if (control_change_flag){midi_extra_cue[extras]=176+fx_pot_settings[(control_change_flag-1)*2];   // program change for non drums
+		  midi_extra_cue[extras+1]=control_change_value; // setting for reverb atm
+		  midi_extra_cue[extras+2]=control_change[control_change_flag-1];
+		  midi_extra_cue[28]=extras+3;
+		  control_change_flag=0; //clear
+
+		  }
+
+
+
+
+
+	  }
+
+
+		}
+
+void LFO_tracking(uint8_t selected_bar, uint8_t *pointer){ //0-7 15-23 , simple note on -off lfo based on bar count ,effective , 4x , maybe run it ahead for say 4 bars
+
+
+	uint8_t counter=0;
+
+	uint8_t output=0;
+	uint8_t lfo_out=0;
+	if (selected_bar>31) selected_bar=31;  // limit to a single set for now
+
+	#define max_LFO_value 8
+
+	for (i=0;i<16;i++){     // produce output for selected bar
+		output=0;
+
+		counter=0;
+		lfo_out=0;
+
+			while (counter<selected_bar){
+			counter+=(LFO_low_list[i]+1); // minimum+1
+			if ((counter>=selected_bar)&&(!output)) {output=1;lfo_out=0;}
+
+
+			counter+=(LFO_high_list[i]+1); // minimum+1
+			if ((counter>=selected_bar)&&(!output)) {output=1;lfo_out=1;}
+			}
+
+			if(!LFO_phase_list[i]) lfo_out=1;
+			if(LFO_phase_list[i]==2) lfo_out=!lfo_out;
+			pointer[i]=lfo_out;
+
+	}
+
+
+	}
+
+void seq_play_record(uint8_t* buf, uint8_t*buf_time ){ // this is triggered by keyboard when arm rec is enabled , will keep overdub if more than 8 keys, note offs seem to track ok , notes stuck on from elsewhere
+	// might redo this for multiple buffers instead of one
+	//works good , use it for diff things
+
+	uint16_t current_scene=scene_buttons[0];  // gonna change to midi channel based and x8 for keys
+	uint8_t current_channel=0;
+	current_scene=(voice_list[current_scene]); // midi channel based , might convert to a list ie 0=2 3=1 4=2 for now stay with 0-4
+
+	current_scene&=3;
+	current_channel=current_scene;
+	current_scene=(note_recording_set_current[current_scene]*16)+(current_scene*128);  // 4*8*48=1536, drums and 3 keys , this is only time *3 for data
+
+
+	uint8_t new_time=0;
+
+
+	if (!seq_record_enable) {seq_record_enable=1;memset (buf+(current_scene*3),0,48); seq_record_timer=1;memset (buf_time+(current_scene),0,16);
+	short_repeat_counter[current_channel]=1;}  // will delete if started while running
+	if( (!pause) )  { seq_record_timer=seq_pos;} // reads seq_pos if running, will disable at end
+
+
+	uint16_t seq_play_pointer=(current_scene*3)+((seq_record_enable-1)*3); // needs fix
+	uint16_t time_pos= (current_scene)+((seq_record_enable-1));
+		new_time=seq_record_timer&255;
+
+
+
+
+		buf[seq_play_pointer]=keyboard[0]&127;//note
+		buf[seq_play_pointer+1]=keyboard[1]&127;// velocity
+		buf[seq_play_pointer+2]=new_time;// relative time, nothing if zero
+		buf_time[time_pos]=new_time ;  // 255 max
+		seq_record_enable++;
+
+		if (seq_record_timer>250) {seq_record_enable=0;seq_record_timer=0;rec_arm=0;}
+		if (seq_record_enable>16) {seq_record_enable=0;seq_record_timer=0;rec_arm=0;}
+
+
+	}
+
+
+
+
+void cdc_send2(void){ // new midi send function ,  make a way to change playback speed per track also an offset
+		// now going voice based and only 4  , instead 8 records per track
+		//uint8_t playback_offset=0;  // this will change per triggering time for playback
+	uint16_t time=seq_pos;
+	uint8_t cue_counter=0;
+	uint8_t note_midi[256];
+	uint8_t counter=0;
+	uint8_t status=MIDI_NOTE_OFF;
+	uint8_t velocity=0;
+	uint8_t pitch=6;
+	uint8_t midi_extra=midi_extra_cue[28];
+
+	uint16_t count=0;
+	uint16_t count2=0;
+	uint16_t time_add=0;
+	uint16_t time_end=0;
+	uint16_t set_jump=0;
+
+
+	if (	short_track_disable) bar_map_sound_enable[short_track_disable-1]=0; //mutes selected track when keyboard pressed
+
+	//uint8_t accent_select=0;
+	//midi_extra_cue[28]=0; //sending junk even wehn off
+
+
+
+	for (i=0;i<64;i++){ //does only one round, 24 messages per track ,, uses search  , this now needs to change 24*8*4
+		// this stays but now in different regions , nothing to do with time !
+
+		count=i>>4;
+		counter=count; // this is now refers to voice selected
+		set_jump=(note_recording_set_current[count]*16)+(count*128);//0-512 range
+
+
+		count=(i&15)+set_jump; // jumps from currently playing notes to next midi channel
+		count2=count*3; // *3 bytess in buf
+
+/*			if (!(i&15)) {
+				counter=i>>4;
+				time_add=0;
+				time=seq_pos_out[counter]; // 0-511 atm
+				time_end=seq_play_buf_end[counter];
+
+				if ((time_end<256) ) time_add=time&256; // plays multiple times , might drop it
+				if ((time_end<128) ) time_add=time&384;
+
+			}*/
+
+
+			//if (time>time_end) time_add=time_end;
+
+		//if (((seq_play_buf_time[i]+time_add)==time) && (seq_play_buf[count])){ //   works only on exact position
+			if ((seq_play_buf_time[count]+time_add)==time){    // plays when time matches to search position , this is just time
+			velocity=0;
+			status=MIDI_NOTE_OFF;
+			if (seq_play_buf[count2 + 1]) {status=MIDI_NOTE_ON;
+			velocity=note_accent[counter];  // gets messed up at times
+
+			}
+			note_midi[cue_counter] = midi_channel_list[counter] + status; // add Note_on only
+			pitch=seq_play_buf[count2]&127; // pitch
+			if (counter) {if (pitch>6)  pitch=pitch+transpose_pitch_modifier[counter]; else pitch=12;} // pitch of note modify with in an octave
+						note_midi[(cue_counter) + 1] = pitch;
+						note_midi[(cue_counter) + 2] = velocity;// velocity
+		//	if(bar_map_sound_enable[counter] ||  (!velocity)) cue_counter+=3;  // sends on note enable but also all note offs
+						cue_counter+=3;
+
+			//if ((time==(seq_play_buf_end[counter])) ) seq_reset_flag[counter]=time;  // restart after last note , not happy at all here
+		}
+			if ((short_repeat_time[count])==(time&255)){    // plays short live recording x number of times then delete
+				if (short_repeat_counter[counter]){ // only if running
+
+				velocity=0;
+			status=MIDI_NOTE_OFF;
+			if (short_repeat_buf[(count2) + 1]) {status=MIDI_NOTE_ON;
+			velocity=note_accent[counter];
+
+			}
+
+			note_midi[cue_counter] =midi_channel_list[counter]+ status; // add Note_on only
+			pitch=short_repeat_buf[count2]&127; // pitch
+		//	if (counter>7) {if (pitch>6)  pitch=pitch+transpose_pitch_modifier[counter-8]; else pitch=12;} // pitch of note modify with in an octave
+						note_midi[(cue_counter) + 1] = pitch;
+						note_midi[(cue_counter) + 2] = velocity;// velocity
+			//if(bar_map_sound_enable[counter] ||  (!velocity) ) cue_counter+=3;  // sends on note enable but also all note offs
+			 cue_counter+=3;
+
+			//if ((time==(seq_play_buf_end[counter])) ) seq_reset_flag[counter]=time;  // restart after last note , not happy at all here
+		}}
+
+
+
+
+
+
+	}
+	if(cue_counter>95) cue_counter=95;
+	if (pause) cue_counter=0;
+	serial_len=cue_counter;
+	//midi_extra_cue[28] = 0; // issues with sending , this helps somewhat
+	if( midi_extra && (!cue_counter) )	{ memcpy(serial_out, midi_extra_cue, midi_extra); // extra stuff sent only when no notes are sent
+	serial_len =  midi_extra;}
+	else 	memcpy(serial_out, note_midi, serial_len);
+
+	midi_extra_cue[28] = 0;  // reset    ,seems extra data coming from somewhere
+}
+
+void seq_pos_rate(uint8_t scene ,uint8_t*buf , uint8_t*buf_time, uint16_t* buf_end ) {  // modifies and writes seq_play_buf_time , run this on selected only ,might keep the lot in one place
+		uint16_t temp=0;
+		uint8_t current_scene=scene&15;
+		uint8_t current_scene2=current_scene*16;
+		uint16_t temp_out=0;
+
+		for (i=0;i<16;i++){
+
+			temp=buf[(i*3)+2+(current_scene2*3)]; //grab original value
+				if(temp) temp=temp*seq_pos_set[current_scene];										// last pos stored , needs to increment at least by one always
+			//if(temp>250) temp=250;  // doesn't loop
+			if (temp_out<temp) temp_out=temp;
+			if(temp==256) temp=257;
+
+			buf_time[i+current_scene2]=temp;// write to time buf
+
+		}
+
+		buf_end [current_scene]=temp_out; // save new  length
+
+
+		if (temp_out>255) seq_pos_flag[current_scene]=1; else seq_pos_flag[current_scene]=0;
+	}
+
+/*
 void cdc_send(void){     // all midi runs often , need to separate  , will go back to the old way ,less confusing
 		// sometimes seem to miss note on message
 	// might remove this
@@ -294,13 +587,13 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 					note_timing[i] = 16; // resets counter
 					} else last_note_on_channel[i] = 0; //skip sending on zero velocity
 
-		/*			if ((note_timing[i]>1 )){    // in case old note hasnt finished ,Note_off
+					if ((note_timing[i]>1 )){    // in case old note hasnt finished ,Note_off
 						note_midi[cue_counter] =midi_channel_select+ MIDI_NOTE_OFF; // note off
 						note_midi[(cue_counter) + 1] =last_note_on_channel[i];
 						note_midi[(cue_counter) + 2] = 0;
 						cue_counter = cue_counter + 3;
 						note_timing[i]=0;
-					}*/
+					}
 					 // saves last pitch step
 
 
@@ -440,13 +733,13 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 			// memcpy(serial_out , send_temp, serial_len);  // basic note only send
 			 midi_extra_cue[28] = 0;  // reset    ,seems extra data coming from somewhere
-/*			 //nrpn_temp[30]=0;
+			 //nrpn_temp[30]=0;
 
 
 			 memcpy(serial_out + serial_len, nrpn_temp, nrpn_temp[30]); // temp only !  add nrpn here
 
 			 serial_len = serial_len + nrpn_temp[30];
-			 nrpn_temp[30] = 0;*/
+			 nrpn_temp[30] = 0;
 			 if (pause)
 				 pause = 2;
 
@@ -467,8 +760,7 @@ void cdc_send(void){     // all midi runs often , need to separate  , will go ba
 
 
 		}
-
-
+*/
 void nrpn_send(void){			 // all nrpn data goes here ,sends as well on serial
 
 
@@ -524,152 +816,8 @@ void nrpn_send(void){			 // all nrpn data goes here ,sends as well on serial
 
 }
 
-void loop_lfo(void) {  // 0-64-0(default)  >>  127-(lfo*gain)
 
-			uint16_t temp_hold=0;
-			int8_t lfo_out[sound_set*3];
-			memcpy(lfo_out,loop_lfo_out,sound_set*3);
-			uint8_t mem;
-			uint8_t lfo_rate=1;
-
-
-			for (i=0;i<sound_set;i++){
-				 mem=i+sound_set;  // bytes 16-31 ,tracks lfo info
-				 lfo_rate=lfo_settings_list[(i*2)];
-
-				if ((lfo_out[mem]==0) && (lfo_out[i]>=63))	lfo_out[mem]=2;
-				if (lfo_out[mem]==0) lfo_out[i]= (lfo_out[i]+lfo_rate);
-				if ((lfo_out[mem]==2) && (lfo_out[i]<=0))	lfo_out[mem]=0;
-				if (lfo_out[mem]==2) lfo_out[i]= (lfo_out[i]-lfo_rate);
-				if (lfo_out[i]<0) lfo_out[i]=0;
-
-				temp_hold=((lfo_out[i]*lfo_settings_list[(i*2)+1])>>6);   // level  64*lfo level
-						if (temp_hold>127) temp_hold=127;
-						lfo_out[i+32]=127-temp_hold;  // bytes 32-48 ,lfo output
-			}
-
-			memcpy(loop_lfo_out,lfo_out,sound_set*3);
-
-		}
-
-void midi_send_control(void){   // 16notes 1/8 res , 16 pattern , for one pattern only for now testing
-
-			midi_send_time=(midi_send_time+1)&2047; // counts up every
-			//if (!midi_send_time) midi_send_current=0; // reset counter when time on zero
-
-
-
-		}
-
-void midi_extras(void){    // extra midi data added here , program change , cc
-
-	//  if (((seq_pos>>5)&1) && (!pause))   // send cc , off during pause , dont disable
-		//  if (!pause)  // send cc , off during pause , dont disable
-	  {
-		  uint8_t extras=midi_extra_cue[28];
-/*		  midi_extra_cue[extras]=176+midi_channel_list[12];  // cc ch3
-		  midi_extra_cue[extras+1]=74;  // filter cutoff ,correct
-		  midi_extra_cue[extras+2]=(((loop_lfo_out[44]*2)+32)+pot_states[0])&127;  // lfo out , use pot 0 for offset
-		  // midi_extra_cue[extras+2]=64;
-		  midi_extra_cue[28]=extras+3;*/
-
-
-	/*	  { midi_extra_cue[extras+3]=192+midi_channel_list[0];     // program change data,always runs,  mainly used only for changing program on es1
-		  midi_extra_cue[extras+4]=program_change[0];
-		  midi_extra_cue[extras+5]=program_change[0];
-		  midi_extra_cue[28]=extras+6;}*/
-
-		  if (program_change_flag){midi_extra_cue[extras]=192+midi_channel_list[program_change_flag-1];   // program change for non drums
-		  midi_extra_cue[extras+1]=program_change[program_change_flag-1];
-		  midi_extra_cue[extras+2]=0;
-		  midi_extra_cue[28]=extras+3;
-		  program_change_flag=0; //clear
-
-		  }
-		  if (control_change_flag){midi_extra_cue[extras]=176+fx_pot_settings[(control_change_flag-1)*2];   // program change for non drums
-		  midi_extra_cue[extras+1]=control_change_value; // setting for reverb atm
-		  midi_extra_cue[extras+2]=control_change[control_change_flag-1];
-		  midi_extra_cue[28]=extras+3;
-		  control_change_flag=0; //clear
-
-		  }
-
-
-
-
-
-	  }
-
-
-		}
-
-void LFO_tracking(uint8_t selected_bar, uint8_t *pointer){ //0-7 15-23 , simple note on -off lfo based on bar count ,effective , 4x , maybe run it ahead for say 4 bars
-
-
-	uint8_t counter=0;
-
-	uint8_t output=0;
-	uint8_t lfo_out=0;
-	if (selected_bar>31) selected_bar=31;  // limit to a single set for now
-
-	#define max_LFO_value 8
-
-	for (i=0;i<16;i++){     // produce output for selected bar
-		output=0;
-
-		counter=0;
-		lfo_out=0;
-
-			while (counter<selected_bar){
-			counter+=(LFO_low_list[i]+1); // minimum+1
-			if ((counter>=selected_bar)&&(!output)) {output=1;lfo_out=0;}
-
-
-			counter+=(LFO_high_list[i]+1); // minimum+1
-			if ((counter>=selected_bar)&&(!output)) {output=1;lfo_out=1;}
-			}
-
-			if(!LFO_phase_list[i]) lfo_out=1;
-			if(LFO_phase_list[i]==2) lfo_out=!lfo_out;
-			pointer[i]=lfo_out;
-
-	}
-
-
-	}
-
-void seq_play_record(uint8_t* buf, uint8_t*buf_time ){ // this is triggered by keyboard when arm rec is enabled , will keep overdub if more than 8 keys, note offs seem to track ok , notes stuck on from elsewhere
-	// might redo this for multiple buffers instead of one
-
-	uint8_t current_scene=scene_buttons[0];
-	uint8_t new_time=0;
-
-
-	if (!seq_record_enable) {seq_record_enable=1;memset (buf+(current_scene*48),0,48); seq_record_timer=1;memset (buf_time+(current_scene*16),0,16);
-	short_repeat_counter[current_scene]=1;}  // will delete if started while running
-	if( (!pause) )  { seq_record_timer=seq_pos;} // reads seq_pos if running, will disable at end
-
-
-	uint16_t seq_play_pointer=(current_scene*48)+((seq_record_enable-1)*3);
-	uint16_t time_pos= (current_scene*16)+((seq_record_enable-1));
-		new_time=seq_record_timer&255;
-
-
-
-
-		buf[seq_play_pointer]=keyboard[0]&127;//note
-		buf[seq_play_pointer+1]=keyboard[1]&127;// velocity
-		buf[seq_play_pointer+2]=new_time;// relative time, nothing if zero
-		buf_time[time_pos]=new_time ;  // 255 max
-		seq_record_enable++;
-
-		if (seq_record_timer>250) {seq_record_enable=0;seq_record_timer=0;rec_arm=0;}
-		if (seq_record_enable>16) {seq_record_enable=0;seq_record_timer=0;rec_arm=0;}
-
-
-	}
-
-
+/*
 void cdc_send2(void){ // new midi send function ,  make a way to change playback speed per track also an offset
 
 		//uint8_t playback_offset=0;  // this will change per triggering time for playback
@@ -692,13 +840,13 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 
 
 
-	for (i=0;i<256;i++){ //does only one round, 24 messages per track ,, uses search
+	for (i=0;i<256;i++){ //does only one round, 24 messages per track ,, uses search  , this now needs to change 24*8*4
+		// old was
 
+		count=i*3; // for seq_play_buf , 3 bytes per record ,
 
-		count=i*3; // for seq_play_buf
-
-		counter=i>>4;
-/*			if (!(i&15)) {
+		counter=i>>4; // 0-15 tracks  , change to 0-3
+			if (!(i&15)) {
 				counter=i>>4;
 				time_add=0;
 				time=seq_pos_out[counter]; // 0-511 atm
@@ -707,7 +855,7 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 				if ((time_end<256) ) time_add=time&256; // plays multiple times , might drop it
 				if ((time_end<128) ) time_add=time&384;
 
-			}*/
+			}
 
 
 			//if (time>time_end) time_add=time_end;
@@ -766,29 +914,6 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 	else 	memcpy(serial_out, note_midi, serial_len);
 
 	midi_extra_cue[28] = 0;  // reset    ,seems extra data coming from somewhere
-}
+} // old version
 
-void seq_pos_rate(uint8_t scene ,uint8_t*buf , uint8_t*buf_time, uint16_t* buf_end ) {  // modifies and writes seq_play_buf_time , run this on selected only ,might keep the lot in one place
-		uint16_t temp=0;
-		uint8_t current_scene=scene&15;
-		uint8_t current_scene2=current_scene*16;
-		uint16_t temp_out=0;
-
-		for (i=0;i<16;i++){
-
-			temp=buf[(i*3)+2+(current_scene2*3)]; //grab original value
-				if(temp) temp=temp*seq_pos_set[current_scene];										// last pos stored , needs to increment at least by one always
-			//if(temp>250) temp=250;  // doesn't loop
-			if (temp_out<temp) temp_out=temp;
-			if(temp==256) temp=257;
-
-			buf_time[i+current_scene2]=temp;// write to time buf
-
-		}
-
-		buf_end [current_scene]=temp_out; // save new  length
-
-
-		if (temp_out>255) seq_pos_flag[current_scene]=1; else seq_pos_flag[current_scene]=0;
-	}
-
+*/

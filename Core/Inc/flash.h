@@ -115,9 +115,9 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 
 
 		  //sector erase works
-		 			memcpy(drum_store_one,seq_play_buf,1024); // for now store here
+		 		//	memcpy(drum_store_one,seq_play_buf,1024); // for now store here
 		//  memcpy  (test_data3+4 ,scene_memory,  256);
-			  flash_page_write(patch_mem,drum_store_one+256);   // bit mixed up
+
 
 		  	  single_settings_list[1]=tempo;
 
@@ -125,15 +125,15 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 			settings_storage(); // all settings
 
 			//memcpy  (test_data3+4 ,all_settings,  256); // copy
-
+			 flash_page_write(patch_mem,seq_play_buf+256);   // bit mixed up
 			patch_mem=patch_mem+1;
 			flash_page_write(patch_mem,all_settings);   // needs more
 			patch_mem=patch_mem+1;
-			flash_page_write(patch_mem,drum_store_one);
+			flash_page_write(patch_mem,seq_play_buf);
 			patch_mem=patch_mem+1;
-			flash_page_write(patch_mem,drum_store_one+512);
+			flash_page_write(patch_mem,seq_play_buf+512);
 			patch_mem=patch_mem+1;
-			flash_page_write(patch_mem,drum_store_one+768);
+			flash_page_write(patch_mem,seq_play_buf+768);
 			patch_mem=patch_mem+1;
 			flash_page_write(patch_mem,alt_pots);
 			patch_mem=patch_mem+1;
@@ -144,7 +144,10 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 			flash_page_write(patch_mem,all_settings+768);
 			patch_mem=patch_mem+1;
 			flash_page_write(patch_mem,all_settings+1024);
-
+			patch_mem=patch_mem+1;
+			flash_page_write(patch_mem,seq_play_buf+1024);
+			patch_mem=patch_mem+1;
+			flash_page_write(patch_mem,seq_play_buf+1280);
 
 		//  memcpy  (test_data3+4 ,drum_store_one,  256);  // drums
 
@@ -175,23 +178,29 @@ void flash_read(void){     //can hang here
 	test_data2[0]=0x03; //read ok , get notes
 	test_data2[2]=patch_mem;
 	HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0);  // when readin low till the end
-	HAL_SPI_TransmitReceive (&hspi1,test_data2, test_data3,  2560, 100); // request data , always leave extra room (clock) , works
+	HAL_SPI_TransmitReceive (&hspi1,test_data2, test_data3,  3076, 100); // request data , always leave extra room (clock) , works
 	HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);  // high end
 
 
-	memcpy(drum_store_one+256,test_data3+4,256);    // buttons data
+	memcpy(seq_play_buf+256,test_data3+4,256);    // buttons data
 
 	memcpy(all_settings,test_data3+260,256); // copy back settings block
 
 
 
-	memcpy(drum_store_one,test_data3+516,256);   // next block (+4)
-	memcpy(drum_store_one+512,test_data3+772,512); //
+	memcpy(seq_play_buf,test_data3+516,256);   // next block (+4)
+	memcpy(seq_play_buf+512,test_data3+772,512); //512-768
+
+
+
 	memcpy(alt_pots,test_data3+1284,256);
 	memcpy(all_settings+256,test_data3+1540,1024); // second half of settings
+	memcpy(seq_play_buf+1024,test_data3+2564,512); //1024-1536
+
+
 	memcpy(program_change_automation,alt_pots+128,32); // program change data
 
-	memcpy(seq_play_buf,drum_store_one,1024); //for now
+	//memcpy(seq_play_buf,drum_store_one,1024); //for now
 
 	settings_storage(); // all settings read out
 

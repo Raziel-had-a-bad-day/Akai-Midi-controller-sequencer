@@ -228,7 +228,7 @@ int main(void)
 
 
 	uint8_t count_div;
-	for (i=0;i<256;i++){
+	for (i=0;i<512;i++){
 		count_div=i/16;
 	seq_play_buf_time[i]=seq_play_buf[(i*3)+2]; // saves time of messages
 
@@ -344,14 +344,17 @@ int main(void)
 
 		//  lcd_menu_pages(2); // seems to mess up printing now
 		  lcd_mem(); // this sends too fast when run constant
-		  accent_bit=((seq_step_long&3)<<3)+(seq_step>>1);   //0-32 ,32+32 for 8 bytes ,1 bit is 2 steps, time reference
-		  accent_bit_shift=((seq_step_long>>2)&1)*4; // changes per bar , time reference
+		 // accent_bit=((seq_step_long&3)<<3)+(seq_step>>1);   //0-32 ,32+32 for 8 bytes ,1 bit is 2 steps, time reference
+		//  accent_bit_shift=((seq_step_long>>2)&1)*4; // changes per bar , time reference
 		  if (clip_stop && (scene_buttons[0]>7)) pitch_mode(); // only when second page
 
 		  if(s_temp==31){ seq_record_enable=0;
 
-		  for (i=0;i<16;i++){  // advance short record playback
-			  if ((short_repeat_counter[i])>=4) {memset (short_repeat_buf+(i*48),0,48);memset (short_repeat_time+(i*16),0,16);short_repeat_counter[i]=0;};
+		  for (i=0;i<4;i++){  // advance short record playback , this now voice based
+			  if ((short_repeat_counter[i])>=4) {
+				 uint16_t current_scene=(note_recording_set_current[i]*16)+(i*128); // time buf
+
+				  memset (short_repeat_buf+(current_scene*3),0,48);memset (short_repeat_time+(current_scene),0,16);short_repeat_counter[i]=0;};
 			  if ((short_repeat_counter[i]) && ((short_repeat_counter[i]))<4) short_repeat_counter[i]++;
 
 		  }}
@@ -363,11 +366,15 @@ int main(void)
 			  seq_step_long=bar_map_counter&63;
 		  if ((!bar_map_screen_level)&&(!clip_stop)) {  // disp function for bar and accent ,disabled for pitch mode
 			  memcpy(button_states+8,bar_map_lights,8); button_states[8+(seq_step_long&7)]=3;  // shows current bar pos on first screen
-			  uint32_t accent_pointer=(uint32_t)&motion_record_buf;
-			  for(i=0;i<8;i++){
+			 memset(button_states+15,0,8);
+			 uint8_t recordings=note_recording_set_current[voice_list[scene_buttons[0]]];
+			  button_states[16+recordings]=5;
+
+			  //  uint32_t accent_pointer=(uint32_t)&motion_record_buf;
+			/*  for(i=0;i<8;i++){  // accent bar draw
 			  		if	(VAR_GET_BIT(accent_pointer+(scene_buttons[0]*8)+accent_bit_shift,((accent_bit&24)+i))) 	 button_states[16+i]=5;
 			  		else button_states[16+i]=0;  // adds accent on/off bar on thrid row
-			  		}
+			  		}*/
 
 		  }
 		  } //end of pause off
@@ -381,7 +388,7 @@ int main(void)
 		  HAL_RTC_GetTime(&hrtc, &seq_clock, RTC_FORMAT_BIN);
 		  HAL_RTC_GetDate(&hrtc, &seq_date, RTC_FORMAT_BIN);  // this needs to be called or the time wont work properly
 
-			  pattern_settings();
+			//  pattern_settings();
 			//  led_full_clear();
 		//	  alt_pots_playing(); // run it always
 			  //if (clip_stop) alt_pots_playing(); // lights for alt pots during play
@@ -601,7 +608,7 @@ int main(void)
 				  				 // uint8_t current_seq_pos=seq_pos&255;
 				  uint8_t extra_start=midi_extra_cue[28];  //start from last byte
 
-				  if (midi_channel_list[selected_scene]==9)   // drums send
+				  if (midi_channel_list[voice_list[selected_scene]]==9)   // drums send
 
 
 				  {  midi_extra_cue[extra_start]=(note_flag+9);         // use drumlist for now
@@ -609,7 +616,7 @@ int main(void)
 				  midi_extra_cue[1+extra_start]=(drum_list[selected_scene]);midi_extra_cue[2+extra_start]=velocity; midi_extra_cue[28]=extra_start+3;   // send midi
 
 				  incoming=0;}
-				  else  {midi_extra_cue[extra_start]=note_flag+midi_channel_list[selected_scene];  midi_extra_cue[1+extra_start]=((incoming))&127 ;
+				  else  {midi_extra_cue[extra_start]=note_flag+midi_channel_list[voice_list[selected_scene]];  midi_extra_cue[1+extra_start]=((incoming))&127 ;
 				  midi_extra_cue[2+extra_start]=velocity; midi_extra_cue[28]=extra_start+3;incoming=0;}  // send normal then keyboard off
 				  keyboard[0]=incoming;
 

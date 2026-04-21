@@ -23,7 +23,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 
 		uint8_t incoming_data1 = incoming_message[1]&127;
 
-	switch(bar_map_screen_level){   // grab the pointer for the correct bar map screen
+	switch(bar_map_screen_level){   // grab the pointer for the correct bar map screen , might use it for diff functions now
 		case 0: pointer=(uint32_t)&bar_map_0;color=green_button;break;
 		case 1: pointer=(uint32_t)&bar_map_1;color=red_button;break;
 		case 2: pointer=(uint32_t)&bar_map_8;color=red_button;break;
@@ -47,7 +47,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 			else {VAR_RESET_BIT((pointer+(scene_select&12)+((alt_list>>3))),(alt_list&7));}
 
 	} //end of mod
-	if ((incoming_data1>23) && (incoming_data1<40) && (!bar_map_screen_level)  ) {
+	if ((incoming_data1>23) && (incoming_data1<40) && (!bar_map_screen_level)  ) {  // top 2 bars
 	// modify button from incoming
 
 			uint8_t alt_list=	 button_states[incoming_data1 ];
@@ -64,10 +64,10 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 
 
 	} //end of mod
-	if ((incoming_data1>8) && (incoming_data1<24) && (!bar_map_screen_level)  ) {
+	if ((incoming_data1>15) && (incoming_data1<24) && (!bar_map_screen_level)  ) {   // middle row now recording select
 	// modify button from incoming
-			uint32_t accent_pointer=(uint32_t)&motion_record_buf;
-
+		// add shift copy to buf
+			memset(button_states+16,0,8);   // clear row
 			uint8_t alt_list=	 button_states[incoming_data1 ];
 			switch(alt_list){    // change state of button
 			case 0 :alt_list = accent_color;break;   //
@@ -75,17 +75,22 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 
 			button_states[incoming_data1 ]=alt_list;
 			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
+			if(button_states[square_buttons_list[alt_list]]) {
+			uint8_t	set_scene=voice_list[scene_select]; // midi channel based , might convert to a list ie 0=2 3=1 4=2 for now stay with 0-4
+				set_scene&=3;
+				note_recording_set_current[set_scene]=alt_list&7;  // 4 settings for now
 
+			}
  // modify data from button state
-		if(button_states[square_buttons_list[alt_list]])  {VAR_SET_BIT((accent_pointer+(scene_select*8)+accent_bit_shift),((accent_bit&24)+(alt_list-16)));}
-		else {VAR_RESET_BIT((accent_pointer+(scene_select*8)+accent_bit_shift),((accent_bit&24)+(alt_list-16)));}
+		//if(button_states[square_buttons_list[alt_list]])  {VAR_SET_BIT((accent_pointer+(scene_select*8)+accent_bit_shift),((accent_bit&24)+(alt_list-16)));}
+	//	else {VAR_RESET_BIT((accent_pointer+(scene_select*8)+accent_bit_shift),((accent_bit&24)+(alt_list-16)));}  // controls accent bit
 
 
 	} //end of mod
 
 // draw screen
 
-	if (bar_map_screen_level){       // draw bars
+	if (bar_map_screen_level){       // draw bars , might dump al this
 		pointer+=(scene_select&12);
 		for(i=0;i<32;i++){
 			note_enabled=VAR_GET_BIT((pointer+(i>>3)),(i&7)); // read note on
@@ -93,7 +98,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 			button_states[square_buttons_list[i]]=note_enabled;   // set light
 		}}
 
-	if (!bar_map_screen_level){   // draw notes also accent on/off
+	if (!bar_map_screen_level){   // normal screen default
 
 		uint8_t multi=countSetBits(note_on_tracking_buf[1]);// get number of bits on bar select
 
@@ -119,13 +124,16 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 			bar_map_lights[incoming_data1-8]=red_button;// enable bar selected light
 			bar_map_counter=(bar_map_counter&504)+(incoming_data1-8);  // move bar map counter
 
-
+			//
 		}
+
+
+
 		pointer+=(scene_select*2);
 			for(i=0;i<16;i++){
 				note_enabled=VAR_GET_BIT(pointer,(i&15));
 				if(!note_enabled) note_enabled=color; else note_enabled=0;
-				button_states[square_buttons_list[i]]=note_enabled;   // set light for notes
+				button_states[square_buttons_list[i]]=note_enabled;   // was set light for notes,, this is now for soemthing else
 			}
 				//memset(button_states+8,0,16);
 	}   // end of !bar_map_level
@@ -174,7 +182,7 @@ void all_notes_off(void){
 }
 
 void alt_pots_playing(void){    // shows currently playing related to alt notes selected, for visual feedback, only when clip_stop
-
+		//not used now
 
 	uint8_t note_played=last_pitch_count[scene_buttons[0]]>>3;  // grab last pitch count
 	if(note_played<4) note_played+=12;
@@ -189,7 +197,7 @@ void alt_pots_playing(void){    // shows currently playing related to alt notes 
 
 
 void record_overdub(void){ // runs only when triggered by keyboard , wipes old data but only when triggered
-
+		// not used
 	uint16_t drum_byte_select;
 	uint16_t clear_select;
 		uint8_t drum_byte; // note on time data
@@ -271,7 +279,7 @@ void loop_screen(void){  // always on now ,produces lights for notes,  16 notes 
 
 
 void note_buttons(void){  // always running only on notes though , might dump it
-
+// not terribly useful
 
 			for (i = 0; i < 40; i++){   // test for bad data
 				if (button_states[i]>10) button_states[i]=0;
@@ -451,7 +459,14 @@ void buttons_store(void){    // incoming data from controller
 		            rec_arm = 1;
 		            memcpy(lcd_buffer,"Recording mode  ",16);
 		            if (shift && !clip_stop)
-		                memset(seq_play_buf + current_scene * 48, 0, 48);
+		            {
+		            uint16_t set_scenes=midi_channel_list[current_scene];
+		            set_scenes&=3;
+		            set_scenes=note_recording_set_current[set_scenes]*8;
+		            memset(seq_play_buf + (set_scenes * 48), 0, 48);// clear recording when shift held
+
+		            }
+
 		            break;
 
 		        case device_button:

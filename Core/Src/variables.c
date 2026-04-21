@@ -189,7 +189,7 @@ uint8_t loop_length;
 
 uint8_t serial_out[128]; // holds midi out data
 uint8_t serial_len;
-uint8_t midi_channel_list[21]={9,9,9,9,9,9,9,9,9,9,9,9,3,3,3,3,3,3 };   //holds midi channel settings 0=1 (midi channels 1-16)
+uint8_t midi_channel_list[6]={9,4,2,3,5};   //holds midi channel settings for voices
 uint8_t nrpn_cue[80]={186,99,5,186,98,16,186,6,32};  // stores message for nrpn on es1 only needs 1 initial c99=5  then only  2 bytes repeating  CC 98 =NRPN LSB and CC 6 =value , for now 9 bytes though  , initial normal 3 bytes then convrted to 9
 const uint8_t pitch_lut[127] ={0,0,0,0,0,0,0,0,0,0,0,0,0,2,4,6,8,10,12,14,16,18,20,22,24,27,30,33,36,39,42,45,48,51,54,57,64,0,2,4,6,8,10,12,14,16,18,20,22,24,27,30,33,36,39,42,45,48,51,54,57,64,70,73,76,79,82,85,88,91,94,97,100,103,105,107,109,111,113,115,117,119,121,123,125,127,64,70,73,76,79,82,85,88,91,94,97,100,103,105,107,109,111,113,115,117,119,121,123,125,127};   // es1 pitch table  4 octaves
 uint8_t es_filter[9]; // track es1 filters  old and new values  say 4+4
@@ -325,7 +325,7 @@ uint8_t bar_map_0[sound_set*2];  // bit map for notes 16*16bit
 uint8_t bar_map_1[sound_set]={255,255,255,255,255,255,255,255};  // bit mapped enable 1 bar
 uint8_t bar_map_8[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 8 bar
 uint8_t bar_map_64[sound_set]={255,255,255,255,255,255,255,255};// bit mapped enable 8*8 bar   , for now might change to diff values
-uint8_t bar_map_screen_level=1;  //selects which zoom is displayed 0-3   , 0=none 1=8 2=32
+uint8_t bar_map_screen_level=0;  //selects which zoom is displayed 0-3   , 0=none 1=8 2=32
 uint8_t bar_end_enable=0;  // if enabled runs everything needed on seq_pos=0
 uint8_t bar_start_enable=1; // if enabled runs everything for seq_pos=255
 
@@ -371,7 +371,7 @@ uint8_t note_on_tracking_buf[8];  // keeps tracking note-ons for 40 track button
 uint8_t bar_map_looping[2]={0,7}; //sets base looping length for 8 bars , can be changed
 uint8_t bar_map_lights[8];  // holds bar map light values for looping display
 uint8_t bar_loop_current;
-uint8_t seq_play_buf[1024]; // holds  *16 note+velocity+time   , recorder with arm_rec , one bar now, maybe more than one bar later
+uint8_t seq_play_buf[2048]; // holds  *16 note+velocity+time   , recorder with arm_rec , one bar now, maybe more than one bar later ,48bytes all with time
 uint16_t seq_record_timer;
 uint8_t seq_record_enable;
 uint8_t transpose_octave_modifier[sound_set];   // it changes base octave and transpose notes for cdc_send2 , calculated from alt_pots  ,octave shift, make sure always above 0
@@ -379,7 +379,7 @@ int8_t transpose_pitch_modifier[sound_set];  // it changes base octave and trans
 uint16_t seq_pos_out[sound_set]; // output from seq_pos_set
 float seq_pos_set[sound_set]={1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}; // seq_pos multiplier
 uint8_t last_note_time[sound_set];
-uint8_t seq_play_buf_time[256]; // holds time values of seq_play_buf , for modification
+uint8_t seq_play_buf_time[512]; // holds time values of seq_play_buf , for modification
 uint16_t seq_play_buf_end[sound_set]; // records the last midi message time
 uint8_t seq_pos_flag[sound_set]; // enables longer than 255 count on seq_pos
 uint8_t seq_reset_flag[sound_set]; // allows reset
@@ -394,6 +394,7 @@ const char *microkorg_cc_list[]={"Portamento", "Wave", "Control1",
 const uint8_t microkorg_cc_numbers[43]={05, 77, 14, 15, 78, 82, 82, 18, 19, 20, 21, 22,
 		22, 63, 74, 71, 79, 85, 23, 24, 25, 26, 07, 10, 92, 73, 75,
 		70, 87, 87, 28, 88, 26, 28, 29, 30, 31, 12, 13, 13, 94, 95, 90};
+uint8_t voice_list[sound_set]={0,0,0,0,0,0,0,0,3,3,1,1,1,1,2,2}; // tracks assigned to voice channels , related to midi channel
 
 
 
