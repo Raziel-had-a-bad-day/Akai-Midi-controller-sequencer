@@ -1,9 +1,14 @@
 
-
+UART_HandleTypeDef huart1;
 
 void seq_play_record(uint8_t* buf, uint8_t*buf_time );
 void cdc_send2(void);
 void seq_pos_rate(uint8_t scene ,uint8_t*buf , uint8_t*buf_time, uint16_t* buf_end );
+void midi_timeout_parse_buffer(const uint8_t *buffer, uint32_t length);
+
+
+
+
 
 uint8_t pattern_scale_process(uint8_t value, uint8_t selected_sound ) {    // scale incoming notes from list
 
@@ -263,9 +268,9 @@ void seq_play_record(uint8_t* buf, uint8_t*buf_time ){ // this is triggered by k
 	uint8_t current_channel=0;
 	current_scene=(voice_list[current_scene]); // midi channel based , might convert to a list ie 0=2 3=1 4=2 for now stay with 0-4
 
-	current_scene&=3;
+	current_scene&=7; // 0-3
 	current_channel=current_scene;
-	current_scene=(note_recording_set_current[current_scene]*16)+(current_scene*128);  // 4*8*48=1536, drums and 3 keys , this is only time *3 for data
+	current_scene=((note_recording_set_current[current_scene]&7)*seq_play_note_count)+(current_scene*(16*sound_set));  // 4*8*48=1536, drums and 3 keys , this is only time *3 for data
 
 
 	uint8_t new_time=0;
@@ -313,7 +318,7 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 	uint16_t count=0;
 	uint16_t count2=0;
 	uint16_t time_add=0;
-	uint16_t time_end=0;
+	//uint16_t time_end=0;
 	uint16_t set_jump=0;
 
 
@@ -324,12 +329,12 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 
 
 
-	for (i=0;i<64;i++){ //does only one round, 24 messages per track ,, uses search  , this now needs to change 24*8*4
+	for (i=0;i<128;i++){ //does only one round, 24 messages per track ,, uses search  , this now needs to change 24*8*4
 		// this stays but now in different regions , nothing to do with time !
 
-		count=i>>4;
+		count=i>>4; // 0-7
 		counter=count; // this is now refers to voice selected
-		set_jump=(note_recording_set_current[count]*16)+(count*128);//0-512 range
+		set_jump=(note_recording_set_current[count]*seq_play_note_count)+(count*(seq_play_note_count*sound_set));//0-512 range
 
 
 		count=(i&15)+set_jump; // jumps from currently playing notes to next midi channel
@@ -354,7 +359,7 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 			velocity=0;
 			status=MIDI_NOTE_OFF;
 			if (seq_play_buf[count2 + 1]) {status=MIDI_NOTE_ON;
-			velocity=note_accent[counter];  // gets messed up at times
+			velocity=note_accent_modulate[counter];  // gets messed up at times
 
 			}
 			note_midi[cue_counter] = midi_channel_list[counter] + status; // add Note_on only
@@ -373,7 +378,7 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 				velocity=0;
 			status=MIDI_NOTE_OFF;
 			if (short_repeat_buf[(count2) + 1]) {status=MIDI_NOTE_ON;
-			velocity=note_accent[counter];
+			velocity=note_accent_modulate[counter];
 
 			}
 
@@ -394,13 +399,20 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 
 
 	}
-	if(cue_counter>95) cue_counter=95;
+	if(cue_counter>95) cue_counter=95; // limit max send
 	if (pause) cue_counter=0;
 	serial_len=cue_counter;
 	//midi_extra_cue[28] = 0; // issues with sending , this helps somewhat
 	if( midi_extra && (!cue_counter) )	{ memcpy(serial_out, midi_extra_cue, midi_extra); // extra stuff sent only when no notes are sent
 	serial_len =  midi_extra;}
-	else 	memcpy(serial_out, note_midi, serial_len);
+	else 	{memcpy(serial_out, note_midi, serial_len);}
+
+
+
+		midi_timeout_parse_buffer(serial_out,serial_len);
+
+
+
 
 	midi_extra_cue[28] = 0;  // reset    ,seems extra data coming from somewhere
 }
@@ -428,7 +440,136 @@ void seq_pos_rate(uint8_t scene ,uint8_t*buf , uint8_t*buf_time, uint16_t* buf_e
 
 		if (temp_out>255) seq_pos_flag[current_scene]=1; else seq_pos_flag[current_scene]=0;
 	}
+void seq_play_copy(void){    // copies current short_repeat_buf to seq_play_buf
 
+
+	uint16_t current_scene=scene_buttons[0];  // gonna change to midi channel based and x8 for keys
+
+	current_scene=(voice_list[current_scene]); // midi channel based , might convert to a list ie 0=2 3=1 4=2 for now stay with 0-4
+
+	current_scene&=3;
+
+	current_scene=((note_recording_set_current[current_scene]&7)*16)+(current_scene*128);  // 4*8*48=1536, drums and 3 keys , this is only time *3 for data
+	current_scene*=3;
+	memcpy(seq_play_buf+current_scene,short_repeat_buf+current_scene,48); // copy back to sey_plau buf
+	memset(short_repeat_buf+current_scene,0,48);  //clear short repeat buf
+
+
+
+
+}
+void keyboard_note_off(uint8_t note_off){ // sends note off for key playing only , uses midi extra cue
+	uint8_t extra_start=midi_extra_cue[28];
+	uint8_t channel=midi_channel_list[voice_list[scene_buttons[0]]];
+	midi_extra_cue[extra_start]=129+channel;  midi_extra_cue[1+extra_start]=(note_off)&127 ;
+					  midi_extra_cue[2+extra_start]=0; midi_extra_cue[28]=extra_start+3;
+
+
+
+}
+#define AUTO_OFF_TIMEOUT_MS   500U
+#define MIDI_CONTROL_CHANGE   0xB0
+#define MIDI_ALL_NOTES_OFF    123
+
+typedef struct {
+    uint32_t last_activity_tick;   // Last time we saw a Note On or Note Off on this channel
+} ChannelState_t;
+
+static ChannelState_t ch_state[16];
+
+
+
+
+
+// Process one incoming MIDI byte (call this from your receive callback or buffer parser)
+void midi_timeout_parse_buffer(const uint8_t *buffer, uint32_t length)
+{
+    uint32_t i = 0;
+    uint8_t running_status = 0;
+
+    while (i < length) {
+        uint8_t byte = buffer[i++];
+
+        if (byte & 0x80) {                    // Status byte
+            running_status = byte;
+        }
+        else if (running_status == 0) {
+            continue;                         // data without status → ignore
+        }
+
+        uint8_t status  = running_status & 0xF0;
+        uint8_t channel = running_status & 0x0F;
+
+        if (status == 0x90 || status == 0x80) {   // Note On or Note Off
+            if (i + 1 < length) {                 // need 2 data bytes
+               // uint8_t note = buffer[i++];
+                uint8_t vel  = buffer[i++];
+
+                // Any Note On (vel > 0) or real Note Off resets the timer for the channel
+                if ((status == 0x90 && vel > 0) || status == 0x80) {
+                    ch_state[channel].last_activity_tick = HAL_GetTick();
+                }
+                // Note On with vel==0 is treated as Note Off
+                else if (status == 0x90 && vel == 0) {
+                    ch_state[channel].last_activity_tick = HAL_GetTick();
+                }
+            }
+        }
+        // Optional: also reset on All Notes Off / All Sound Off if you send them manually
+        else if (status == 0xB0) {                // Control Change
+            if (i + 1 < length) {
+                uint8_t cc = buffer[i++];
+              //  uint8_t val = buffer[i++];
+                if (cc == 123 || cc == 120) {     // All Notes Off or All Sound Off
+                    ch_state[channel].last_activity_tick = HAL_GetTick();
+                }
+            }
+        }
+        // You can ignore other messages or add more if needed
+    }
+}
+
+void midi_timeout_check_and_send(void)
+{
+    uint32_t now = HAL_GetTick();
+
+    for (uint8_t ch = 0; ch < 16; ch++) {
+        uint32_t last = ch_state[ch].last_activity_tick;
+
+        if (last != 0 && (now - last) >= AUTO_OFF_TIMEOUT_MS) {
+            // Timeout → send All Notes Off on this channel
+            // You can call your existing send function here
+            // Example using a simple 3-byte send (replace with your real send):
+            uint8_t msg[3] = {0xB0 | ch, 123, 0};
+            HAL_UART_Transmit(&huart1,msg,3,1000);         // <--- your own send routine
+
+            // Optional: also send All Sound Off
+            // msg[1] = 120; your_midi_send_function(msg, 3);
+
+            // Reset timer so we don't spam
+            ch_state[ch].last_activity_tick = 0;
+        }
+    }
+}
+void accent_lfo(void){
+	uint32_t pos=0;  //wave pointer 0-127
+	uint32_t clock=(seq_step_long<<8)+seq_pos; // 0-255 ,faster or slower 14bit total
+	uint32_t level=0;
+
+
+	for (i=0;i<sound_set;i++){
+
+		pos=(clock*(lfo_settings_list[i*2]))>>7;   // 8 * 7  /256 very slow / 1  quick
+		pos&=127;
+
+		level=sine_wave[pos]*lfo_settings_list[(i*2)+1]; // 10+7
+		level=level>>9;
+		if (level>254) level=254;
+		note_accent_modulate[i]=((level*note_accent[i])>>8)+1;  // make sure it's not 0
+
+	}
+
+}
 /*
 void cdc_send(void){     // all midi runs often , need to separate  , will go back to the old way ,less confusing
 		// sometimes seem to miss note on message

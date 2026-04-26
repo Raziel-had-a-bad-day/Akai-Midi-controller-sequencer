@@ -1,0 +1,542 @@
+Checking Core/Src/fx.c ...
+1/8 files checked 0% done
+Checking Core/Src/main.c ...
+Core/Inc/main.h:30:0: information: Include file: "stm32f4xx_hal.h" not found. [missingInclude]
+#include "stm32f4xx_hal.h"
+^
+Core/Src/main.c:21:0: information: Include file: "usb_device.h" not found. [missingInclude]
+#include "usb_device.h"
+^
+Core/Src/main.c:26:0: information: Include file: "string.h" not found. [missingInclude]
+#include"string.h"
+^
+Core/Src/main.c:27:0: information: Include file: "stdio.h" not found. [missingInclude]
+#include "stdio.h"
+^
+Core/Src/main.c:29:0: information: Include file: "time.h" not found. [missingInclude]
+#include "time.h"
+^
+Core/Inc/variables.h:22:0: information: Include file: "string.h" not found. [missingInclude]
+#include"string.h"
+^
+Core/Src/main.c:31:0: information: Include file: "usbd_cdc_if.h" not found. [missingInclude]
+#include "usbd_cdc_if.h"
+^
+Core/Inc/flash.h:81:15: style: inconclusive: Boolean expression 'write_once==0' is used in bitwise operation. Did you mean '&&'? [bitwiseOnBoolean]
+   if ((send) & (write_once==0)&&(!shift)          ){
+              ^
+Core/Inc/lcd.h:150:26: error: Array 'lcd_item[12]' accessed at index 12, which is out of bounds. [arrayIndexOutOfBounds]
+        case 12: lcd_item[12].var = &seq_clock.Seconds;        lcd_item[12].name = "seconds";      digits = 2; break;
+                         ^
+Core/Inc/lcd.h:151:26: error: Array 'lcd_item[12]' accessed at index 13, which is out of bounds. [arrayIndexOutOfBounds]
+        case 13: lcd_item[13].var = &last_note_on_channel[scene];
+                         ^
+Core/Inc/lcd.h:152:26: error: Array 'lcd_item[12]' accessed at index 13, which is out of bounds. [arrayIndexOutOfBounds]
+                 lcd_item[13].name = "last note pitch"; digits = 3; blank = 1; break;
+                         ^
+Core/Src/main.c:236:21: error: Array 'seq_play_buf_end[16]' accessed at index 31, which is out of bounds. [arrayIndexOutOfBounds]
+ if(seq_play_buf_end[count_div]<seq_play_buf_time[i]) seq_play_buf_end[count_div]=seq_play_buf_time[i]; // save last message time per track
+                    ^
+Core/Src/main.c:231:12: note: Assuming that condition 'i<512' is not redundant
+ for (i=0;i<512;i++){
+           ^
+Core/Src/main.c:232:14: note: Assignment 'count_div=i/16', assigned value is 31
+  count_div=i/16;
+             ^
+Core/Src/main.c:236:21: note: Array index out of bounds
+ if(seq_play_buf_end[count_div]<seq_play_buf_time[i]) seq_play_buf_end[count_div]=seq_play_buf_time[i]; // save last message time per track
+                    ^
+Core/Src/main.c:412:10: style: The if condition is the same as the previous if condition [duplicateCondition]
+     if (!seq_t){ LFO_tracking(current_playing_bar,LFO_tracking_out); // runs once per bar ,after a full stop resets to zero
+         ^
+Core/Src/main.c:410:10: note: First condition
+     if (!seq_t) current_playing_bar=(current_playing_bar+1)&31;  // resets on a stop
+         ^
+Core/Src/main.c:412:10: note: Second condition
+     if (!seq_t){ LFO_tracking(current_playing_bar,LFO_tracking_out); // runs once per bar ,after a full stop resets to zero
+         ^
+Core/Inc/midi.h:114:9: style: Condition '!counter_a' is always true [knownConditionTrueFalse]
+    && (!counter_a)) {
+        ^
+Core/Inc/midi.h:111:9: note: Assuming that condition '!counter_a' is not redundant
+ while((!counter_a)&& (i<100))    // testing for changed buttons but only against send temp
+        ^
+Core/Inc/midi.h:114:9: note: Condition '!counter_a' is always true
+    && (!counter_a)) {
+        ^
+Core/Src/main.c:584:30: style: Condition '!flag' is always true [knownConditionTrueFalse]
+      if (cdc_buffer[12] && (!flag) )  {cdc_start=12;flag=1;}
+                             ^
+Core/Src/main.c:581:19: note: Assignment 'flag=0', assigned value is 0
+     uint8_t flag=0;
+                  ^
+Core/Src/main.c:584:30: note: Condition '!flag' is always true
+      if (cdc_buffer[12] && (!flag) )  {cdc_start=12;flag=1;}
+                             ^
+Core/Inc/flash.h:85:17: style: Redundant initialization for 'patch_mem'. The initialized value is overwritten before it is read. [redundantInitialization]
+       patch_mem=0;
+                ^
+Core/Inc/flash.h:84:25: note: patch_mem is initialized
+       uint8_t patch_mem=(patch_save&15)<<4;    // 16*16 (4kbyte)   start location for series of data stored
+                        ^
+Core/Inc/flash.h:85:17: note: patch_mem is overwritten
+       patch_mem=0;
+                ^
+Core/Src/main.c:290:52: warning: Redundant assignment of 'seq_step' to itself. [selfAssignment]
+    if (!pause) seq_step = seq_t>> 4; else seq_step=seq_step; // changed seq_pos to 255 count
+                                                   ^
+Core/Inc/midi.h:70:12: style: The scope of the variable 'color' can be reduced. [variableScope]
+   uint8_t color=0;
+           ^
+Core/Inc/midi.h:151:13: style: The scope of the variable 'temp_hold' can be reduced. [variableScope]
+   uint16_t temp_hold=0;
+            ^
+Core/Inc/midi.h:154:12: style: The scope of the variable 'mem' can be reduced. [variableScope]
+   uint8_t mem;
+           ^
+Core/Inc/midi.h:155:12: style: The scope of the variable 'lfo_rate' can be reduced. [variableScope]
+   uint8_t lfo_rate=1;
+           ^
+Core/Inc/midi.h:231:10: style: The scope of the variable 'counter' can be reduced. [variableScope]
+ uint8_t counter=0;
+         ^
+Core/Inc/midi.h:233:10: style: The scope of the variable 'output' can be reduced. [variableScope]
+ uint8_t output=0;
+         ^
+Core/Inc/midi.h:234:10: style: The scope of the variable 'lfo_out' can be reduced. [variableScope]
+ uint8_t lfo_out=0;
+         ^
+Core/Inc/midi.h:312:10: style: The scope of the variable 'counter' can be reduced. [variableScope]
+ uint8_t counter=0;
+         ^
+Core/Inc/midi.h:318:11: style: The scope of the variable 'count' can be reduced. [variableScope]
+ uint16_t count=0;
+          ^
+Core/Inc/midi.h:319:11: style: The scope of the variable 'count2' can be reduced. [variableScope]
+ uint16_t count2=0;
+          ^
+Core/Inc/midi.h:322:11: style: The scope of the variable 'set_jump' can be reduced. [variableScope]
+ uint16_t set_jump=0;
+          ^
+Core/Inc/midi.h:421:12: style: The scope of the variable 'temp' can be reduced. [variableScope]
+  uint16_t temp=0;
+           ^
+Core/Inc/fx.h:182:10: style: The scope of the variable 'pitch_counter' can be reduced. [variableScope]
+ uint8_t pitch_counter=0;
+         ^
+Core/Inc/fx.h:185:10: style: The scope of the variable 'alt_pots_value' can be reduced. [variableScope]
+  int8_t alt_pots_value=0;
+         ^
+Core/Inc/lcd.h:200:9: style: The scope of the variable 'select' can be reduced. [variableScope]
+ char  *select;
+        ^
+Core/Inc/lcd.h:201:7: style: The scope of the variable 'select_char' can be reduced. [variableScope]
+ char select_char;
+      ^
+Core/Inc/notes.h:11:10: style: The scope of the variable 'note_enabled' can be reduced. [variableScope]
+ uint8_t note_enabled=0;
+         ^
+Core/Inc/notes.h:17:10: style: The scope of the variable 'accent_color' can be reduced. [variableScope]
+ uint8_t accent_color=yellow_button;
+         ^
+Core/Inc/notes.h:304:10: style: The scope of the variable 'alt_list' can be reduced. [variableScope]
+ uint8_t alt_list;
+         ^
+Core/Inc/flash.h:57:12: style: The scope of the variable 'length' can be reduced. [variableScope]
+   uint8_t length=0; // max 64 atm
+           ^
+Core/Src/main.c:230:10: style: The scope of the variable 'count_div' can be reduced. [variableScope]
+ uint8_t count_div;
+         ^
+Core/Inc/midi.h:88:10: style: Local variable 'shift' shadows outer variable [shadowVariable]
+     int shift = (bar_map_screen_level-1)*3;
+         ^
+Core/Inc/variables.h:90:9: note: Shadowed declaration
+uint8_t shift; // track shift button
+        ^
+Core/Inc/midi.h:88:10: note: Shadow variable
+     int shift = (bar_map_screen_level-1)*3;
+         ^
+Core/Inc/midi.h:421:12: style: Local variable 'temp' shadows outer variable [shadowVariable]
+  uint16_t temp=0;
+           ^
+Core/Inc/variables.h:107:9: note: Shadowed declaration
+uint8_t temp;
+        ^
+Core/Inc/midi.h:421:12: note: Shadow variable
+  uint16_t temp=0;
+           ^
+Core/Inc/midi.h:487:14: style: Local variable 'i' shadows outer variable [shadowVariable]
+    uint32_t i = 0;
+             ^
+Core/Inc/variables.h:112:10: note: Shadowed declaration
+uint16_t i;  // always 16 bit or higher
+         ^
+Core/Inc/midi.h:487:14: note: Shadow variable
+    uint32_t i = 0;
+             ^
+Core/Inc/fx.h:16:10: style: Local variable 'current_midi' shadows outer variable [shadowVariable]
+ uint8_t current_midi=midi_channel_list[voice_list[scene_buttons[0]]]; // midi channel of currently selected track
+         ^
+Core/Inc/variables.h:263:9: note: Shadowed declaration
+uint8_t current_midi; // holds selected channel 1-16
+        ^
+Core/Inc/fx.h:16:10: note: Shadow variable
+ uint8_t current_midi=midi_channel_list[voice_list[scene_buttons[0]]]; // midi channel of currently selected track
+         ^
+Core/Inc/fx.h:80:10: style: Local variable 'current_midi' shadows outer variable [shadowVariable]
+ uint8_t current_midi=midi_channel_list[scene_buttons[0]];
+         ^
+Core/Inc/variables.h:263:9: note: Shadowed declaration
+uint8_t current_midi; // holds selected channel 1-16
+        ^
+Core/Inc/fx.h:80:10: note: Shadow variable
+ uint8_t current_midi=midi_channel_list[scene_buttons[0]];
+         ^
+Core/Inc/fx.h:85:10: style: Local variable 'i' shadows outer variable [shadowVariable]
+ uint8_t i=0;
+         ^
+Core/Inc/variables.h:112:10: note: Shadowed declaration
+uint16_t i;  // always 16 bit or higher
+         ^
+Core/Inc/fx.h:85:10: note: Shadow variable
+ uint8_t i=0;
+         ^
+Core/Inc/lcd.h:162:10: style: Local variable 'lcd_char' shadows outer variable [shadowVariable]
+    char lcd_char[4];
+         ^
+Core/Inc/variables.h:464:6: note: Shadowed declaration
+char lcd_char[4];
+     ^
+Core/Inc/lcd.h:162:10: note: Shadow variable
+    char lcd_char[4];
+         ^
+Core/Inc/notes.h:13:10: style: Local variable 'i' shadows outer variable [shadowVariable]
+ uint8_t i=0;
+         ^
+Core/Inc/variables.h:112:10: note: Shadowed declaration
+uint16_t i;  // always 16 bit or higher
+         ^
+Core/Inc/notes.h:13:10: note: Shadow variable
+ uint8_t i=0;
+         ^
+Core/Inc/notes.h:249:10: style: Local variable 'n' shadows outer variable [shadowVariable]
+ uint8_t n;
+         ^
+Core/Inc/variables.h:113:10: note: Shadowed declaration
+uint16_t n;
+         ^
+Core/Inc/notes.h:249:10: note: Shadow variable
+ uint8_t n;
+         ^
+Core/Inc/notes.h:314:10: style: Local variable 'current_midi' shadows outer variable [shadowVariable]
+ uint8_t current_midi=midi_channel_list[voice_list[scene_buttons[0]]];
+         ^
+Core/Inc/variables.h:263:9: note: Shadowed declaration
+uint8_t current_midi; // holds selected channel 1-16
+        ^
+Core/Inc/notes.h:314:10: note: Shadow variable
+ uint8_t current_midi=midi_channel_list[voice_list[scene_buttons[0]]];
+         ^
+Core/Inc/flash.h:2:10: style: Local variable 'temp' shadows outer variable [shadowVariable]
+ uint8_t temp[2]={0x05};
+         ^
+Core/Inc/variables.h:107:9: note: Shadowed declaration
+uint8_t temp;
+        ^
+Core/Inc/flash.h:2:10: note: Shadow variable
+ uint8_t temp[2]={0x05};
+         ^
+Core/Inc/midi.h:420:42: style: Parameter 'buf' can be declared as pointer to const [constParameterPointer]
+void seq_pos_rate(uint8_t scene ,uint8_t*buf , uint8_t*buf_time, uint16_t* buf_end ) {  // modifies and writes seq_play_buf_time , run this on selected only ,might keep the lot in one place
+                                         ^
+Core/Inc/flash.h:16:52: style: Parameter 'data' can be declared as pointer to const [constParameterPointer]
+void flash_page_write(uint8_t page_select,uint8_t* data){    // write single page (256 bytes )
+                                                   ^
+Core/Inc/flash.h:54:12: style: Variable 'settings_multi' can be declared as const array [constVariable]
+   uint8_t settings_multi[]={1,1,4,1,1,1,4,1,2,1,1,4,4,4,1,1,1,1,2,3,1,1,1,3};   // sets length,  sound_set*x ,512 atm
+           ^
+Core/Src/main.c:965:51: style: Parameter 'huart' can be declared as pointer to const [constParameterPointer]
+ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+                                                  ^
+Core/Src/main.c:993:56: style: Parameter 'htim' can be declared as pointer to const [constParameterPointer]
+ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)    // unreliable
+                                                       ^
+Core/Src/main.c:1010:52: style: Parameter 'hspi' can be declared as pointer to const [constParameterPointer]
+ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi)   // when finished sending
+                                                   ^
+Core/Src/main.c:1046:34: style: Parameter 'Buf' can be declared as pointer to const [constParameterPointer]
+ void USB_CDC_RxHandler(uint8_t* Buf, uint32_t Len)
+                                 ^
+Core/Inc/midi.h:129:46: warning: Uninitialized variable: buffer_short [uninitvar]
+ buffer_size=n;memcpy(buffer_out+buffer_size,buffer_short,4);
+                                             ^
+Core/Inc/midi.h:122:6: note: Assuming condition is false
+ if (counter_a) { // one at a time ,but runs often ,might change
+     ^
+Core/Inc/midi.h:129:46: note: Uninitialized variable: buffer_short
+ buffer_size=n;memcpy(buffer_out+buffer_size,buffer_short,4);
+                                             ^
+Core/Inc/midi.h:70:17: style: Variable 'color' is assigned a value that is never used. [unreadVariable]
+   uint8_t color=0;
+                ^
+Core/Inc/midi.h:151:22: style: Variable 'temp_hold' is assigned a value that is never used. [unreadVariable]
+   uint16_t temp_hold=0;
+                     ^
+Core/Inc/midi.h:155:20: style: Variable 'lfo_rate' is assigned a value that is never used. [unreadVariable]
+   uint8_t lfo_rate=1;
+                   ^
+Core/Inc/midi.h:231:17: style: Variable 'counter' is assigned a value that is never used. [unreadVariable]
+ uint8_t counter=0;
+                ^
+Core/Inc/midi.h:233:16: style: Variable 'output' is assigned a value that is never used. [unreadVariable]
+ uint8_t output=0;
+               ^
+Core/Inc/midi.h:234:17: style: Variable 'lfo_out' is assigned a value that is never used. [unreadVariable]
+ uint8_t lfo_out=0;
+                ^
+Core/Inc/midi.h:312:17: style: Variable 'counter' is assigned a value that is never used. [unreadVariable]
+ uint8_t counter=0;
+                ^
+Core/Inc/midi.h:313:16: style: Variable 'status' is assigned a value that is never used. [unreadVariable]
+ uint8_t status=MIDI_NOTE_OFF;
+               ^
+Core/Inc/midi.h:314:18: style: Variable 'velocity' is assigned a value that is never used. [unreadVariable]
+ uint8_t velocity=0;
+                 ^
+Core/Inc/midi.h:315:15: style: Variable 'pitch' is assigned a value that is never used. [unreadVariable]
+ uint8_t pitch=6;
+              ^
+Core/Inc/midi.h:318:16: style: Variable 'count' is assigned a value that is never used. [unreadVariable]
+ uint16_t count=0;
+               ^
+Core/Inc/midi.h:319:17: style: Variable 'count2' is assigned a value that is never used. [unreadVariable]
+ uint16_t count2=0;
+                ^
+Core/Inc/midi.h:322:19: style: Variable 'set_jump' is assigned a value that is never used. [unreadVariable]
+ uint16_t set_jump=0;
+                  ^
+Core/Inc/midi.h:421:16: style: Variable 'temp' is assigned a value that is never used. [unreadVariable]
+  uint16_t temp=0;
+               ^
+Core/Inc/fx.h:164:18: style: Variable 'pointer' is assigned a value that is never used. [unreadVariable]
+ uint32_t pointer=( uint32_t)&fx_map_1;
+                 ^
+Core/Inc/fx.h:182:23: style: Variable 'pitch_counter' is assigned a value that is never used. [unreadVariable]
+ uint8_t pitch_counter=0;
+                      ^
+Core/Inc/fx.h:185:24: style: Variable 'alt_pots_value' is assigned a value that is never used. [unreadVariable]
+  int8_t alt_pots_value=0;
+                       ^
+Core/Inc/fx.h:186:20: style: Variable 'bar_temp' is assigned a value that is never used. [unreadVariable]
+  uint16_t bar_temp=0;
+                   ^
+Core/Inc/notes.h:135:10: style: Variable 'pointer' is assigned a value that is never used. [unreadVariable]
+  pointer+=(scene_select*2);
+         ^
+Core/Inc/notes.h:153:18: style: Variable 'pointer' is assigned a value that is never used. [unreadVariable]
+ uint32_t pointer=( uint32_t)&bar_map_1;
+                 ^
+Core/Inc/notes.h:758:15: style: Variable 'scene_select' is assigned a value that is never used. [unreadVariable]
+  scene_select=0;
+              ^
+Core/Inc/flash.h:57:18: style: Variable 'length' is assigned a value that is never used. [unreadVariable]
+   uint8_t length=0; // max 64 atm
+                 ^
+Core/Inc/flash.h:218:28: style: Variable 'drum_byte_select' is assigned a value that is never used. [unreadVariable]
+  uint16_t drum_byte_select=0;
+                           ^
+Core/Inc/flash.h:219:21: style: Variable 'drum_byte' is assigned a value that is never used. [unreadVariable]
+   uint8_t drum_byte=0; // get data
+                    ^
+Core/Inc/flash.h:247:18: style: Variable 'tempo_hold' is assigned a value that is never used. [unreadVariable]
+ float tempo_hold=1;  // calculate tempo look up
+                 ^
+Core/Src/main.c:625:36: style: Variable 'buffer_pos' is assigned a value that is never used. [unreadVariable]
+      if (buffer_pos>23) buffer_pos=0;   // reset buffer in case
+                                   ^
+Checking Core/Src/main.c: USE_FULL_ASSERT...
+2/8 files checked 38% done
+Checking Core/Src/notes.c ...
+3/8 files checked 38% done
+void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
+                                        ^
+void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c)
+                                          ^
+void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
+                                        ^
+void HAL_RTC_MspDeInit(RTC_HandleTypeDef* hrtc)
+                                          ^
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
+                                             ^
+void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
+                                               ^
+void HAL_UART_MspInit(UART_HandleTypeDef* huart)
+                                          ^
+void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
+                                            ^
+4/8 files checked 53% done
+5/8 files checked 61% done
+__attribute__((weak)) int _write(int file, char *ptr, int len)
+                                                 ^
+6/8 files checked 65% done
+Checking Core/Src/sysmem.c ...
+7/8 files checked 68% done
+#include "stm32f4xx.h"
+^
+8/8 files checked 100% done
+Core/Inc/fx.h:77:0: style: The function 'fx_map_screen' is never used. [unusedFunction]
+void fx_map_screen(void){    // fx screen functions , 3 pages ,12 tracks  , disabled for now
+^
+Core/Inc/fx.h:161:0: style: The function 'fx_map_tracker' is never used. [unusedFunction]
+void fx_map_tracker(void){     // creates sound enable for notes from fx_map_screen , might just dump this , not very useful
+^
+Core/Inc/lcd.h:191:0: style: The function 'lcd_message' is never used. [unusedFunction]
+void lcd_message(void){    // prints pot used
+^
+Core/Inc/lcd.h:220:0: style: The function 'lcd_menu_pages' is never used. [unusedFunction]
+void lcd_menu_pages(uint8_t page){  // various setups for different pages  ,0-3 for now ,position needs to be around every 3 digits or it might miss some of the digits
+^
+Core/Inc/midi.h:13:0: style: The function 'pattern_scale_process' is never used. [unusedFunction]
+uint8_t pattern_scale_process(uint8_t value, uint8_t selected_sound ) {    // scale incoming notes from list
+^
+Core/Inc/midi.h:420:0: style: The function 'seq_pos_rate' is never used. [unusedFunction]
+void seq_pos_rate(uint8_t scene ,uint8_t*buf , uint8_t*buf_time, uint16_t* buf_end ) {  // modifies and writes seq_play_buf_time , run this on selected only ,might keep the lot in one place
+^
+Core/Inc/midi.h:887:0: style: The function 'nrpn_send' is never used. [unusedFunction]
+void nrpn_send(void){    // all nrpn data goes here ,sends as well on serial
+^
+Core/Inc/notes.h:187:0: style: The function 'alt_pots_playing' is never used. [unusedFunction]
+void alt_pots_playing(void){    // shows currently playing related to alt notes selected, for visual feedback, only when clip_stop
+^
+Core/Inc/notes.h:202:0: style: The function 'record_overdub' is never used. [unusedFunction]
+void record_overdub(void){ // runs only when triggered by keyboard , wipes old data but only when triggered
+^
+Core/Inc/notes.h:233:0: style: The function 'step_recording' is never used. [unusedFunction]
+void step_recording(void)  {    // write keyboard notes to alt_pots  , but only during pause and arm_rec
+^
+Core/Inc/notes.h:245:0: style: The function 'midi_cue_fill' is never used. [unusedFunction]
+void midi_cue_fill(void){
+^
+Core/Inc/notes.h:264:0: style: The function 'play_muting' is never used. [unusedFunction]
+void play_muting(void){    // all muting stuff here , sometimes it loses data , disable
+^
+Core/Inc/notes.h:774:0: style: The function 'note_replace' is never used. [unusedFunction]
+void note_replace(uint8_t note_replace) {    // replace first note
+^
+Core/Inc/notes.h:794:0: style: The function 'pattern_settings' is never used. [unusedFunction]
+void pattern_settings(void){     // pattern change function , also program change automation, change to 2 for now , using 4bytes *8 per sound (512 bytes) instead
+^
+Core/Src/main.c:965:0: style: The function 'HAL_UART_RxCpltCallback' is never used. [unusedFunction]
+ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+^
+Core/Src/main.c:993:0: style: The function 'HAL_TIM_PeriodElapsedCallback' is never used. [unusedFunction]
+ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)    // unreliable
+^
+Core/Src/main.c:1010:0: style: The function 'HAL_SPI_TxRxCpltCallback' is never used. [unusedFunction]
+ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef * hspi)   // when finished sending
+^
+Core/Src/main.c:1040:0: style: The function 'stop_start' is never used. [unusedFunction]
+ void stop_start(void)             {
+^
+Core/Src/main.c:1046:0: style: The function 'USB_CDC_RxHandler' is never used. [unusedFunction]
+ void USB_CDC_RxHandler(uint8_t* Buf, uint32_t Len)
+^
+Core/Src/main.c:1080:0: style: The function 'assert_failed' is never used. [unusedFunction]
+void assert_failed(uint8_t *file, uint32_t line)
+^
+void HAL_MspInit(void)
+^
+void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
+^
+void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c)
+^
+void HAL_RTC_MspInit(RTC_HandleTypeDef* hrtc)
+^
+void HAL_RTC_MspDeInit(RTC_HandleTypeDef* hrtc)
+^
+void HAL_SPI_MspInit(SPI_HandleTypeDef* hspi)
+^
+void HAL_SPI_MspDeInit(SPI_HandleTypeDef* hspi)
+^
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
+^
+void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
+^
+void HAL_UART_MspInit(UART_HandleTypeDef* huart)
+^
+void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
+^
+void NMI_Handler(void)
+^
+void HardFault_Handler(void)
+^
+void MemManage_Handler(void)
+^
+void BusFault_Handler(void)
+^
+void UsageFault_Handler(void)
+^
+void SVC_Handler(void)
+^
+void DebugMon_Handler(void)
+^
+void PendSV_Handler(void)
+^
+void SysTick_Handler(void)
+^
+void TIM2_IRQHandler(void)
+^
+void I2C1_EV_IRQHandler(void)
+^
+void I2C1_ER_IRQHandler(void)
+^
+void DMA2_Stream0_IRQHandler(void)
+^
+void DMA2_Stream2_IRQHandler(void)
+^
+void OTG_FS_IRQHandler(void)
+^
+void initialise_monitor_handles()
+^
+int _getpid(void)
+^
+void _exit (int status)
+^
+__attribute__((weak)) int _read(int file, char *ptr, int len)
+^
+__attribute__((weak)) int _write(int file, char *ptr, int len)
+^
+int _close(int file)
+^
+int _fstat(int file, struct stat *st)
+^
+int _isatty(int file)
+^
+int _lseek(int file, int ptr, int dir)
+^
+int _open(char *path, int flags, ...)
+^
+int _wait(int *status)
+^
+int _unlink(char *name)
+^
+int _times(struct tms *buf)
+^
+int _stat(char *file, struct stat *st)
+^
+int _link(char *old, char *new)
+^
+int _fork(void)
+^
+int _execve(char *name, char **argv, char **env)
+^
+Core/Src/sysmem.c:53:0: style: The function '_sbrk' is never used. [unusedFunction]
+void *_sbrk(ptrdiff_t incr)
+^
+void SystemInit(void)
+^
+void SystemCoreClockUpdate(void)
+^
+nofile:0:0: information: Active checkers: 113/592 (use --checkers-report=<filename> to see details) [checkersReport]
+

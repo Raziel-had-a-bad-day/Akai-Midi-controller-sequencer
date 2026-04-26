@@ -1,14 +1,16 @@
 Akai APC key 25 midi controller based sequencer project with STM32F411+flash ,can be used with a similarly mapped controller though , uses USB midi to talk to pc then midi-ox links it to the midi controller (including lighting the buttons) also midi out on serial   . Has LCD for useful info like tempo ,  but not super essential.
  
-
+lcd(16x2. I2c) shows cc options and operating modes 
 use left and right arrows to step through zoom levels : notes , bars , bars*8,bars*64 
 
 
-rec_arm on default screen , records midi notes played on keyboard , live or in pause , only way to enter notes now , 12 notes buffer 
+rec_arm on default screen , records midi notes played on keyboard , live or in pause , only way to enter notes now , 8 notes buffer 
  shift+rec_arm  = clears notes
+playing will loop for a short time , can be saved to the currently selected recording slot (shift held) 
+ 
  
 shift+pause = loops current bar , can be changed with bar selector (fourth row) 
-row 5 = select sound, 0-7 drums 8-15 keys
+row 5 = select sound, 1-3 keys rest drums 
 
 
 pot 7+pause+device = 	sets midi channel for current sound 
@@ -28,12 +30,13 @@ Stop all clips = stops and jumps to start
 
 device =   shows current midi channel on top rows ,blinky yellow  
 
-down arrow = calls up fx menu , pots set cc send on keys  , buttons set on/off per bar 1,8,64 ,0-3 level on , 4-7 level off, 3 channels * 4 settings 
+down arrow = calls up fx menu , pots set cc send on keys  , 3 channels * 4 settings , press shift and adjust pots to assign cc controller to particular pot  
 
-Pot 3 =sets transpose pitch change advance rate on keys 
 
-Third row is accent on/off for avery 2 notes for 8 bars , can be recorded with shift+pot8 as well.
-Forth row is bar position of 8 bars. Holding down one and pressing another will loop those bars.
+Pot 3 =sets transpose pitch change advance rate on keys on main screen 
+
+middle row = 8 sets of midi recordings per midi channel/voice 
+Forth row is bar position of 8 bars. Holding down one and pressing another will loop those bars.Not doing anything atm 
 
 ////pitch entry mode ///
 clip stop on enables pitch screen , only used for transpose !  synced to bar position 

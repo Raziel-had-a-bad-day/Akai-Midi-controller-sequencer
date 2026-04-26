@@ -44,49 +44,63 @@ void flash_page_write(uint8_t page_select,uint8_t* data){    // write single pag
 
 }
 
-void settings_storage(void){   // runs to store setting and read back
+void settings_storage(void)
+{
+    // runs to store setting and read back
 
-			uint8_t *settings[]={scene_transpose,pot_states,pot_tracking,mute_list,note_accent,midi_channel_list,
-					pitch_list_for_drums,pattern_scale_list,
-					lfo_settings_list,single_settings_list,pitch_change_loop,LFO_low_list
-			,LFO_high_list,LFO_phase_list,pitch_change_rate,bar_map_1,bar_map_8,bar_map_64,bar_map_0, motion_record_buf
-			,fx_map_1,fx_map_8,fx_map_64,fx_pot_values };
-			uint8_t settings_multi[]={1,1,4,1,1,1,4,1,2,1,1,4,4,4,1,1,1,1,2,8,1,1,1,3};   // sets length,  sound_set*x ,512 atm
-			uint8_t settings_temp[256];
-			uint16_t settings_total=0;  //adds up position , huge miss here retard alert
-			uint8_t length=0; // max 64 atm
-			tempo=single_settings_list[1];
-			flash_settings_count = sizeof(settings) / sizeof(settings[0]); // This gives 5
+    uint8_t *settings[] = {
+        scene_transpose, pot_states, pot_tracking, mute_list, note_accent, midi_channel_list,
+         pattern_scale_list,
+        lfo_settings_list, single_settings_list, pitch_change_loop,
+          pitch_change_rate, bar_map_1, bar_map_8,
+        bar_map_64, bar_map_0, fx_pot_settings, fx_map_1, note_recording_set_current,
+        voice_list, fx_pot_values
+    }; // try to add to the end
 
-			for (i=0;i<flash_settings_count;i++){
+    uint8_t settings_temp[256];
+    uint16_t settings_total = 0;
+    uint16_t length = 0;
 
-				length=(settings_multi[i]*sound_set);
-				if(settings_write_flag) {		memcpy(settings_temp,settings[i],length);	// copy bytes to temp
-				memcpy(all_settings+settings_total,settings_temp,length);}
-				else {
+    tempo = single_settings_list[1];
 
-					memcpy(settings_temp,all_settings+settings_total,length);  // copy value
-					memcpy(settings[i],settings_temp,length);                }  //
+    uint8_t flash_settings_count = sizeof(settings) / sizeof(settings[0]);
 
-		settings_total=settings_total+length;
+    for (uint8_t i = 0; i < flash_settings_count; i++) {
 
-			}
-			flash_settings_size=settings_total; // keep track of size here
-		//	for (i=0;i<1023;i++){if (all_settings[i]>127) all_settings[i]=0;}  // reset values just in case
-			settings_write_flag=0;
+        // Automatic size calculation
+        length = (uint16_t)sizeof(*(settings[i])) * sound_set;
 
+        // Safety: prevent buffer overflow
+        if (settings_total + length > sizeof(all_settings)) {
+            // Emergency stop - something went wrong with size calculation
+            break;
+        }
+
+        if (settings_write_flag) {
+            memcpy(settings_temp, settings[i], length);
+            memcpy(all_settings + settings_total, settings_temp, length);
+        }
+        else {
+            memcpy(settings_temp, all_settings + settings_total, length);
+            memcpy(settings[i], settings_temp, length);
+        }
+
+        settings_total += length;
+    }
+
+    flash_settings_size = settings_total;
+    settings_write_flag = 0;
 }
-
 void flash_write(void){					// too much crap needs to simplify , easy mistakes
 	  if ((send) & (write_once==0)&&(!shift)          ){
 
 		 		  uint8_t test_data3[270]={0,10,0,0};
 		 		  uint8_t patch_mem=(patch_save&15)<<4;    // 16*16 (4kbyte)   start location for series of data stored
 		 		  patch_mem=0;
-		 		  test_data3[2]=patch_mem;
+		 		  test_data3[2]=patch_mem;  // page counter 64kb total
 
-		 		//  memcpy  (test_data3+4 ,drum_store_one+256,  256);   // maybe drum data
 
+		 		  // needs more than 4k cleared by now
 
 		 		  test_data3[0]=0x06; //enable write each time
 		 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0);
@@ -112,7 +126,31 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 		 		  HAL_SPI_Transmit(&hspi1, test_data3, 1, 100);
 		 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);   // high end
 		 			read_busy();
+		 			  test_data3[2]=patch_mem+16;  //second sector clear
+		 			test_data3[0]=0x06; //enable write each time
+			 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0);
+			 		  HAL_SPI_Transmit(&hspi1, test_data3, 1, 1000);
+			 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);
+			 			read_busy();
+			 		  //----formAT SECTION
 
+
+			 		  test_data3[0]=0x20; //sector erase 4k (block is 0x52) , this is need , setting FF doesn't seem to work for page erase
+
+
+			 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0);         // enable for sector erase   , stays empty when enabled
+			 		  HAL_SPI_Transmit(&hspi1,  test_data3, 4, 1000);   //erase sector ,works       4kbytes   (block erase=32kbytes)
+			 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);
+			 			read_busy();
+			 		  // test write
+
+
+			 		  test_data3[0]=0x04; //disable write
+
+			 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0); // low
+			 		  HAL_SPI_Transmit(&hspi1, test_data3, 1, 100);
+			 		  HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);   // high end
+			 			read_busy();
 
 		  //sector erase works
 		 		//	memcpy(drum_store_one,seq_play_buf,1024); // for now store here
@@ -142,12 +180,24 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 			flash_page_write(patch_mem,all_settings+512);
 			patch_mem=patch_mem+1;
 			flash_page_write(patch_mem,all_settings+768);
+
 			patch_mem=patch_mem+1;
 			flash_page_write(patch_mem,all_settings+1024);
-			patch_mem=patch_mem+1;
-			flash_page_write(patch_mem,seq_play_buf+1024);
-			patch_mem=patch_mem+1;
-			flash_page_write(patch_mem,seq_play_buf+1280);
+
+
+
+			int play_buf_len = (uint16_t)sizeof(seq_play_buf);     // might do this with the rest
+			play_buf_len=(play_buf_len-1024);
+			while (play_buf_len>0){
+				patch_mem=patch_mem+1;
+				flash_page_write(patch_mem,seq_play_buf+(play_buf_len+1024));
+				play_buf_len-=256;
+
+			}
+
+
+
+
 
 		//  memcpy  (test_data3+4 ,drum_store_one,  256);  // drums
 
@@ -171,14 +221,14 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 void flash_read(void){     //can hang here
 	read_busy();
 
-	uint8_t test_data2[4096]={0,10,0,0};
-	uint8_t test_data3[4096]={0,10,0,0};
+	uint8_t test_data2[4868]={0,10,0,0};
+	uint8_t test_data3[4868]={0,10,0,0};
 	uint8_t patch_mem=(patch_save&15)<<4;    // 16*16 (4kbyte)   start location
 
 	test_data2[0]=0x03; //read ok , get notes
 	test_data2[2]=patch_mem;
 	HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 0);  // when readin low till the end
-	HAL_SPI_TransmitReceive (&hspi1,test_data2, test_data3,  3076, 100); // request data , always leave extra room (clock) , works
+	HAL_SPI_TransmitReceive (&hspi1,test_data2, test_data3,  4868, 100); // request data , always leave extra room (clock) , works
 	HAL_GPIO_WritePin(CS1_GPIO_Port, CS1_Pin, 1);  // high end
 
 
@@ -193,12 +243,12 @@ void flash_read(void){     //can hang here
 
 
 
-	memcpy(alt_pots,test_data3+1284,256);
+	memcpy(alt_pots,test_data3+1284,(sound_set*16));
 	memcpy(all_settings+256,test_data3+1540,1024); // second half of settings
-	memcpy(seq_play_buf+1024,test_data3+2564,512); //1024-1536
+	memcpy(seq_play_buf+1024,test_data3+2564,2048); //1024-3072
 
 
-	memcpy(program_change_automation,alt_pots+128,32); // program change data
+	memcpy(program_change_automation,alt_pots+(sound_set*8),(sound_set*2)); // program change data
 
 	//memcpy(seq_play_buf,drum_store_one,1024); //for now
 
@@ -210,7 +260,7 @@ void flash_read(void){     //can hang here
 
 
 	uint8_t d;
-	 for (d=0;d<32;d++) {
+	 for (d=0;d<(sound_set*2);d++) {
 					 rand_velocities[d]=(rand()&31)+95;
 				 } // write random velocites list
 

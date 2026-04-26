@@ -221,8 +221,11 @@ void bar_start(void){
 void bar_end(void){
 
 		if(!bar_loop_current){  // stop advancing in shift + play
-	if ((bar_map_counter&7)>=bar_map_looping[1]) bar_map_counter=bar_map_looping[0]+((bar_map_counter+8)&504); // skips to next start point
-		else bar_map_counter=(bar_map_counter+1)&511; // this needs to be elsewhere
+	//if ((bar_map_counter&7)>=bar_map_looping[1]) bar_map_counter=bar_map_looping[0]+((bar_map_counter+8)&504); // skips to next start point
+	//	else bar_map_counter=(bar_map_counter+1)&511; // this needs to be elsewhere
+
+			//bar_map_counter=(bar_map_counter+1)&511;
+
 		}
 
 		bar_start_enable=1;bar_end_enable=0;
@@ -231,12 +234,14 @@ void bar_end(void){
 
 }
 void cc_lut(uint8_t cc_number){
+
+	memset(cc_string,32,16);
 	for (i=0;i<43;i++){
 		if(cc_number==microkorg_cc_numbers[i])
 
 		{
 			uint8_t length=strlen(microkorg_cc_list[i]);
-			memset(cc_string,32,16);
+
 			memcpy(cc_string,microkorg_cc_list[i],length);
 			i=43;
 		}

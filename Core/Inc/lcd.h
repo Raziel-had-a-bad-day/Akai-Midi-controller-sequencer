@@ -2,7 +2,7 @@
 //#include "variables.h"
 
 typedef struct {  uint8_t *var; char *name;} LCD_item;    // creates lcd menu items to make it a bit easier
-LCD_item lcd_item[12];
+LCD_item lcd_item[14];
 
 uint8_t lcd_init[20]={3,3,3,2,2,8,0,8,0,12,0,6,0,1,0,2 };  // 4 bit initialize code ,starting at DB4  ,0-3 send straight  ignore finish  + add delay ,   then send double and wait for finish no delay , no cursor or blinking (12)
 uint8_t lcd_delay[20]={100,100,100,10,10,10,10,10,10,100,10,10,10,10,10};  //top then bottom
@@ -260,9 +260,9 @@ if(led_clear) {
 
 
 	led_clear++;
-	if (led_clear==30)  memset (button_states,10,99);	// after an elapsed time
-if (led_clear==32)  memset (button_states,0,99);
-if (led_clear>40) led_clear=0;
+	if (led_clear==30)  {memcpy(button_states_clear,button_states,99);memset (button_states,10,99);}	// after an elapsed time
+if (led_clear==32) memcpy(button_states,button_states_clear,99);
+if (led_clear>40) led_clear=1;
 }
 
 
