@@ -60,7 +60,10 @@ void settings_storage(void)
     uint8_t settings_temp[256];
     uint16_t settings_total = 0;
     uint16_t length = 0;
+    uint8_t array_length[]={1,1,1,1,1,1,1,2,1,1,2,1,1,1,2,8,1,1,1,8
 
+
+    };  //  this is needed no simple way around it
     tempo = single_settings_list[1];
 
     uint8_t flash_settings_count = sizeof(settings) / sizeof(settings[0]);
@@ -68,9 +71,10 @@ void settings_storage(void)
     for (uint8_t i = 0; i < flash_settings_count; i++) {
 
         // Automatic size calculation
-        length = (uint16_t)sizeof(*(settings[i])) * sound_set;
+       // length = (uint16_t)sizeof(*(&settings+1)-settings);  // this is wrong
+        length = array_length[i]*8;
+        //*(&array + 1) - array   , this just give 4 always (32bit)
 
-        // Safety: prevent buffer overflow
         if (settings_total + length > sizeof(all_settings)) {
             // Emergency stop - something went wrong with size calculation
             break;

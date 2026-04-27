@@ -295,7 +295,7 @@ uint8_t control_change_flag=0;  // selects from fx list , not sounds or midi
 
 uint8_t keyboard_step_record;   // keeps count of keys pressed once rec_arm and pause is on
 uint8_t loop_screen_disable=0;
-uint8_t control_change[16];   // set control change data using fx menu list
+uint8_t control_change[sound_set*8];   // set control change data using fx menu list
 uint8_t control_change_value=71;
 
 uint8_t current_playing_bar;   // keep record of the current playing bar , lenght to be set
@@ -316,8 +316,8 @@ uint8_t alt_pots_overwrite_enable[sound_set];  // allows to overwrite alt pots v
 uint8_t temp_midi_var=0;
 
 uint8_t fx_incoming[3];
-uint8_t fx_pot_settings[48]={3,71,3,74,3,5,3,76,3,77,3,78,3,79,3,80,4,72,4,5,4,76,4,77,4,74,4,94,4,71,4,15,2,71,2,72,2,73,2,74,2,75,2,76,2,77,2,78 };      //  holds midi_channel and cc assignment for 8 pots  0-15 and 0-127 , fx list cha 3 ,4,2
-uint8_t fx_pot_values[48]={64,64,64,64,
+uint8_t fx_pot_settings[sound_set*8];      //  holds midi_channel and cc assignment for 8 pots  / voices
+uint8_t fx_pot_values[sound_set*8]={64,64,64,64,
 							64,64,64,64,
 							23,76,64,64,
 							23,76,64,64,
@@ -335,7 +335,7 @@ uint8_t fx_pot_values[48]={64,64,64,64,
 }; // holds on and off values as well as transition speed for both , 8 tracks for now
 
 uint8_t fx_map_sound_enable[sound_set]={1,1,1,1,1,1,1,1}; //tracks if bar is enabled
-uint8_t control_change_buf[32];  // stores control change values
+uint8_t control_change_buf[sound_set*8];  // stores control change values
 uint8_t fx_counter=0;
 
 uint8_t motion_record_buf[sound_set*8];  // holds 1 bit motion record when pressing shift and changing knob levels set elsewhere

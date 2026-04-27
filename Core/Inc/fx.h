@@ -13,15 +13,10 @@ void fx_menu(uint8_t incoming){ // pot 1-8 control fx list 1-8 cc value ,, cc se
 	//called always when down arrow enabled
 	// for now just triggers a  cc send
 	uint8_t current_scene=incoming&7;   // this just selects which pot 0-3 high level 4-7 low level
-	uint8_t current_midi=midi_channel_list[voice_list[scene_buttons[0]]]; // midi channel of currently selected track
-	uint8_t scene_select=0;
-	if(current_midi==3) scene_select=0;
-	if(current_midi==4) scene_select=8;
-	if(current_midi==2) scene_select=16;
+	uint8_t current_voice=voice_list[scene_buttons[0]]; // midi channel of currently selected track
+	uint8_t scene_select=current_voice*8;
 
- // 8 pot values per channel
-
-
+	// now voice based
 		fx_pot_values[(current_scene)+scene_select]=pot_states[current_scene];   // saves pot setting on fx screen
 
 
@@ -55,12 +50,14 @@ void fx_menu(uint8_t incoming){ // pot 1-8 control fx list 1-8 cc value ,, cc se
 }
 void fx_cc_send(uint8_t send){   // sends cc for particular fx track , not scene based
 
-	uint8_t current_scene=send&15;  // 12 track of cc for now
+	uint8_t current_scene=send&63;  // 12 track of cc for now
 
 
-	control_change_value=fx_pot_settings[(current_scene*2)+1]; // selects cc   , midi channel then cc
+	control_change_value=fx_pot_settings[(current_scene)]; // selects cc   , midi channel then cc
 
-	if (fx_map_sound_enable[send]) control_change[current_scene]=fx_pot_values[current_scene];
+	//if (fx_map_sound_enable[send])
+
+		control_change[current_scene]=fx_pot_values[current_scene];
 //	else control_change[current_scene]=fx_pot_values[(current_scene*4)+1]; // send onor off
 
 
@@ -193,14 +190,15 @@ void transpose_tracker(void){ // this runs every bar , should finish after the l
 		//pitch_counter=(pitch_counter+pitch_change_rate[i+8])&255;   // pitch change rate =  +1 +2 +4 +8 +16 +32
 
 		if (seq_pos_flag[i+8])  bar_temp=(bar_map_counter>>1); else bar_temp=bar_map_counter;// halve rate if seq_pos is double length
-		pitch_counter=((bar_temp)/pitch_change_rate[i+8])&7; // modify to fixed position
+
+		if (pitch_change_rate[i]) pitch_counter=((bar_temp)/pitch_change_rate[i])&7; // modify to fixed position ,divide by zero not good
 
 		alt_pots_value=(random_list[(i*8)+(pitch_counter)])&127; // grab alt pots
 		transpose_octave_modifier[i]=(alt_pots_value/12)*12;  // holds base octave value
 		alt_pots_value= alt_pots_value-(transpose_octave_modifier[i]);
 		if (alt_pots_value<7) transpose_pitch_modifier[i]=0-(6-alt_pots_value);  else transpose_pitch_modifier[i]=alt_pots_value-6;
 		if (!transpose_octave_modifier[i]) transpose_octave_modifier[i]=1; // fix zero values
-
+		if(pitch_change_rate[i]==0) transpose_pitch_modifier[i]=0;
 
 
 

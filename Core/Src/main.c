@@ -222,7 +222,7 @@ int main(void)
 	flash_read();
 	for (i=0;i<16;i++){
 
-		if (pitch_change_rate[i]==0) pitch_change_rate[i]=1;
+		if (pitch_change_rate[i]>127) pitch_change_rate[i]=127;
 
 	}
 
@@ -304,7 +304,7 @@ int main(void)
 
 		 if (seq_t) {   cdc_send2(); }
 
-		  if(seq_t&&1) {{ if (fx_counter>11) fx_counter=0; else fx_counter++; } fx_cc_send(fx_counter);}// sending midi cc, sends only on change so can be called often
+		  if(seq_t&&1) {{ if (fx_counter>63) fx_counter=0; else fx_counter++; } fx_cc_send(fx_counter);}// sending midi cc, sends only on change so can be called often
 
 
 		  midi_extras(); // sends cc and pc , not a problem

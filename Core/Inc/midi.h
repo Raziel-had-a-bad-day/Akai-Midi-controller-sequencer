@@ -208,7 +208,9 @@ void midi_extras(void){    // extra midi data added here , program change , cc
 		  program_change_flag=0; //clear
 
 		  }
-		  if (control_change_flag){midi_extra_cue[extras]=176+fx_pot_settings[(control_change_flag-1)*2];   // program change for non drums
+
+		  uint8_t voice_select=(control_change_flag-1)>>3;   //  this is already voice list NOT scene_buttons !!!
+		  if (control_change_flag){midi_extra_cue[extras]=176+midi_channel_list[voice_select];   // select midi for cc
 		  midi_extra_cue[extras+1]=control_change_value; // setting for reverb atm
 		  midi_extra_cue[extras+2]=control_change[control_change_flag-1];
 		  midi_extra_cue[28]=extras+3;
@@ -300,7 +302,30 @@ void seq_play_record(uint8_t* buf, uint8_t*buf_time ){ // this is triggered by k
 
 	}
 
+void seq_play_copy(void){    // copies current short_repeat_buf to seq_play_buf
 
+
+	uint16_t current_scene=scene_buttons[0];  // gonna change to midi channel based and x8 for keys
+
+	current_scene=(voice_list[current_scene]); // midi channel based , might convert to a list ie 0=2 3=1 4=2 for now stay with 0-4
+
+	current_scene&=7;
+
+	current_scene=((note_recording_set_current[current_scene]&7)*16)+(current_scene*128);  // 4*8*48=1536, drums and 3 keys , this is only time *3 for data
+
+	memcpy(seq_play_buf_time+current_scene,short_repeat_time+current_scene,16); // copy back to sey_plau buf
+	memset(short_repeat_time+current_scene,0,16);  //clear short repeat buf
+
+	current_scene*=3;
+	//need to always insert the time as well
+	memcpy(seq_play_buf+current_scene,short_repeat_buf+current_scene,48); // copy back to sey_plau buf
+	//
+	memset(short_repeat_buf+current_scene,0,48);  //clear short repeat buf
+
+// won't play seq_play_buf even though it's copied properly
+
+
+}
 
 
 void cdc_send2(void){ // new midi send function ,  make a way to change playback speed per track also an offset
@@ -440,24 +465,7 @@ void seq_pos_rate(uint8_t scene ,uint8_t*buf , uint8_t*buf_time, uint16_t* buf_e
 
 		if (temp_out>255) seq_pos_flag[current_scene]=1; else seq_pos_flag[current_scene]=0;
 	}
-void seq_play_copy(void){    // copies current short_repeat_buf to seq_play_buf
 
-
-	uint16_t current_scene=scene_buttons[0];  // gonna change to midi channel based and x8 for keys
-
-	current_scene=(voice_list[current_scene]); // midi channel based , might convert to a list ie 0=2 3=1 4=2 for now stay with 0-4
-
-	current_scene&=3;
-
-	current_scene=((note_recording_set_current[current_scene]&7)*16)+(current_scene*128);  // 4*8*48=1536, drums and 3 keys , this is only time *3 for data
-	current_scene*=3;
-	memcpy(seq_play_buf+current_scene,short_repeat_buf+current_scene,48); // copy back to sey_plau buf
-	memset(short_repeat_buf+current_scene,0,48);  //clear short repeat buf
-
-
-
-
-}
 void keyboard_note_off(uint8_t note_off){ // sends note off for key playing only , uses midi extra cue
 	uint8_t extra_start=midi_extra_cue[28];
 	uint8_t channel=midi_channel_list[voice_list[scene_buttons[0]]];

@@ -80,7 +80,11 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 			if(button_states[square_buttons_list[alt_list]]) {
 			uint8_t	set_scene=voice_list[scene_select]; // midi channel based , might convert to a list ie 0=2 3=1 4=2 for now stay with 0-4
 				set_scene&=3;
-				note_recording_set_current[set_scene]=alt_list&7;  // 4 settings for now
+				note_recording_set_current[0]=alt_list&7;  // for now set all the sounds to the same
+				note_recording_set_current[1]=alt_list&7;  //
+				note_recording_set_current[2]=alt_list&7;  //
+				note_recording_set_current[3]=alt_list&7;  //
+				note_recording_set_current[4]=alt_list&7;  //
 
 			}
 			if (shift) seq_play_copy();  // copy if shift pressed , needs to be the same selection though
@@ -602,14 +606,17 @@ void buttons_store(void){    // incoming data from controller
 		;break;// sets pitch for drums ,only first page
 
 		case pot_4:break;
-		case pot_5: 	if ((!device)&& (!clip_stop)) {lfo_settings_list[(current_scene*2)]=incoming_message[2];} ;break;  // lfo rate
-		case pot_6: if ((!device) && (!clip_stop))   {lfo_settings_list[(current_scene*2)+1]=incoming_message[2] ;} ;break;  // lfo level
+		case pot_5: 	if ((!device)&& (!clip_stop)) {lfo_settings_list[(current_scene*2)]=incoming_message[2];} ;memcpy(lcd_buffer+16,"LFO rate        ",16);;lcd_number(incoming_message[2],29); break;  // lfo rate
+		case pot_6: if ((!device) && (!clip_stop))   {lfo_settings_list[(current_scene*2)+1]=incoming_message[2] ;} ;memcpy(lcd_buffer+16,"LFO depth       ",16);lcd_number(incoming_message[2],29); break;  // lfo level
 
 		case pot_7:	if ((pause) && (device)&& (!clip_stop)) 		 {  // enter mid channel
 			uint8_t midi_selected=(incoming_message[2]>>3)&15;
 			midi_channel_list[current_scene]=midi_selected;
-			lcd_number(midi_selected);
-		memcpy(lcd_buffer+16,"Edit MIDI       ",16);memcpy(lcd_buffer+29,lcd_char+1,2);
+			lcd_number(midi_selected,29);
+		memcpy(lcd_buffer+16,"Edit MIDI       ",16);
+
+		} else {memcpy(lcd_buffer+16,"LFO dest       ",16);lcd_number(incoming_message[2],29);
+
 
 		}
 		//memset(button_states+24,0,16);button_states[31+(current_midi&7)-((current_midi>>3)<<3)]=yellow_blink_button;}
@@ -617,8 +624,8 @@ void buttons_store(void){    // incoming data from controller
 		;break;   // sets midi channel on selected sound
 
 		case pot_8:
-			if ((shift) && (device))		{timer_value=bpm_table[incoming_message[2]+64]; tempo=incoming_message[2]+64; memcpy(lcd_buffer,"Edit Tempo     ",16);} //tempo
-			if ((!device)&&(!shift)) {note_accent[current_scene]=incoming_message[2];rand_velocities[current_scene]=incoming_message[2];  memcpy(lcd_buffer,"Velocity / Accent    ",16);    // accent input
+			if ((shift) && (device))		{timer_value=bpm_table[incoming_message[2]+64]; tempo=incoming_message[2]+64; memcpy(lcd_buffer,"Edit Tempo     ",16);lcd_number(incoming_message[2],29);} //tempo
+			if ((!device)&&(!shift)) {note_accent[current_scene]=incoming_message[2];rand_velocities[current_scene]=incoming_message[2];  memcpy(lcd_buffer,"Velocity / Accent    ",16);lcd_number(incoming_message[2],29);    // accent input
 		current_accent=pot_states[7];}  // accent also used for tempo with shift
 
 			;break;
@@ -634,36 +641,34 @@ void buttons_store(void){    // incoming data from controller
 			if (!shift){
 
 			memcpy(lcd_buffer,"CC send         ",16);
-			 uint8_t shift_fx=1;
-			 if (current_midi==4) shift_fx=17;
-			 if (current_midi==2) shift_fx=33;
-			 uint8_t cc_selected=fx_pot_settings[((incoming_data1-48)*2)+shift_fx]; //gets cc number for the pot
+			 uint8_t shift_fx=current_scene*8; // voice based
 
-			 lcd_number(cc_selected);
+			 uint8_t cc_selected=fx_pot_settings[((incoming_data1-48))+shift_fx]; //gets cc number for the pot
+
+			 lcd_number(cc_selected,9);
 			 cc_lut(cc_selected);
 			 memcpy(lcd_buffer+16,cc_string,15); // copy name of cc
 
-			 memcpy(lcd_buffer+9,lcd_char,3);
-			lcd_number(incoming_message[2]);
-			 memcpy(lcd_buffer+13,lcd_char,3);
+
+			lcd_number(incoming_message[2],13);
+
 			fx_menu(fx_incoming[1]);  // saves pot settings for fx
 			}
 			else {
 
 				memcpy(lcd_buffer,"CC re-assign     ",16);
-				 uint8_t shift_fx=1;
-				 if (current_midi==4) shift_fx=17;
-				 if (current_midi==2) shift_fx=33;
+				 uint8_t shift_fx=current_scene*8; // voice based
 
-				 fx_pot_settings[((incoming_data1-48)*2)+(shift_fx-1)]=current_midi;
-				 fx_pot_settings[((incoming_data1-48)*2)+shift_fx]=incoming_message[2]; //gets cc number for the pot
-				 uint8_t cc_selected=fx_pot_settings[((incoming_data1-48)*2)+shift_fx]; //gets cc number for the pot
-				 lcd_number(cc_selected);
+
+
+				 fx_pot_settings[((incoming_data1-48))+shift_fx]=incoming_message[2]; //gets cc number for the pot
+				 uint8_t cc_selected=fx_pot_settings[((incoming_data1-48))+shift_fx]; //gets cc nc number for the pot
+				 lcd_number(cc_selected,9);
 				 cc_lut(cc_selected);
 				 memcpy(lcd_buffer+16,cc_string,15); // copy name of cc
-				 memcpy(lcd_buffer+9,lcd_char,3);
-				lcd_number(incoming_message[2]);
-				 memcpy(lcd_buffer+13,lcd_char,3);
+
+				lcd_number(incoming_message[2],13);
+
 
 			}
 

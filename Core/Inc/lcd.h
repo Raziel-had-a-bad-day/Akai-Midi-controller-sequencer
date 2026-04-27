@@ -230,7 +230,7 @@ void lcd_menu_pages(uint8_t page){  // various setups for different pages  ,0-3 
 	}
 
 }
-void lcd_number (uint8_t num) {
+void lcd_number (uint8_t num,uint8_t pos) {  // prints a number to a position
 
 	 // string to return
 	    uint8_t dec_hold = num;
@@ -245,8 +245,8 @@ void lcd_number (uint8_t num) {
 	    } else {
 	        sprintf(lcd_char, "%d", dec_hold);
 	    }
+	    memcpy(lcd_buffer+(pos&31),lcd_char,3);
 
-	//return (char*) lcd_char;
 
 }
 
