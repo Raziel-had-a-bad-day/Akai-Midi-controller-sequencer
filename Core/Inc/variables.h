@@ -138,6 +138,11 @@ uint8_t seq_pos_swing[sound_set]={2,1,1,1,3,3,3}; // swing timing for seq_pos no
 volatile uint16_t timer_value=512; // sets timer ccr  def is 1100 for now
 uint8_t cdc_buffer[64];  // receive buffer on sub , check usbd_cdc_if.c and h for more
 uint32_t Len;
+uint8_t serial_tx_buf[64];
+uint8_t serial_tx_counter=0;
+uint8_t tx_ready=1;
+uint8_t serial_rx_buf[64];
+uint8_t serial_rx_counter=0;
 
 //  pot byte  are 176 , 48-55, 0-127
 // square buttons byte   144 /128 ,   0-39,127,   top row is 32-39
@@ -186,7 +191,7 @@ uint8_t button_states_save[100]; // reference for button changes for controller 
 uint8_t loop_current_speed;
 uint8_t loop_lfo_out[sound_set*3];  // used for some level of lfo using pot7 for now 0-255
 // uint8_t lfo_settings[sound_set*3];  // lfo 0-8   rate , gain,offset, target
-uint8_t alt_pots[sound_set*16]; // stores a set of alt pot settings , 8 bytes per bank , 8 banks , also holds extra data > 128
+uint8_t alt_pots[256]; // stores a set of alt pot settings
 
 uint8_t alt_pots_octave[sound_set]; // tracks octave from alt pots
 uint8_t seq_step_mem;  // mem for looper
@@ -210,7 +215,7 @@ uint8_t LFO_tracking_out[sound_set*4]; // LFO output
 
 uint8_t serial_out[128]; // holds midi out data
 uint8_t serial_len;
-uint8_t midi_channel_list[sound_set]={9,4,2,3,5};   //holds midi channel settings for voices
+
 uint8_t nrpn_cue[80]={186,99,5,186,98,16,186,6,32};  // stores message for nrpn on es1 only needs 1 initial c99=5  then only  2 bytes repeating  CC 98 =NRPN LSB and CC 6 =value , for now 9 bytes though  , initial normal 3 bytes then convrted to 9
 const uint8_t pitch_lut[127] ={0,0,0,0,0,0,0,0,0,0,0,0,0,2,4,6,8,10,12,14,16,18,20,22,24,27,30,33,36,39,42,45,48,51,54,57,64,0,2,4,6,8,10,12,14,16,18,20,22,24,27,30,33,36,39,42,45,48,51,54,57,64,70,73,76,79,82,85,88,91,94,97,100,103,105,107,109,111,113,115,117,119,121,123,125,127,64,70,73,76,79,82,85,88,91,94,97,100,103,105,107,109,111,113,115,117,119,121,123,125,127};   // es1 pitch table  4 octaves
 
@@ -373,8 +378,9 @@ const char *microkorg_cc_list[]={"Portamento", "Wave", "OSC1 Control1",
 const uint8_t microkorg_cc_numbers[43]={05, 77, 14, 15, 78, 82, 82, 18, 19, 20, 21, 22,
 		22, 63, 74, 71, 79, 85, 23, 24, 25, 26, 07, 10, 92, 73, 75,
 		70, 87, 87, 28, 88, 26, 28, 29, 30, 31, 12, 13, 13, 94, 95, 90};
-uint8_t voice_list[sound_set]={3,1,2,0,0,0,0,0}; // tracks assigned to voice channels , related to midi channel
 
+uint8_t voice_list[sound_set]={3,1,2,0,0,0,0,0}; // tracks assigned to voice channels , related to midi channel
+uint8_t midi_channel_list[sound_set]={9,4,2,3,5};   //holds midi channel settings for voices
 
 
 char lcd_char[4];

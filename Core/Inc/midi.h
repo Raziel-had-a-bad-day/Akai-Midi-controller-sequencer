@@ -6,10 +6,6 @@ void cdc_send2(void);
 void seq_pos_rate(uint8_t scene ,uint8_t*buf , uint8_t*buf_time, uint16_t* buf_end );
 void midi_timeout_parse_buffer(const uint8_t *buffer, uint32_t length);
 
-
-
-
-
 uint8_t pattern_scale_process(uint8_t value, uint8_t selected_sound ) {    // scale incoming notes from list
 
 	uint8_t note=0;
@@ -83,7 +79,6 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	 //send_temp[counter&7]=3;   // draws green runner and bar position on first screen
 	}
 
-
 	if (bar_map_screen_level >= 1 && bar_map_screen_level <= 3) {
 	    int shift = (bar_map_screen_level-1)*3;
 	    counter = (counter >> shift) & 7;
@@ -92,16 +87,8 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	    send_temp[24+counter] = send_temp[32+counter] = color;
 	}
 
-
 	//	if (record) send_temp[square_buttons_list[green_position[0]]]=3;   // add moving green light  ,off during pause
-
 	//send_temp[square_buttons_list[seq_step]]=1;
-	/*if (down_arrow){
-	memcpy(send_temp+8,LFO_tracking_bank+8,8);     // temporary for testing
-	memcpy(send_temp+16,LFO_tracking_bank+24,8);
-	memcpy(send_temp+24,LFO_tracking_bank+40,8);
-	memcpy(send_temp+32,LFO_tracking_bank+56,8);
-	if (scene_buttons[0]<8) memset(send_temp+8,0,32);}*/
 
 	for(n=0;n<512;n+=4){
 
@@ -117,8 +104,6 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 		}  // can be used to reset all these buttons
 	i++;}
 
-
-
 	if (counter_a) { // one at a time ,but runs often ,might change
 
 		buffer_short[0] = MIDI_NOTE_ON+temp_midi_var;
@@ -130,9 +115,6 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	if (!counter_a) n=512;
 
 	}  // end of loop
-
-
-
 
 	//if (send_buffer[6]){ while (CDC_Transmit_FS(send_buffer+5, 3)== USBD_BUSY){HAL_Delay(1);}}//bad
 	if (buffer_size) CDC_Transmit_FS(buffer_out, buffer_size); // trying big send
@@ -272,23 +254,21 @@ void seq_play_record(uint8_t* buf, uint8_t*buf_time ){ // this is triggered by k
 
 	current_scene&=7; // 0-3
 	current_channel=current_scene;
-	current_scene=((note_recording_set_current[current_scene]&7)*seq_play_note_count)+(current_scene*(16*sound_set));  // 4*8*48=1536, drums and 3 keys , this is only time *3 for data
+	current_scene=((note_recording_set_current[current_scene]&7)*seq_play_note_count)+(current_scene*(seq_play_note_count*sound_set));  // 4*8*48=1536, drums and 3 keys , this is only time *3 for data
 
 
 	uint8_t new_time=0;
 
 
-	if (!seq_record_enable) {seq_record_enable=1;memset (buf+(current_scene*3),0,48); seq_record_timer=1;memset (buf_time+(current_scene),0,16);
+	if (!seq_record_enable) {seq_record_enable=1;memset (buf+(current_scene*3),0,(seq_play_note_count*3)); seq_record_timer=1;
+	memset (buf_time+(current_scene),0,seq_play_note_count);
 	short_repeat_counter[current_channel]=1;}  // will delete if started while running
 	if( (!pause) )  { seq_record_timer=seq_pos;} // reads seq_pos if running, will disable at end
 
 
 	uint16_t seq_play_pointer=(current_scene*3)+((seq_record_enable-1)*3); // needs fix
 	uint16_t time_pos= (current_scene)+((seq_record_enable-1));
-		new_time=seq_record_timer&255;
-
-
-
+		new_time=seq_record_timer&255;  // might make it longer
 
 		buf[seq_play_pointer]=keyboard[0]&127;//note
 		buf[seq_play_pointer+1]=keyboard[1]&127;// velocity
@@ -308,19 +288,17 @@ void seq_play_copy(void){    // copies current short_repeat_buf to seq_play_buf
 	uint16_t current_scene=scene_buttons[0];  // gonna change to midi channel based and x8 for keys
 
 	current_scene=(voice_list[current_scene]); // midi channel based , might convert to a list ie 0=2 3=1 4=2 for now stay with 0-4
-
 	current_scene&=7;
+	current_scene=((note_recording_set_current[current_scene]&7)*seq_play_note_count)+(current_scene*seq_play_note_count*record_per_channel);  // 4*8*48=1536, drums and 3 keys , this is only time *3 for data
 
-	current_scene=((note_recording_set_current[current_scene]&7)*16)+(current_scene*128);  // 4*8*48=1536, drums and 3 keys , this is only time *3 for data
-
-	memcpy(seq_play_buf_time+current_scene,short_repeat_time+current_scene,16); // copy back to sey_plau buf
-	memset(short_repeat_time+current_scene,0,16);  //clear short repeat buf
+	memcpy(seq_play_buf_time+current_scene,short_repeat_time+current_scene,seq_play_note_count); // copy back to sey_plau buf
+	memset(short_repeat_time+current_scene,0,seq_play_note_count);  //clear short repeat buf
 
 	current_scene*=3;
 	//need to always insert the time as well
-	memcpy(seq_play_buf+current_scene,short_repeat_buf+current_scene,48); // copy back to sey_plau buf
+	memcpy(seq_play_buf+current_scene,short_repeat_buf+current_scene,(seq_play_note_count*3)); // copy back to sey_plau buf
 	//
-	memset(short_repeat_buf+current_scene,0,48);  //clear short repeat buf
+	memset(short_repeat_buf+current_scene,0,(seq_play_note_count*3));  //clear short repeat buf
 
 // won't play seq_play_buf even though it's copied properly
 
@@ -349,20 +327,14 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 
 	if (	short_track_disable) bar_map_sound_enable[short_track_disable-1]=0; //mutes selected track when keyboard pressed
 
-	//uint8_t accent_select=0;
-	//midi_extra_cue[28]=0; //sending junk even wehn off
-
-
-
-	for (i=0;i<128;i++){ //does only one round, 24 messages per track ,, uses search  , this now needs to change 24*8*4
+	for (i=0;i<(seq_play_note_count*sound_set);i++){ //does only one round, 24 messages per track ,, uses search  , this now needs to change 24*8*4
 		// this stays but now in different regions , nothing to do with time !
 
 		count=i>>4; // 0-7
 		counter=count; // this is now refers to voice selected
 		set_jump=(note_recording_set_current[count]*seq_play_note_count)+(count*(seq_play_note_count*sound_set));//0-512 range
 
-
-		count=(i&15)+set_jump; // jumps from currently playing notes to next midi channel
+		count=(i&(seq_play_note_count-1))+set_jump; // jumps from currently playing notes to next voice channel (time)
 		count2=count*3; // *3 bytess in buf
 
 /*			if (!(i&15)) {
@@ -418,28 +390,19 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 			//if ((time==(seq_play_buf_end[counter])) ) seq_reset_flag[counter]=time;  // restart after last note , not happy at all here
 		}}
 
-
-
-
-
-
 	}
 	if(cue_counter>95) cue_counter=95; // limit max send
-	if (pause) cue_counter=0;
-	serial_len=cue_counter;
+	//if (pause) cue_counter=0;
+	if (! serial_len) {serial_len=cue_counter;  // only update after clear
 	//midi_extra_cue[28] = 0; // issues with sending , this helps somewhat
 	if( midi_extra && (!cue_counter) )	{ memcpy(serial_out, midi_extra_cue, midi_extra); // extra stuff sent only when no notes are sent
-	serial_len =  midi_extra;}
+	serial_len =  midi_extra;midi_extra_cue[28] = 0;} // send only when no notes
 	else 	{memcpy(serial_out, note_midi, serial_len);}
-
-
 
 		midi_timeout_parse_buffer(serial_out,serial_len);
 
 
-
-
-	midi_extra_cue[28] = 0;  // reset    ,seems extra data coming from somewhere
+	} // send only when serial_len empty
 }
 
 void seq_pos_rate(uint8_t scene ,uint8_t*buf , uint8_t*buf_time, uint16_t* buf_end ) {  // modifies and writes seq_play_buf_time , run this on selected only ,might keep the lot in one place
@@ -448,7 +411,7 @@ void seq_pos_rate(uint8_t scene ,uint8_t*buf , uint8_t*buf_time, uint16_t* buf_e
 		uint8_t current_scene2=current_scene*16;
 		uint16_t temp_out=0;
 
-		for (i=0;i<16;i++){
+		for (i=0;i<seq_play_note_count;i++){
 
 			temp=buf[(i*3)+2+(current_scene2*3)]; //grab original value
 				if(temp) temp=temp*seq_pos_set[current_scene];										// last pos stored , needs to increment at least by one always
@@ -484,10 +447,6 @@ typedef struct {
 } ChannelState_t;
 
 static ChannelState_t ch_state[16];
-
-
-
-
 
 // Process one incoming MIDI byte (call this from your receive callback or buffer parser)
 void midi_timeout_parse_buffer(const uint8_t *buffer, uint32_t length)
@@ -549,7 +508,7 @@ void midi_timeout_check_and_send(void)
             // You can call your existing send function here
             // Example using a simple 3-byte send (replace with your real send):
             uint8_t msg[3] = {0xB0 | ch, 123, 0};
-            HAL_UART_Transmit(&huart1,msg,3,1000);         // <--- your own send routine
+            HAL_UART_Transmit(&huart1,msg,3,100);         // <--- your own send routine
 
             // Optional: also send All Sound Off
             // msg[1] = 120; your_midi_send_function(msg, 3);

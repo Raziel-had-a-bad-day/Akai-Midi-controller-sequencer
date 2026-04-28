@@ -52,23 +52,16 @@ void fx_cc_send(uint8_t send){   // sends cc for particular fx track , not scene
 
 	uint8_t current_scene=send&63;  // 12 track of cc for now
 
-
 	control_change_value=fx_pot_settings[(current_scene)]; // selects cc   , midi channel then cc
-
-	//if (fx_map_sound_enable[send])
-
-		control_change[current_scene]=fx_pot_values[current_scene];
+	if (control_change_value==255) {fx_pot_settings[(current_scene)]=0;control_change_value=0;} // bad data
+		control_change[current_scene]=fx_pot_values[current_scene]&127;
 //	else control_change[current_scene]=fx_pot_values[(current_scene*4)+1]; // send onor off
-
 
 	if (control_change_buf[current_scene]!=control_change[current_scene])
 		{control_change_flag=current_scene+1;control_change_buf[current_scene]=control_change[current_scene];}
 			//only sends cc on change of value , nothing otherwise
 
 	//control_change[current_scene]=pot_states[current_scene];
-
-
-
 
 }
 void fx_map_screen(void){    // fx screen functions , 3 pages ,12 tracks  , disabled for now

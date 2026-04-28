@@ -755,7 +755,7 @@ void pitch_mode(void){  // changes display when in pitch mode , maybe diff note 
 	uint8_t selected_scene=scene_buttons[0]&7;
 
 	uint8_t current_pitch_step=(last_pitch_count[selected_scene])&7;// shows selected pitch step 0-7
-	if(!pause) current_pitch_step=((bar_map_counter)/pitch_change_rate[selected_scene+8])&7;
+//	if(!pause) current_pitch_step=((bar_map_counter)/pitch_change_rate[selected_scene+8])&7;  // div 0
 
 	uint8_t current_pitch_playing;
 	uint8_t current_octave;

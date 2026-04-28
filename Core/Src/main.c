@@ -186,9 +186,6 @@ int main(void)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 2 */
 
-
-
-
   // USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS);
 
   //tusb_init(0,0);
@@ -210,9 +207,11 @@ int main(void)
   	}
 */
 
-
     HAL_TIM_Base_Start_IT(&htim2);
-   // HAL_UART_Receive_IT(&huart1, &serial1_temp, 1);		// midi irq
+   HAL_UART_Receive_IT(&huart1, serial_rx_buf, 1);		// midi irq
+  // HAL_UART_Receive_IT(&huart1, serial_rx_buf, 1);
+  		// midi irq
+
    // HAL_UART_Receive_DMA(&huart1, serial1_hold2,1);    //
   //CDC_Transmit_FS("Hello\r\n",7);
 
@@ -226,14 +225,12 @@ int main(void)
 
 	}
 
-
 	uint8_t count_div;
 	for (i=0;i<1024;i++){   // read data from seq_play_buf
 		count_div=i/16;
 
 	if(seq_play_buf[(i*3)]>127) memset(seq_play_buf+(i*3),0,3);
 	if(seq_play_buf[(i*3)+1]>127) memset(seq_play_buf+(i*3),0,3);// clear bad data
-
 
 	seq_play_buf_time[i]=seq_play_buf[(i*3)+2]; // saves time of messages
 	if(seq_play_buf_end[count_div]<seq_play_buf_time[i]) seq_play_buf_end[count_div]=seq_play_buf_time[i]; // save last message time per track
@@ -271,8 +268,6 @@ int main(void)
 
 
 	 // HAL_GPIO_WritePin(PPQ_GPIO_Port, PPQ_Pin, (ppq_send|1));
-
-
 	 // uint16_t step_temp=0;
 	 // uint8_t seq_step_mod;
 	  uint8_t selected_scene=scene_buttons[0]; // moving on from this
@@ -290,7 +285,6 @@ int main(void)
 		  if((seq_t>245 ) && (!bar_start_enable)  && (bar_end_enable) ) bar_end(); // this needs to change
 		  if (seq_t==255) seq_step_long=(seq_step_long+1)&255;
 
-
 		  if (!pause) seq_step = seq_t>> 4; else seq_step=seq_step; // changed seq_pos to 255 count
 		  if(pause) green_position[0]=seq_record_timer>>5;  else green_position[0]=seq_step>>1;
 
@@ -301,16 +295,11 @@ int main(void)
 		 if(solo) {	memset(bar_map_sound_enable,0,(sound_set*1)); bar_map_sound_enable[scene_buttons[0]]=1;	} // enable one sound for solo
 		 if(rec_arm) {	 bar_map_sound_enable[scene_buttons[0]]=1;	} // lock on selected channel when recording
 
-
 		 if (seq_t) {   cdc_send2(); }
 
 		  if(seq_t&&1) {{ if (fx_counter>63) fx_counter=0; else fx_counter++; } fx_cc_send(fx_counter);}// sending midi cc, sends only on change so can be called often
 
-
 		  midi_extras(); // sends cc and pc , not a problem
-
-
-
 			 seq_pos_mem=seq_t;
 		 } // end of seq_pos ,fast step 8/step
 
@@ -337,8 +326,6 @@ int main(void)
 			  if ((short_repeat_counter[i]) && ((short_repeat_counter[i]))<4) short_repeat_counter[i]++;
 
 		  }}
-
-
 
 		  if (!pause) {
 			  shift_hold_function(); // runs on every note
@@ -373,9 +360,7 @@ int main(void)
 			  seq_current_step=loop_lfo_out[current_scene+32];
 			  loop_current_speed=pattern_scale_list[current_scene];
 
-
 			  if (!seq_t) current_playing_bar=(current_playing_bar+1)&31;  // resets on a stop
-
 
 			  if ((send) && shift) {  all_notes_off(); flash_read();  button_states[send_button]=0; send=0; }   // reload everything from flash
 
@@ -393,11 +378,7 @@ int main(void)
 
 				 // printf(" %d",loop_screen_note_on[(selected_scene*32)+i] );
 				 // printf(" ds=%d ",drum_store_one[i+(scene_buttons[0]*4)] );
-
-
 			  }
-
-
 			  printf("   %d",seq_step );
 			  printf("   %d",led_clear);
 			  printf("   %d",pattern_select );
@@ -409,11 +390,7 @@ int main(void)
 			//  printf(" cdc=%d\n ",cdc_len_temp);
 
  				// print section
-
-
-
 			  //if (lcd_downcount) { lcd_message();lcd_downcount--; }
-
  			//	lcd_menu_pages(1);
 
 
@@ -448,16 +425,26 @@ int main(void)
 
 	  /////////////// MIDI SEND ////////////////
 
-	  if ((serial_len>12 )&&(HAL_UART_GetState(&huart1)==HAL_UART_STATE_READY)) // send 12bytes at a time on large sends
+	  //if ((serial_len>12 )&&(HAL_UART_GetState(&huart1)==HAL_UART_STATE_READY)) // send 12bytes at a time on large sends
+		  if (tx_ready && serial_len) // send 12bytes at a time on large sends
+			//  if ((HAL_UART_GetState(&huart1)==HAL_UART_STATE_READY)&& tx_ready && serial_len)
 
-	  { HAL_UART_Transmit(&huart1,serial_out,serial_len,100); // uart send disable if no info,
-	  uint8_t mem_temp[128];
-	  serial_len-=12;
-	  memcpy(mem_temp,serial_out+serial_len,12);
-	  memcpy(serial_out,mem_temp,serial_len);
+		  {
+
+
+			  memcpy(serial_tx_buf,serial_out,serial_len);
+			  serial_tx_counter=serial_len;
+			  tx_ready=0;
+			  HAL_UART_Transmit_IT(&huart1, serial_tx_buf, serial_tx_counter);
+			  serial_len=0;
+	//	  HAL_UART_Transmit(&huart1,serial_out,serial_len,100); // uart send disable if no info,
+	//  uint8_t mem_temp[128];
+	 // serial_len-=12;
+
+	 // memcpy(serial_out,mem_temp,serial_len);
 
 	  }
-	  if ((serial_len<=12)&&(HAL_UART_GetState(&huart1)==HAL_UART_STATE_READY)) {HAL_UART_Transmit(&huart1,serial_out,serial_len,100); serial_len=0;} //serial send
+	 // if ((serial_len<=12)&&(HAL_UART_GetState(&huart1)==HAL_UART_STATE_READY)) {HAL_UART_Transmit(&huart1,serial_out,serial_len,100); serial_len=0;} //serial send
 
 
 
@@ -541,12 +528,8 @@ int main(void)
 
 				  }
 
-
-
 				  // sends straight to keyboard on receive
 			 // printf(" 1=%d ",cdc_buffer[0] ); printf(" 2=%d ",cdc_buffer[1] ); printf(" 3=%d \n ",cdc_buffer[2] );
-
-
 
 			  if (pause==5)  { all_notes_off();}    // runs only once during pause
 
@@ -589,9 +572,6 @@ int main(void)
 				  keyboard[0]=incoming;
 
 				//  memcpy(keyboard_buffer+buffer_pos,midi_extra_cue+(1+extra_start),2); keyboard_buffer[buffer_pos+2]=current_seq_pos; keyboard_buffer[31]=buffer_pos+3;  // store in buffer
-
-
-
 
 				  }//end of keyboard
 
@@ -743,7 +723,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -927,7 +907,14 @@ static void MX_GPIO_Init(void)
 
 		//memcpy((serial_hold+8),(serial_hold2+8),8);
 	}
+	void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
+		if (huart->Instance == USART1){
 
+			tx_ready=1;
+		}
+
+
+	}
 
 
 
