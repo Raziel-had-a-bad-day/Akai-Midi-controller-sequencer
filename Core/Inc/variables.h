@@ -83,7 +83,18 @@ uint8_t countSetBits(uint8_t number) { // count bits in byte
         number >>=   1;        // Right shift n by 1
     }
     return count;}
+// Pre-compute mask for 8-bit target using CLZ (very fast on Cortex-M)
 
+
+static inline uint8_t get_8bit_mask(uint8_t target)   //  finds bit mask for a 8 bit number , for repeating patterns etc
+{
+    if (target == 0) return 0x00;
+
+    // Use CLZ (Count Leading Zeros) - hardware accelerated on Cortex-M
+    uint32_t temp = target;
+    int highest_bit = 31 - __builtin_clz(temp);     // position of MSB
+    return (uint8_t)((1u << (highest_bit + 1)) - 1);
+}
 
 //buttons
 uint8_t volume; // volume button
@@ -388,6 +399,8 @@ char lcd_char[4];
 char cc_string[16];  // holds outgoing string for lcd
 
 uint8_t note_recording_set_current[sound_set]={0,0,0,0,0,0,0,0};  // currently playing recording set , setting to 8
+uint8_t note_recording_set_timer[sound_set]={0,3,7,15,31,63,127,255}; // higher number overules lower number , can be any number , may be presets
+uint8_t note_recording_set_counter[sound_set]; // keeps track , reset on stop
 uint8_t short_repeat_counter[sound_set];  // counts triggered playback //1-8 bars
 uint8_t short_repeat_buf[seq_play_note_count*sound_set*3*record_per_channel];// this holds temp notes when played during run
 uint8_t short_repeat_time[seq_play_note_count*sound_set*record_per_channel]; // holds time values for short playback , 8 sets
@@ -397,14 +410,6 @@ uint8_t button_states_clear[128];
 uint8_t cdc_echo[3]; // deleteuint
 uint8_t cdc_to_notes[3];
 uint8_t note_accent_modulate[sound_set]={127,127,127,127,127,127,127,127}; // control velocity 0-127
-
-
-
-
-
-
-
-
 
 
 uint16_t sine_wave[128]={

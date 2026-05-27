@@ -31,6 +31,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 		default:break;}
 
 
+/*
 	if ((incoming_data1>7) && (incoming_data1<40) && bar_map_screen_level) { //when changing
 	// modify button from incoming
 
@@ -47,7 +48,8 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 			else {VAR_RESET_BIT((pointer+(scene_select&12)+((alt_list>>3))),(alt_list&7));}
 
 	} //end of mod
-/*
+*/
+
 	if ((incoming_data1>23) && (incoming_data1<40) && (!bar_map_screen_level)  ) {  // top 2 bars
 	// modify button from incoming
 
@@ -60,12 +62,12 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
 
  // modify data from button state
-		if(button_states[square_buttons_list[alt_list]])  {VAR_SET_BIT((pointer+(scene_select*2)),(alt_list&15));}
-		else {VAR_RESET_BIT((pointer+(scene_select*2)),(alt_list&15));}
+	//	if(button_states[square_buttons_list[alt_list]])  {VAR_SET_BIT((pointer+(scene_select*2)),(alt_list&15));}
+	//	else {VAR_RESET_BIT((pointer+(scene_select*2)),(alt_list&15));}
 
-
+// use this for tracking note recorded ?
 	} //end of mod
-*/
+
 	if ((incoming_data1>15) && (incoming_data1<24) && (!bar_map_screen_level)  ) {   // middle row now recording select
 	// modify button from incoming
 		// add shift copy to buf
@@ -105,7 +107,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 			button_states[square_buttons_list[i]]=note_enabled;   // set light
 		}}
 
-	if (!bar_map_screen_level){   // normal screen default
+	if (!bar_map_screen_level){   // normal screen default , runs always
 
 		uint8_t multi=countSetBits(note_on_tracking_buf[1]);// get number of bits on bar select
 
@@ -136,12 +138,8 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 
 
 
-		pointer+=(scene_select*2);
-/*			for(i=0;i<16;i++){
-				note_enabled=VAR_GET_BIT(pointer,(i&15));
-				if(!note_enabled) note_enabled=color; else note_enabled=0;
-				button_states[square_buttons_list[i]]=note_enabled;   // was set light for notes,, this is now for soemthing else
-			}*/
+		//pointer+=(scene_select*2);
+
 				//memset(button_states+8,0,16);
 	}   // end of !bar_map_level
 		USB_send();  // do full clear send before new data
@@ -315,7 +313,7 @@ void buttons_store(void){    // incoming data from controller
 	 //uint8_t offset_pitch=seq_pos>>3;
 
 	memcpy(incoming_message,cdc_to_notes,3); // works off only receiving buffer
-	uint8_t current_midi=midi_channel_list[voice_list[scene_buttons[0]]];
+	//uint8_t current_midi=midi_channel_list[voice_list[scene_buttons[0]]];
 	//uint8_t buffer_clear = 0;
 	uint8_t incoming_data1 = incoming_message[1]&127;
 	uint8_t status=incoming_message[0];
@@ -480,6 +478,7 @@ void buttons_store(void){    // incoming data from controller
 		        case stop_all_clips:
 		            button_states[play_pause_button] = 5;
 		            memcpy(lcd_buffer,"Stop, jump to start.  ",16);
+		            memset(note_recording_set_counter,0,sound_set);
 		            pause = 5;
 		            seq_step = seq_step_long = 0;
 		            bar_selector = 0;

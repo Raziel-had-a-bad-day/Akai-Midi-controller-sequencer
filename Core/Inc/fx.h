@@ -8,6 +8,7 @@ void transpose_tracker(void);
 void bar_start(void);
 void bar_end(void);
 void bar_map_tracker(void);
+void lcd_number (uint8_t num,uint8_t pos);
 
 void fx_menu(uint8_t incoming){ // pot 1-8 control fx list 1-8 cc value ,, cc settings is stored in fx_pot _settings, shift+pot might set transition speed ,
 	//called always when down arrow enabled
@@ -200,11 +201,97 @@ void transpose_tracker(void){ // this runs every bar , should finish after the l
 
 	}
 			}
+// =============================================
+// Configuration - ONE number per pattern
+// Format: (StartBar * 100) + Duration
+// =============================================
+typedef struct {
+    uint8_t  pattern;
+    uint16_t code;        // start*100 + duration
+} Event;
 
+static const Event events[] = {  // only for special sections
+
+	{2, 151},	// works
+	{3, 311},
+	{4, 631},    // Pattern 4 at bar 45 for 2 bars
+    {5, 951},    // Pattern 5 at bar 64 for 1 bar
+
+	// Add more here as needed
+};
+
+#define NUM_EVENTS  (sizeof(events) / sizeof(events[0]))
+
+uint8_t get_current_pattern(uint32_t current_bar)
+{
+    if (current_bar == 0) return 0;   // safety
+
+    // Check for special sections (override)
+    for (uint8_t i = 0; i < NUM_EVENTS; i++)
+    {
+        uint32_t start    = events[i].code / 10;
+        uint32_t duration = events[i].code % 10;
+
+        if (current_bar >= start && current_bar < start + duration) // check if current bar is special
+        {
+            return events[i].pattern;
+        }
+    }
+
+    // Core loop: 0 or 1
+   // uint32_t pos = (current_bar - 1) % 8;  // counts 0-7
+    uint32_t pos = current_bar &7;  // counts 0-7
+    return (pos < 7) ? 0 : 1;  // cycle 0 or 1
+}
+void note_recording_tracker(void){  // runs always per bar , tracks which pattern to play
+	//uint8_t down_count=7;
+	uint8_t n;
+	for (n=0;n<sound_set;n++){
+//		down_count=7;
+//		while(down_count){  // skips on 0 , picks highest
+//			 uint8_t mask = get_8bit_mask(note_recording_set_timer[down_count]);
+//
+//			 if ((note_recording_set_counter [i] & mask) == note_recording_set_timer[down_count])
+//
+//				{note_recording_set_current[i]=down_count;down_count=1;}
+//				else note_recording_set_current[i]=note_recording_set_timer[0];
+//			down_count--;
+//
+//		}
+//
+//		note_recording_set_counter[i]=(note_recording_set_counter[i]+1) &255; // limited to 256
+		note_recording_set_current[n]=get_current_pattern(seq_step_long);
+
+
+
+
+	}
+	lcd_number ((note_recording_set_current[voice_list[scene_buttons[0]]]+1),13); // print current playing recording
+}
 
 void bar_start(void){
-	if((!pause) ) { bar_map_tracker();}  // might drop all this
+	if((!pause) ) {  note_recording_tracker(); bar_map_tracker();}  // might drop all this
+	memset(button_states+32,0,8);
+	uint16_t current_scene=scene_buttons[0];  // gonna change to midi channel based and x8 for keys
 
+	current_scene=(voice_list[current_scene]); // midi channel based , might convert to a list ie 0=2 3=1 4=2 for now stay with 0-4
+	current_scene&=7;
+	current_scene=((note_recording_set_current[current_scene]&7)*seq_play_note_count)+(current_scene*seq_play_note_count*record_per_channel);
+	uint8_t time=0;
+
+		for(i=0;i<8;i++){
+			time=seq_play_buf_time[current_scene+i];
+			if(time){
+
+			button_states[square_buttons_list[time>>5]]=red_button;   // was set light for notes,, this is now for soemthing else
+			time=short_repeat_buf[current_scene+i];
+
+			if(time){
+
+					button_states[square_buttons_list[time>>5]]=red_button; }  // was set light for notes,, this is now for soemthing else
+
+
+			}}
 	//fx_map_tracker();} // normal playing screen ,disabled for pitch mode
 	   transpose_tracker();  // first change on second bar at the end
 	  bar_start_enable=0;bar_end_enable=1;

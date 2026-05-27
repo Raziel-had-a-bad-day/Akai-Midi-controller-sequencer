@@ -65,6 +65,7 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	  uint8_t toggle=green_position[0]&1;
 	  uint8_t color=0;
 	  uint16_t counter=bar_map_counter;
+	  uint8_t select_midi=voice_list[scene_buttons[0]];
 
 	  memcpy(send_temp,button_states,100);
 	  if (clear_rows) { memset(send_temp+8,0,32);clear_rows=0;}
@@ -75,7 +76,8 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 		send_buffer_sent = 2;
 	}
 	////  temporary lights , not stored
-	if ( (!bar_map_screen_level)) { send_temp[square_buttons_list[green_position[0]]]=5;
+
+	if ( (!bar_map_screen_level)) { send_temp[square_buttons_list[green_position[0]]]=blink_light_list[select_midi];
 	 //send_temp[counter&7]=3;   // draws green runner and bar position on first screen
 	}
 
@@ -357,7 +359,7 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 			status=MIDI_NOTE_OFF;
 			if (seq_play_buf[count2 + 1]) {status=MIDI_NOTE_ON;
 			velocity=note_accent_modulate[counter];  // gets messed up at times
-
+			blink_light_list[counter]=3; //red blink for note on, from voice list
 			}
 			note_midi[cue_counter] = midi_channel_list[counter] + status; // add Note_on only
 			pitch=seq_play_buf[count2]&127; // pitch
@@ -537,6 +539,8 @@ void accent_lfo(void){
 	}
 
 }
+
+
 /*
 void cdc_send(void){     // all midi runs often , need to separate  , will go back to the old way ,less confusing
 		// sometimes seem to miss note on message

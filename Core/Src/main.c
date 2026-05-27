@@ -244,7 +244,7 @@ int main(void)
 
 	//TIM2->CCMR1 = 0;
 	lcd_start();
-
+	scene_buttons[0]=0;
 //	 board_init();
 
 /*
@@ -286,8 +286,9 @@ int main(void)
 		  if (seq_t==255) seq_step_long=(seq_step_long+1)&255;
 
 		  if (!pause) seq_step = seq_t>> 4; else seq_step=seq_step; // changed seq_pos to 255 count
-		  if(pause) green_position[0]=seq_record_timer>>5;  else green_position[0]=seq_step>>1;
-
+		  //if(pause) green_position[0]=seq_record_timer>>5;  else green_position[0]=seq_step>>1;
+		 // if(!stop_all_clips)
+			  green_position[0]=seq_t>>5;
 		  green_position[1]=seq_step>>1;
 
 		//  cdc_send(); // all midi compiled for send  8/per note , sends on seq_pos=1 atm
@@ -307,8 +308,12 @@ int main(void)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	  if ((s_temp) != (seq_t>>3)) {			// runs on note steps 0-31
 
-		  if ((seq_step==15)) {  led_full_clear();	// this runs twice
+
+		  if (seq_step&1)  memset(blink_light_list,5,8);
+		 // reset all lights
+			  if(seq_step==13) {  led_full_clear();	// this runs twice
 		  }
+
 
 		  //  lcd_menu_pages(2); // seems to mess up printing now
 		  lcd_mem(); // this sends too fast when run constant
@@ -548,8 +553,8 @@ int main(void)
 
 				//  if (incoming>>7)  {note_flag=128;velocity=0;}
 				  if (buffer_pos>23) buffer_pos=0;   // reset buffer in case
-				  if( rec_arm && (!clip_stop))  { seq_play_record(seq_play_buf, seq_play_buf_time );} // records live sequence from keyboard[0]
-				  if ((!rec_arm) && (!clip_stop)){ seq_play_record(short_repeat_buf, short_repeat_time );} //being skipped ?
+				  if( rec_arm && (!clip_stop))  { button_states[square_buttons_list[seq_step>>1]]=red_button;seq_play_record(seq_play_buf, seq_play_buf_time );} // records live sequence from keyboard[0]
+				  if ((!rec_arm) && (!clip_stop)){button_states[square_buttons_list[seq_step>>1]]=red_button; seq_play_record(short_repeat_buf, short_repeat_time );} //being skipped ?
 
 
  	  	  	  	  uint8_t incoming=keyboard[0]&127;
