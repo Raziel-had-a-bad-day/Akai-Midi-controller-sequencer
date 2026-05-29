@@ -270,7 +270,9 @@ void note_recording_tracker(void){  // runs always per bar , tracks which patter
 }
 
 void bar_start(void){
-	if((!pause) ) {  note_recording_tracker(); bar_map_tracker();}  // might drop all this
+	//if((!pause) ) { ;}  // might drop all this
+	 note_recording_tracker();
+	 bar_map_tracker();
 	memset(button_states+32,0,8);
 	uint16_t current_scene=scene_buttons[0];  // gonna change to midi channel based and x8 for keys
 

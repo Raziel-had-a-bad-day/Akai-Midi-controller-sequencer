@@ -12,7 +12,7 @@ playing will loop for a short time , can be saved to the currently selected reco
 shift+pause = loops current bar , can be changed with bar selector (fourth row) 
 row 5 = select sound, 1-3 keys rest drums 
 
-
+pot 4 = bar scrub
 pot 7+pause+device = 	sets midi channel for current sound 
 pot8=		velocity/accent ,  now default and red is velocity:96
 pot8 +shift+device=tempo

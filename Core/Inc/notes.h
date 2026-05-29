@@ -390,7 +390,7 @@ void buttons_store(void){    // incoming data from controller
 		    switch (incoming_data1)
 		    {
 		        case up_arrow_button:           // bum notes
-		        	memcpy(lcd_buffer,"Keys edit       ",16);
+		        	memcpy(lcd_buffer+16,"Keys edit       ",16);
 		        	if (scene_buttons[0] < 8)
 		            {
 		                memset(button_states, 1, 8);
@@ -405,8 +405,8 @@ void buttons_store(void){    // incoming data from controller
 
 		        case solo_button:
 		            solo = 1;
-		            memcpy(lcd_buffer,"Solo mode      ",16);
-		            if (shift) {memset(mute_list, 0, sound_set);  memcpy(lcd_buffer,"Clear all muting    ",16);}       // clear mutes on shift
+		            memcpy(lcd_buffer+16,"Solo mode      ",16);
+		            if (shift) {memset(mute_list, 0, sound_set);  memcpy(lcd_buffer+16,"Clear all muting    ",16);}       // clear mutes on shift
 		            break;
 
 		        case right_arrow_button:        // zoom out
@@ -428,7 +428,7 @@ void buttons_store(void){    // incoming data from controller
 		            break;
 
 		        case down_arrow_button:
-		        	memcpy(lcd_buffer," FX_edit_mode  ",16);
+		        	memcpy(lcd_buffer+16," FX_edit_mode  ",16);
 		            down_arrow = 1;
 		            break;
 
@@ -456,7 +456,7 @@ void buttons_store(void){    // incoming data from controller
 
 		        case rec_arm_button:
 		            rec_arm = 1;
-		            memcpy(lcd_buffer,"Recording mode  ",16);
+		            memcpy(lcd_buffer+16,"Recording mode  ",16);
 		            if (shift && !clip_stop)
 		            {
 		            uint16_t set_scenes=current_scene;
@@ -477,7 +477,7 @@ void buttons_store(void){    // incoming data from controller
 
 		        case stop_all_clips:
 		            button_states[play_pause_button] = 5;
-		            memcpy(lcd_buffer,"Stop, jump to start.  ",16);
+		            memcpy(lcd_buffer+16,"Stop, jump to start.  ",16);
 		            memset(note_recording_set_counter,0,sound_set);
 		            pause = 5;
 		            seq_step = seq_step_long = 0;
@@ -501,7 +501,7 @@ void buttons_store(void){    // incoming data from controller
 
 		        case clip_stop_button:
 		            clip_stop = 1;
-		            memcpy(lcd_buffer,"Enter pitch mode  ",16);
+		            memcpy(lcd_buffer+16,"Enter pitch mode  ",16);
 
 		            bar_map_screen_level = 0;
 		            break;
@@ -518,26 +518,27 @@ void buttons_store(void){    // incoming data from controller
 			{
 			switch(incoming_data1){
 
-			case up_arrow_button:up_arrow=0;if ((scene_buttons[0]>7)) {memcpy(lcd_buffer,"Select keys track    ",16);
+			case up_arrow_button:up_arrow=0;if ((scene_buttons[0]>7)) {memcpy(lcd_buffer+16,"Select track    ",16);
 				memset(button_states,1,8);
 				//scene_buttons[0]=scene_buttons[0]-8;
 
 				second_scene=0;
-				loop_screen();}else{ memset(button_states,1,8);memcpy(lcd_buffer,"Select drum track    ",16);}  ;break;
+				loop_screen();}//else{ memset(button_states,1,8);memcpy(lcd_buffer,"Select drum track    ",16);}
+				;break;
 			case right_arrow_button:right_arrow=0;  break;//zoom out
 			case select_button: {select_bn=0;} ;break; // select enable
-			case down_arrow_button:down_arrow=0;bar_map_screen_level=0;bar_map_screen() ;memcpy(lcd_buffer,"Normal mode     ",16);; break;
+			case down_arrow_button:down_arrow=0;bar_map_screen_level=0;bar_map_screen() ;memcpy(lcd_buffer+16,"Normal mode     ",16);; break;
 			case left_arrow_button: left_arrow=0; break;// zoom in
 			case mute_button:scene_mute=0;break;
 			case record_button:record=0;overdub_enabled=0;break;
 			case volume_button:volume=0;break;
 			case pan_button:pan=0;break;
 			case send_button:send=0;break;
-			case rec_arm_button:rec_arm=0;seq_record_enable=0;seq_record_timer=0;memcpy(lcd_buffer,"Normal mode     ",16);break;
+			case rec_arm_button:rec_arm=0;seq_record_enable=0;seq_record_timer=0;memcpy(lcd_buffer+16,"Normal mode     ",16);break;
 			case device_button:device=0;break;// shows midi channel , for now
 			case play_pause_button:{pause=0;button_states[stop_all_clips]=0;bar_loop_current=0;  memcpy(lcd_buffer+16,"Play            ",16);}break;
-			case clip_stop_button: {clip_stop=0;bar_map_screen_level=0;bar_map_screen();}memcpy(lcd_buffer,"Normal mode     ",16); break;
-			case solo_button:solo=0;memcpy(lcd_buffer,"Normal mode     ",16);break;
+			case clip_stop_button: {clip_stop=0;bar_map_screen_level=0;bar_map_screen();}memcpy(lcd_buffer+16,"Normal mode     ",16); break;
+			case solo_button:solo=0;memcpy(lcd_buffer+16,"Normal mode     ",16);break;
 			default:break;
 
 
@@ -604,7 +605,7 @@ void buttons_store(void){    // incoming data from controller
 		 memcpy(lcd_buffer,"Pitch change rate    ",16);
 		;break;// sets pitch for drums ,only first page
 
-		case pot_4:break;
+		case pot_4:seq_step_modify=(pot_states[3]&127)+1;memcpy(lcd_buffer+16,"Jump to bar     ",16);lcd_number((seq_step_modify-1),29);break; // scrub bars
 		case pot_5: 	if ((!device)&& (!clip_stop)) {lfo_settings_list[(current_scene*2)]=incoming_message[2];} ;memcpy(lcd_buffer+16,"LFO rate        ",16);;lcd_number(incoming_message[2],29); break;  // lfo rate
 		case pot_6: if ((!device) && (!clip_stop))   {lfo_settings_list[(current_scene*2)+1]=incoming_message[2] ;} ;memcpy(lcd_buffer+16,"LFO depth       ",16);lcd_number(incoming_message[2],29); break;  // lfo level
 
@@ -623,8 +624,8 @@ void buttons_store(void){    // incoming data from controller
 		;break;   // sets midi channel on selected sound
 
 		case pot_8:
-			if ((shift) && (device))		{timer_value=bpm_table[incoming_message[2]+64]; tempo=incoming_message[2]+64; memcpy(lcd_buffer,"Edit Tempo     ",16);lcd_number(incoming_message[2],29);} //tempo
-			if ((!device)&&(!shift)) {note_accent[current_scene]=incoming_message[2];rand_velocities[current_scene]=incoming_message[2];  memcpy(lcd_buffer,"Velocity / Accent    ",16);lcd_number(incoming_message[2],29);    // accent input
+			if ((shift) && (device))		{timer_value=bpm_table[incoming_message[2]+64]; tempo=incoming_message[2]+64; memcpy(lcd_buffer+16,"Edit Tempo     ",16);lcd_number(incoming_message[2],29);} //tempo
+			if ((!device)&&(!shift)) {note_accent[current_scene]=incoming_message[2];rand_velocities[current_scene]=incoming_message[2];  memcpy(lcd_buffer+16,"Velocity / Accent    ",16);lcd_number(incoming_message[2],29);    // accent input
 		current_accent=pot_states[7];}  // accent also used for tempo with shift
 
 			;break;
@@ -639,7 +640,7 @@ void buttons_store(void){    // incoming data from controller
 			fx_incoming[1]=incoming_data1;  // selects which pot
 			if (!shift){
 
-			memcpy(lcd_buffer,"CC send         ",16);
+			memcpy(lcd_buffer+16,"CC send         ",16);
 			 uint8_t shift_fx=current_scene*8; // voice based
 
 			 uint8_t cc_selected=fx_pot_settings[((incoming_data1-48))+shift_fx]; //gets cc number for the pot
@@ -655,7 +656,7 @@ void buttons_store(void){    // incoming data from controller
 			}
 			else {
 
-				memcpy(lcd_buffer,"CC re-assign     ",16);
+				memcpy(lcd_buffer+16,"CC re-assign     ",16);
 				 uint8_t shift_fx=current_scene*8; // voice based
 
 
@@ -700,7 +701,7 @@ void buttons_store(void){    // incoming data from controller
 
 	if (scene_select)  { // change scene select lite , one at a time though , fully update so need for extra sends
 		scene_select=scene_select-1;
-		memcpy(lcd_buffer,"Select keys,drums    ",16);
+		memcpy(lcd_buffer+16,"Select keys,drums    ",16);
 
 		//uint8_t clear_green[8]= {1,1,1,1,1,1,1,1};
 		memset(alt_pots_overwrite_enable,0,sound_set );  // clear alt pots edit

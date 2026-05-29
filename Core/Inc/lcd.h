@@ -18,7 +18,7 @@ RTC_TimeTypeDef seq_clock;
 uint8_t lcd_page1_ref[]={1,3,4,2,8,2,11,2,30,2,24,2,27,2,16,3,21,2,14,2,0,0,0,0};   // start and length of *lcd_page1 references ,last entry can be trouble,  keep 0 at the end to finish
 uint8_t page_up_counter; // tracks menu search
 int8_t var_size; // track size of variables for lcd
-
+void lcd_time_track(void);
 
 
 
@@ -261,6 +261,22 @@ if (led_clear>66) led_clear=1;
 }
 
 
+}
+
+void lcd_time_track(void){  // time/position/bars display on lcd
+
+struct SeqTime time=convert(seq_pos_millis());
+
+//memset(lcd_buffer,32,14);
+
+lcd_number(seq_step_long,3);
+
+lcd_number(time.minutes,7);
+
+lcd_number(time.seconds,10);
+lcd_buffer[13]=(uint8_t) 's';
+lcd_buffer[10]=(uint8_t) ':';
+lcd_buffer[6]=(uint8_t) 'b';
 }
 
 

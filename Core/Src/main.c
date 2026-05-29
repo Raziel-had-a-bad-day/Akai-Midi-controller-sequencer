@@ -280,12 +280,19 @@ int main(void)
 
 		  accent_lfo();
 
-		  if((seq_t<10 ) && (bar_start_enable)  && (!bar_end_enable) ) bar_start(); // a little time buffer  just in case
+		  if((seq_t<10 ) && (bar_start_enable)  && (!bar_end_enable) ) {bar_start();} // a little time buffer  just in case
 
 		  if((seq_t>245 ) && (!bar_start_enable)  && (bar_end_enable) ) bar_end(); // this needs to change
-		  if (seq_t==255) seq_step_long=(seq_step_long+1)&255;
+		  if ((seq_t==255)){
+			  if (seq_step_modify){seq_step_long=seq_step_modify-1;seq_step_modify=0;}
+
+			  else  {if (!pause) seq_step_long=(seq_step_long+1)&(song_length-1);}}  // total length might change it
 
 		  if (!pause) seq_step = seq_t>> 4; else seq_step=seq_step; // changed seq_pos to 255 count
+
+
+
+
 		  //if(pause) green_position[0]=seq_record_timer>>5;  else green_position[0]=seq_step>>1;
 		 // if(!stop_all_clips)
 			  green_position[0]=seq_t>>5;
@@ -308,7 +315,7 @@ int main(void)
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	  if ((s_temp) != (seq_t>>3)) {			// runs on note steps 0-31
 
-
+		  lcd_time_track();
 		  if (seq_step&1)  memset(blink_light_list,5,8);
 		 // reset all lights
 			  if(seq_step==13) {  led_full_clear();	// this runs twice
@@ -331,15 +338,24 @@ int main(void)
 			  if ((short_repeat_counter[i]) && ((short_repeat_counter[i]))<4) short_repeat_counter[i]++;
 
 		  }}
+		  //progress bar
+		  memset(button_states+8,0,8);
+		 if (!seq_step_modify){
+		  button_states[8+((seq_step_long>>3)&7)]=5;  // shows 8 bar  on first screen
+		  button_states[8+(seq_step_long&7)]=3;}  // shows current bar pos on first screen
+		 else {
+			  button_states[8+(((seq_step_modify-1)>>3)&7)]=5;  // shows 8 bar  on first screen
+			  button_states[8+((seq_step_modify-1)&7)]=3;}
+		  /////////////
+
 
 		  if (!pause) {
 			  shift_hold_function(); // runs on every note
 
 			  //seq_step_long=bar_map_counter&63;
 		  if ((!bar_map_screen_level)&&(!clip_stop)) {  // disp function for bar and accent ,disabled for pitch mode
-			  memcpy(button_states+8,bar_map_lights,8);
-			  button_states[8+((seq_step_long>>3)&7)]=5;  // shows 8 bar  on first screen
-			  button_states[8+(seq_step_long&7)]=3;  // shows current bar pos on first screen
+			//  memcpy(button_states+8,bar_map_lights,8);
+
 
 
 			  memset(button_states+15,0,8);

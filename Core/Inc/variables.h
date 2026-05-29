@@ -8,6 +8,7 @@
 #define prescaler 192   // TIM10 values
 #define ppq_set 192   // TIM10 values
 #define drum_store 64  // scene_select  *4
+#define song_length 128 // bar count 128= 7 mins
 
 #define SRAM_BitB_BASE         0x22000000 //sram bit band  base for calculations
 #define RAM_BASE                         0x20000000   // ram address start
@@ -95,6 +96,22 @@ static inline uint8_t get_8bit_mask(uint8_t target)   //  finds bit mask for a 8
     int highest_bit = 31 - __builtin_clz(temp);     // position of MSB
     return (uint8_t)((1u << (highest_bit + 1)) - 1);
 }
+struct SeqTime {  // for displaying various times
+    int minutes;
+    int seconds;
+
+};
+
+struct SeqTime convert(uint32_t milliseconds) {  // calculate from elapsed millis
+    struct SeqTime time;
+    time.minutes = milliseconds / 60000 ; // Calculate minutes
+    time.seconds = (milliseconds/1000) % 60;  // Calculate remaining seconds
+
+    return time;
+}
+uint16_t seq_pos_ref_time; // time of a single seq_pos step in millis, rounded ,not very accurate
+
+
 
 //buttons
 uint8_t volume; // volume button
@@ -134,7 +151,7 @@ uint8_t note_replace_enable=0;
 
 
 uint8_t patch_save;  //  patch save  0-15
-
+uint8_t seq_step_modify=0;  //sets a bar to jump to(song position)  on when enabled 0-127 atm
 
 
 volatile uint16_t seq_pos;  // 16 bit  , 24/quater or 8/step  on 1/16th , sequencer clock, rarely used might change
@@ -423,3 +440,8 @@ uint16_t sine_wave[128]={
 		150, 168, 187, 207, 227, 249, 270, 293, 316, 339, 363, 387, 412, 436, 461, 486,
 
 };
+uint32_t seq_pos_millis(void){  // returns millis elapsed since playback start when called
+	uint32_t temp=((seq_pos_ref_time*seq_pos)+(seq_pos_ref_time*256*seq_step_long));
+
+	return temp; //
+}

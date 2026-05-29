@@ -293,8 +293,11 @@ while (selected_bar<8){				// this tests for data in bars ,if none leaves scene 
 		 bpm_table[d]=tempo_hold;
 	 }
 	 timer_value=bpm_table[tempo]-1;  // starting bpm -1
-	 //	timer_value=511;
 
+	 seq_pos_ref_time=(6000/((cpu_clock/prescaler)/timer_value));  // millisecond per one seq_pos_step for upcount, ppq count * 6
+
+	 //	timer_value=1099;
+	 //454hz
 	 TIM2->PSC=prescaler-1;
 	 TIM2->ARR=timer_value;
 	 //	TIM2->CCR1=(timer_value/2) ;
