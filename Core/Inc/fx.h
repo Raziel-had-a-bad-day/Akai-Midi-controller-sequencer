@@ -237,12 +237,29 @@ uint8_t get_current_pattern(uint32_t current_bar)
             return events[i].pattern;
         }
     }
-
     // Core loop: 0 or 1
    // uint32_t pos = (current_bar - 1) % 8;  // counts 0-7
     uint32_t pos = current_bar &7;  // counts 0-7
     return (pos < 7) ? 0 : 1;  // cycle 0 or 1
 }
+uint8_t load_current_pattern(uint16_t current_bar){
+
+
+	if(current_pattern_list[current_bar]) return (current_pattern_list[current_bar]&7);
+	 uint32_t pos = current_bar &7;  // counts 0-7
+	    return (pos < 7) ? 0 : 1;  // cycle 0 or 1
+
+}
+void save_current_pattern(uint8_t pattern){
+
+	current_pattern_list[seq_step_long]=pattern&7;
+
+
+}
+
+
+
+
 void note_recording_tracker(void){  // runs always per bar , tracks which pattern to play
 	//uint8_t down_count=7;
 	uint8_t n;
@@ -260,7 +277,7 @@ void note_recording_tracker(void){  // runs always per bar , tracks which patter
 //		}
 //
 //		note_recording_set_counter[i]=(note_recording_set_counter[i]+1) &255; // limited to 256
-		note_recording_set_current[n]=get_current_pattern(seq_step_long);
+		note_recording_set_current[n]=load_current_pattern(seq_step_long);
 
 
 
@@ -273,6 +290,8 @@ void bar_start(void){
 	//if((!pause) ) { ;}  // might drop all this
 	 note_recording_tracker();
 	 bar_map_tracker();
+	 if (seq_step_modify && (!pause)) {seq_step_long=seq_step_modify-1;seq_step_modify=0;} // only while running
+
 	memset(button_states+32,0,8);
 	uint16_t current_scene=scene_buttons[0];  // gonna change to midi channel based and x8 for keys
 
@@ -288,11 +307,7 @@ void bar_start(void){
 			button_states[square_buttons_list[time>>5]]=red_button;   // was set light for notes,, this is now for soemthing else
 			time=short_repeat_buf[current_scene+i];
 
-			if(time){
-
-					button_states[square_buttons_list[time>>5]]=red_button; }  // was set light for notes,, this is now for soemthing else
-
-
+			if(time){button_states[square_buttons_list[time>>5]]=red_button; }  // was set light for notes,, this is now for soemthing else
 			}}
 	//fx_map_tracker();} // normal playing screen ,disabled for pitch mode
 	   transpose_tracker();  // first change on second bar at the end

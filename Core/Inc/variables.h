@@ -110,8 +110,8 @@ struct SeqTime convert(uint32_t milliseconds) {  // calculate from elapsed milli
     return time;
 }
 uint16_t seq_pos_ref_time; // time of a single seq_pos step in millis, rounded ,not very accurate
-
-
+uint8_t current_pattern_list[song_length]; // stores selected pattern for a bar
+uint8_t cdc_repeat_check[3]; // hold last value in case repeating (likely cc) pattern
 
 //buttons
 uint8_t volume; // volume button

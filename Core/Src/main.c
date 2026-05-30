@@ -283,15 +283,9 @@ int main(void)
 		  if((seq_t<10 ) && (bar_start_enable)  && (!bar_end_enable) ) {bar_start();} // a little time buffer  just in case
 
 		  if((seq_t>245 ) && (!bar_start_enable)  && (bar_end_enable) ) bar_end(); // this needs to change
-		  if ((seq_t==255)){
-			  if (seq_step_modify){seq_step_long=seq_step_modify-1;seq_step_modify=0;}
-
-			  else  {if (!pause) seq_step_long=(seq_step_long+1)&(song_length-1);}}  // total length might change it
-
+	  if ((seq_t==255)){
+	 {if (!pause) seq_step_long=(seq_step_long+1)&(song_length-1);}}
 		  if (!pause) seq_step = seq_t>> 4; else seq_step=seq_step; // changed seq_pos to 255 count
-
-
-
 
 		  //if(pause) green_position[0]=seq_record_timer>>5;  else green_position[0]=seq_step>>1;
 		 // if(!stop_all_clips)
@@ -339,36 +333,34 @@ int main(void)
 
 		  }}
 		  //progress bar
-		  memset(button_states+8,0,8);
+		  memset(button_states+8,0,16);
 		 if (!seq_step_modify){
 		  button_states[8+((seq_step_long>>3)&7)]=5;  // shows 8 bar  on first screen
-		  button_states[8+(seq_step_long&7)]=3;}  // shows current bar pos on first screen
+		  button_states[8+(seq_step_long&7)]=3;
+		  uint8_t recordings=note_recording_set_current[voice_list[scene_buttons[0]]];
+		  button_states[16+recordings]=5;
+
+		 }  // shows current bar pos on first screen
 		 else {
-			  button_states[8+(((seq_step_modify-1)>>3)&7)]=5;  // shows 8 bar  on first screen
-			  button_states[8+((seq_step_modify-1)&7)]=3;}
+			  uint8_t step=seq_step_modify-1;
+			  //seq_step_modify=0;
+			 button_states[8+(((step)>>3)&7)]=5;  // shows 8 bar  on first screen
+			  button_states[8+((step)&7)]=3;
+			  uint8_t recordings=load_current_pattern(step);
+			  button_states[16+recordings]=5;
+
+		 }
 		  /////////////
+
+
+
+
+
 
 
 		  if (!pause) {
 			  shift_hold_function(); // runs on every note
 
-			  //seq_step_long=bar_map_counter&63;
-		  if ((!bar_map_screen_level)&&(!clip_stop)) {  // disp function for bar and accent ,disabled for pitch mode
-			//  memcpy(button_states+8,bar_map_lights,8);
-
-
-
-			  memset(button_states+15,0,8);
-			 uint8_t recordings=note_recording_set_current[voice_list[scene_buttons[0]]];
-			  button_states[16+recordings]=5;
-
-			  //  uint32_t accent_pointer=(uint32_t)&motion_record_buf;
-			/*  for(i=0;i<8;i++){  // accent bar draw
-			  		if	(VAR_GET_BIT(accent_pointer+(scene_buttons[0]*8)+accent_bit_shift,((accent_bit&24)+i))) 	 button_states[16+i]=5;
-			  		else button_states[16+i]=0;  // adds accent on/off bar on thrid row
-			  		}*/
-
-		  }
 		  } //end of pause off
 
 
@@ -596,7 +588,7 @@ int main(void)
 
 				  }//end of keyboard
 
-					  if(((seq_pos&7)>3) && (cdc_buffer[0]))   buttons_store();   // only runs after receive , might delay a bit
+					  if(((seq_pos&7)>3) && (cdc_to_notes[0]))   buttons_store();   // runs until empty
 
 
     /* USER CODE END WHILE */

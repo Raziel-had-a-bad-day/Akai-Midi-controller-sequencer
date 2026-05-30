@@ -54,13 +54,13 @@ void settings_storage(void)
         lfo_settings_list, single_settings_list, pitch_change_loop,
           pitch_change_rate, bar_map_1, bar_map_8,
         bar_map_64, bar_map_0, fx_pot_settings, fx_map_1, note_recording_set_current,
-        voice_list, fx_pot_values
+        voice_list, fx_pot_values,current_pattern_list
     }; // try to add to the end
 
     uint8_t settings_temp[256];
     uint16_t settings_total = 0;
     uint16_t length = 0;
-    uint8_t array_length[]={1,1,1,1,1,1,1,2,1,1,2,1,1,1,2,8,1,1,1,8
+    uint8_t array_length[]={1,1,1,1,1,1,1,2,1,1,2,1,1,1,2,8,1,1,1,8,8
 
 
     };  //  this is needed no simple way around it
@@ -86,6 +86,9 @@ void settings_storage(void)
         }
         else {
             memcpy(settings_temp, all_settings + settings_total, length);
+
+            for (uint8_t n = 0; n < length; n++){if (settings_temp[n]==255) settings_temp[n]=0;} // check for no data
+
             memcpy(settings[i], settings_temp, length);
         }
 

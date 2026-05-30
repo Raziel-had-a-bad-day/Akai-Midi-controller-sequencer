@@ -80,6 +80,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 			button_states[incoming_data1 ]=alt_list;
 			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
 			if(button_states[square_buttons_list[alt_list]]) {
+			save_current_pattern(alt_list&7);
 			uint8_t	set_scene=voice_list[scene_select]; // midi channel based , might convert to a list ie 0=2 3=1 4=2 for now stay with 0-4
 				set_scene&=3;
 				note_recording_set_current[0]=alt_list&7;  // for now set all the sounds to the same
@@ -111,6 +112,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 
 		uint8_t multi=countSetBits(note_on_tracking_buf[1]);// get number of bits on bar select
 
+
 		if ((incoming_data1>8) && (incoming_data1<16) && (multi>1)) { // multitouch bar_looping, only while held
 			uint8_t looping_count=0;
 			for(i=0;i<8;i++){
@@ -127,6 +129,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 			}
 
 		} // end of bar map looping ,works as long as one button held after another
+
 
 		if ((incoming_data1>8) && (incoming_data1<16) && (multi<=1)) {
 			memset(bar_map_lights,0,8);
@@ -313,8 +316,18 @@ void buttons_store(void){    // incoming data from controller
 	 //uint8_t offset_pitch=seq_pos>>3;
 
 	memcpy(incoming_message,cdc_to_notes,3); // works off only receiving buffer
-	//uint8_t current_midi=midi_channel_list[voice_list[scene_buttons[0]]];
-	//uint8_t buffer_clear = 0;
+
+	if (incoming_message[0]==176){  // test for repeat cc
+
+		if ((incoming_message[1]==cdc_repeat_check[1] )&&	 (incoming_message[2]==cdc_repeat_check[2] )){
+						memset(cdc_to_notes,0,3);return; // exit if repeated cc
+		}
+		}
+	if (incoming_message[0]==176) memcpy(cdc_repeat_check,cdc_to_notes,3); // this should help
+
+
+
+
 	uint8_t incoming_data1 = incoming_message[1]&127;
 	uint8_t status=incoming_message[0];
 
@@ -478,7 +491,7 @@ void buttons_store(void){    // incoming data from controller
 		        case stop_all_clips:
 		            button_states[play_pause_button] = 5;
 		            memcpy(lcd_buffer+16,"Stop, jump to start.  ",16);
-		            memset(note_recording_set_counter,0,sound_set);
+		           // memset(note_recording_set_counter,0,sound_set);
 		            pause = 5;
 		            seq_step = seq_step_long = 0;
 		            bar_selector = 0;
@@ -511,9 +524,6 @@ void buttons_store(void){    // incoming data from controller
 		    }
 		}  // function buttons
 
-
-
-
 		if ((!button_states[incoming_data1]) && (incoming_data1>40))  //only test if button is getting switched off, may not as reliable but quicker
 			{
 			switch(incoming_data1){
@@ -540,13 +550,8 @@ void buttons_store(void){    // incoming data from controller
 			case clip_stop_button: {clip_stop=0;bar_map_screen_level=0;bar_map_screen();}memcpy(lcd_buffer+16,"Normal mode     ",16); break;
 			case solo_button:solo=0;memcpy(lcd_buffer+16,"Normal mode     ",16);break;
 			default:break;
-
-
 			}
 			}
-
-
-
 
 		} // end of Note on for all buttons
 
@@ -577,7 +582,7 @@ void buttons_store(void){    // incoming data from controller
 
 
 	if (status == CC_Message) {//  controller data , store pot , clip stop off
-
+		// seems to repeat here
 		//if(shift) shift_hold_function();
 
 		pot_states[incoming_data1  - 48] = (incoming_message[2]); // store pot all  // not always ok
@@ -603,9 +608,11 @@ void buttons_store(void){    // incoming data from controller
 		case pot_3://
 		pitch_change_rate[current_scene]=1<<(incoming_message[2]/24); //1-32  // pitch hcange rate
 		 memcpy(lcd_buffer,"Pitch change rate    ",16);
-		;break;// sets pitch for drums ,only first page
+				;break;// sets pitch for drums ,only first page
 
-		case pot_4:seq_step_modify=(pot_states[3]&127)+1;memcpy(lcd_buffer+16,"Jump to bar     ",16);lcd_number((seq_step_modify-1),29);break; // scrub bars
+		case pot_4:seq_step_modify=(pot_states[3]&127)+1;memcpy(lcd_buffer+16,"Jump to bar     ",16);lcd_number((seq_step_modify-1),29);
+		 if(pause && (seq_step_modify)) seq_step_long=seq_step_modify-1;// just force
+		;break; // scrub bars
 		case pot_5: 	if ((!device)&& (!clip_stop)) {lfo_settings_list[(current_scene*2)]=incoming_message[2];} ;memcpy(lcd_buffer+16,"LFO rate        ",16);;lcd_number(incoming_message[2],29); break;  // lfo rate
 		case pot_6: if ((!device) && (!clip_stop))   {lfo_settings_list[(current_scene*2)+1]=incoming_message[2] ;} ;memcpy(lcd_buffer+16,"LFO depth       ",16);lcd_number(incoming_message[2],29); break;  // lfo level
 
@@ -640,32 +647,32 @@ void buttons_store(void){    // incoming data from controller
 			fx_incoming[1]=incoming_data1;  // selects which pot
 			if (!shift){
 
-			memcpy(lcd_buffer+16,"CC send         ",16);
-			 uint8_t shift_fx=current_scene*8; // voice based
+				memcpy(lcd_buffer+16,"CC send         ",16);
+				uint8_t shift_fx=current_scene*8; // voice based
 
-			 uint8_t cc_selected=fx_pot_settings[((incoming_data1-48))+shift_fx]; //gets cc number for the pot
+				uint8_t cc_selected=fx_pot_settings[((incoming_data1-48))+shift_fx]; //gets cc number for the pot
 
-			 lcd_number(cc_selected,9);
-			 cc_lut(cc_selected);
-			 memcpy(lcd_buffer+16,cc_string,15); // copy name of cc
+				lcd_number(cc_selected,9);
+				cc_lut(cc_selected);
+				memcpy(lcd_buffer+16,cc_string,15); // copy name of cc
 
 
-			lcd_number(incoming_message[2],13);
+				lcd_number(incoming_message[2],13);
 
-			fx_menu(fx_incoming[1]);  // saves pot settings for fx
+				fx_menu(fx_incoming[1]);  // saves pot settings for fx
 			}
 			else {
 
 				memcpy(lcd_buffer+16,"CC re-assign     ",16);
-				 uint8_t shift_fx=current_scene*8; // voice based
+				uint8_t shift_fx=current_scene*8; // voice based
 
 
 
-				 fx_pot_settings[((incoming_data1-48))+shift_fx]=incoming_message[2]; //gets cc number for the pot
-				 uint8_t cc_selected=fx_pot_settings[((incoming_data1-48))+shift_fx]; //gets cc nc number for the pot
-				 lcd_number(cc_selected,9);
-				 cc_lut(cc_selected);
-				 memcpy(lcd_buffer+16,cc_string,15); // copy name of cc
+				fx_pot_settings[((incoming_data1-48))+shift_fx]=incoming_message[2]; //gets cc number for the pot
+				uint8_t cc_selected=fx_pot_settings[((incoming_data1-48))+shift_fx]; //gets cc nc number for the pot
+				lcd_number(cc_selected,9);
+				cc_lut(cc_selected);
+				memcpy(lcd_buffer+16,cc_string,15); // copy name of cc
 
 				lcd_number(incoming_message[2],13);
 
@@ -675,7 +682,7 @@ void buttons_store(void){    // incoming data from controller
 
 
 
-			}
+		}
 
 
 
@@ -733,7 +740,7 @@ void buttons_store(void){    // incoming data from controller
 	//loop_screen();  // always run except when device on ,except when keyboard step
 	//if (buffer_clear)
 	//	memcpy(cdc_buffer+cdc_start, clear, 3);
-	memset(cdc_to_notes,0,3);
+	memset(cdc_to_notes,0,3); // should clear
 
 	} // end of button store
 
