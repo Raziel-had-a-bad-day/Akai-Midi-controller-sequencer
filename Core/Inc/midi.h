@@ -193,11 +193,22 @@ void midi_extras(void){    // extra midi data added here , program change , cc
 
 		  }
 
-		  uint8_t voice_select=(control_change_flag-1)>>3;   //  this is already voice list NOT scene_buttons !!!
+		  uint8_t voice_select=0;
+		  if(control_change_flag>95){
+			  voice_select=(control_change_flag-96); //
+			  midi_extra_cue[extras]=176+midi_channel_list[voice_select];   // select midi for cc
+			  		  midi_extra_cue[extras+1]=cc_extra_send[0]; // setting for reverb atm
+			  		  midi_extra_cue[extras+2]=cc_extra_send[1];
+			  			  midi_extra_cue[28]=extras+3;
+			  		  control_change_flag=0; //clear
+
+
+		  }
+		   voice_select=(control_change_flag-1)>>3;   //  this is already voice list NOT scene_buttons !!!
 		  if (control_change_flag){midi_extra_cue[extras]=176+midi_channel_list[voice_select];   // select midi for cc
 		  midi_extra_cue[extras+1]=control_change_value; // setting for reverb atm
 		  midi_extra_cue[extras+2]=control_change[control_change_flag-1];
-		  midi_extra_cue[28]=extras+3;
+			  midi_extra_cue[28]=extras+3;
 		  control_change_flag=0; //clear
 
 		  }

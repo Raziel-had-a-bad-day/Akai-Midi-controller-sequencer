@@ -17,33 +17,27 @@ pot 7+pause+device = 	sets midi channel for current sound
 pot8=		velocity/accent ,  now default and red is velocity:96
 pot8 +shift+device=tempo
 
-stop_all_clips = pause and jumps to start
+stop_all_clips = jumps to start
 
 send = write to flash , 
 send + shift = reload 
 solo = solo single channel
 mute = select any part to mute, turns red 
 up arrow = select sounds 8-15, 
-pause= stops at the end of bar 
+pause= loops current pattern
 keyboard =  also play notes on selected sound 
-Stop all clips = stops and jumps to start 
+
+clip stop= sends cc pot 1-8 cc 90-97, not saved
 
 device =   shows current midi channel on top rows ,blinky yellow  
 
-down arrow = calls up fx menu , pots set cc send on keys  , 3 channels * 4 settings , press shift and adjust pots to assign cc controller to particular pot  
-
+down arrow = calls up fx menu , pots set cc send on keys  , 3 channels * 4 settings , press shift and adjust pots to assign cc controller to particular pot ,saved 
 
 Pot 3 =sets transpose pitch change advance rate on keys on main screen 
 
-middle row = 8 sets of midi recordings per midi channel/voice 
+middle row = 8 patterns per midi channel/voice 
 Forth row is bar position of 8 bars. Holding down one and pressing another will loop those bars.Not doing anything atm 
 
-////pitch entry mode ///
-clip stop on enables pitch screen , only used for transpose !  synced to bar position 
-bars 1 and 2 shows pitch in current octave  0-11 
-bar 4 shows pitch sequencer current step , adjust playback rate using pot 3 
-in pause enter pitch for steps using and these bars, can use keyboard also
-keyboard transpose enter while playing live 
-in pause + rec arm = step record mode using keyboard 
+
 
  

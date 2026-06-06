@@ -324,8 +324,8 @@ uint8_t nrpn_gating_enable;  // for gating audio effects on drum
 uint8_t nrpn_gating_switch[8]; //just the levels for gating or volume
 uint8_t nrpn_gating_sequence[16]={127,0,127,0,120,0,100,0,127,0,127,0,120,0,100,0};   // just a gating sequence
 
-uint8_t control_change_flag=0;  // selects from fx list , not sounds or midi
-
+uint8_t control_change_flag=0;  // selects from fx list , not sounds or midi, control chnage value+1
+uint8_t cc_extra_send[2]={0,0};
 uint8_t keyboard_step_record;   // keeps count of keys pressed once rec_arm and pause is on
 uint8_t loop_screen_disable=0;
 uint8_t control_change[sound_set*8];   // set control change data using fx menu list

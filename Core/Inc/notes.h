@@ -204,27 +204,7 @@ void alt_pots_playing(void){    // shows currently playing related to alt notes 
 }
 
 
-void record_overdub(void){ // runs only when triggered by keyboard , wipes old data but only when triggered
-		// not used
-	uint16_t drum_byte_select;
-	uint16_t clear_select;
-		uint8_t drum_byte; // note on time data
-		uint8_t selected_scene=scene_buttons[0];  // this wiil change to pattern select 0-15
-	uint8_t time=seq_step; // 0-15  , this might need to change to a stored time as it's not accurate
 
-
-				drum_byte_select= (time>>2)+(selected_scene*4)+(bar_playing*drum_store);  // select byte position from  seq_pos
-				clear_select=(selected_scene*4)+(bar_playing*drum_store);
-				drum_byte=drum_store_one[drum_byte_select];  // select byt
-
-				if (overdub_enabled==1) {memset(drum_store_one+clear_select,0,4);overdub_enabled=2;} //clear selected bar data , 4 bytes
-
-
-				drum_byte |=(1<<((time&3)*2));  // write note position , set with or
-				 button_states[square_buttons_list[time]]=yellow_button ;  // puts on a light , not ness
-				 drum_store_one[drum_byte_select]=drum_byte;
-
-}
 void top_bar(uint8_t input){ // red bar function for top row
 
 	if (input>7){
@@ -442,7 +422,8 @@ void buttons_store(void){    // incoming data from controller
 
 		        case down_arrow_button:
 		        	memcpy(lcd_buffer+16," FX_edit_mode  ",16);
-		            down_arrow = 1;
+		            clip_stop=0;//disable pitch mode
+		        	down_arrow = 1;
 		            break;
 
 		        case mute_button:
@@ -514,6 +495,7 @@ void buttons_store(void){    // incoming data from controller
 
 		        case clip_stop_button:
 		            clip_stop = 1;
+		            down_arrow=0; // disable cc mode
 		            memcpy(lcd_buffer+16,"Enter pitch mode  ",16);
 
 		            bar_map_screen_level = 0;
@@ -559,14 +541,14 @@ void buttons_store(void){    // incoming data from controller
 	if ((status == CC_Message) && (clip_stop)){   // pitch_mode enabled pto functions ,
 
 		// add extra pot functions here
+		memcpy(lcd_buffer+16,"CC extra        ",16);
+		control_change_flag=current_scene+96;// extra cc send , not stored
 
-		switch(incoming_data1){
+		cc_extra_send[0]=(incoming_data1-48)+90;// select pot  cc 90-97
+		lcd_number(cc_extra_send[0],24);
+		cc_extra_send[1]=incoming_message[2];// cc value 0-127
+		lcd_number(cc_extra_send[1],28);
 
-		case pot_3:
-			pitch_change_rate[current_scene]=1<<(incoming_message[2]/24); //1-32  // pitch hcange rate
-			 ;break;//
-		default:break;
-		}
 
 
 		status=0; // clear
@@ -593,7 +575,7 @@ void buttons_store(void){    // incoming data from controller
 			patch_screen();
 		}
 
-		if (!down_arrow){     // down arrow disabled ,default screen
+		if ((!down_arrow)&&(!clip_stop)){     // down arrow disabled ,default screen
 		switch(incoming_data1){   // pots data selector ,default screen
 
 		case pot_1:
@@ -682,7 +664,8 @@ void buttons_store(void){    // incoming data from controller
 
 
 
-		}
+		}// end of down arrow
+
 
 
 
@@ -731,8 +714,9 @@ void buttons_store(void){    // incoming data from controller
 			 //loop_selector=1; // redraw
 	
 		scene_select=0;
-		if (!clip_stop) bar_map_screen();
-		if (clip_stop)  pitch_mode();
+		//if (!clip_stop)
+			bar_map_screen(); // might just keep this only no extra changes
+		//if (clip_stop)  pitch_mode();
 
 
 	}// end of scene select
