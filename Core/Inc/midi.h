@@ -65,7 +65,8 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	  uint8_t toggle=green_position[0]&1;
 	  uint8_t color=0;
 	  uint16_t counter=bar_map_counter;
-	  uint8_t select_midi=voice_list[scene_buttons[0]];
+	  //uint8_t select_voice=voice_list[scene_buttons[0]];
+	  uint16_t seq_t=seq_pos;
 
 	  memcpy(send_temp,button_states,100);
 	  if (clear_rows) { memset(send_temp+8,0,32);clear_rows=0;}
@@ -77,9 +78,10 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	}
 	////  temporary lights , not stored
 
-	if ( (!bar_map_screen_level)) { send_temp[square_buttons_list[green_position[0]]]=blink_light_list[select_midi];
+	if  ((blink_light_list[seq_t])) { button_states[green_position[0]+32]=red_button; // notes
 	 //send_temp[counter&7]=3;   // draws green runner and bar position on first screen
 	}
+		send_temp[green_position[0]+32]=green_button;
 
 	if (bar_map_screen_level >= 1 && bar_map_screen_level <= 3) {
 	    int shift = (bar_map_screen_level-1)*3;
@@ -330,7 +332,7 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 	uint8_t velocity=0;
 	uint8_t pitch=6;
 	uint8_t midi_extra=midi_extra_cue[28];
-
+	uint8_t voice=voice_list[scene_buttons[0]];
 	uint16_t count=0;
 	uint16_t count2=0;
 	uint16_t time_add=0;
@@ -370,7 +372,7 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 			status=MIDI_NOTE_OFF;
 			if (seq_play_buf[count2 + 1]) {status=MIDI_NOTE_ON;
 			velocity=note_accent_modulate[counter];  // gets messed up at times
-			blink_light_list[counter]=3; //red blink for note on, from voice list
+			{if(voice==count) blink_light_list[time&255]=3;} //red blink for note on, from voice list
 			}
 			note_midi[cue_counter] = midi_channel_list[counter] + status; // add Note_on only
 			pitch=seq_play_buf[count2]&127; // pitch

@@ -7,11 +7,58 @@ void pitch_mode(void);
 void bar_map_tracker(void);
 uint8_t countSetBits(uint8_t number);
 
+void enter_note(uint8_t step){ // enters a midi note on for a selected voice at a certain step in the current pattern 0-255, mainly for one shot samples
+
+	uint8_t voice =voice_list[scene_buttons[0]];
+	uint8_t start=((note_recording_set_current[voice]&7)*seq_play_note_count)+(voice*(seq_play_note_count*sound_set)); // start time byte  in seq_play_buf_time
+	uint8_t pitch=pitch_pot;
+	if (!step) step=1; // always on
+
+	for(i=0;i<16;i++){
+		if (seq_play_buf_time[start+i]==step){
+			seq_play_buf[(start*3)+(i*3)]=pitch;
+			seq_play_buf[(start*3)+(i*3)+1]=127; //vel
+			return;} // replace exit if found an existing(first) record
+		}
+	for(i=0;i<16;i++){
+		if (!seq_play_buf_time[start+i]){
+			seq_play_buf_time[start+i]=step;
+			seq_play_buf[(start*3)+(i*3)]=pitch;
+			seq_play_buf[(start*3)+(i*3)+1]=127; //vel
+			seq_play_buf[(start*3)+(i*3)+2]=step; //time
+			return; // find empty slot then enter new pitch/time , exit
+		}
+
+	}// no fallback for now if pattern is full , needs manual delete, might use the last recorded not pointer ?
+
+	} // end of enter note
+
+void delete_note(uint8_t step){ // delete a midi note on for a selected voice at a certain step in the current pattern 0-255, mainly for one shot samples
+
+	uint8_t voice =voice_list[scene_buttons[0]];
+	uint8_t start=((note_recording_set_current[voice]&7)*seq_play_note_count)+(voice*(seq_play_note_count*sound_set)); // start time byte  in seq_play_buf_time
+
+	if (!step) step=1; // always on
+
+	for(i=0;i<16;i++){
+		if (seq_play_buf_time[start+i]==step){
+			seq_play_buf_time[(start)+(i)]=0;
+			seq_play_buf[(start*3)+(i*3)]=0;
+			seq_play_buf[(start*3)+(i*3)+1]=0; //vel
+			seq_play_buf[(start*3)+(i*3)+2]=0;
+			return;} // replace exit if found an existing(first) record
+		}
+
+	} //end of delete note
+
+
+
+
 void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well, works good
-	uint8_t note_enabled=0;
+	//uint8_t note_enabled=0;
 	uint8_t scene_select=scene_buttons[0]; // clear last two bits
 	uint8_t i=0;
-	uint32_t pointer;   // this is the actual address
+	//uint32_t pointer;   // this is the actual address
 	uint8_t incoming_message[3];
 	uint8_t color=green_button;
 	uint8_t accent_color=yellow_button;
@@ -23,12 +70,12 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 
 		uint8_t incoming_data1 = incoming_message[1]&127;
 
-	switch(bar_map_screen_level){   // grab the pointer for the correct bar map screen , might use it for diff functions now
+/*	switch(bar_map_screen_level){   // not needed
 		case 0: pointer=(uint32_t)&bar_map_0;color=green_button;break;
 		case 1: pointer=(uint32_t)&bar_map_1;color=red_button;break;
 		case 2: pointer=(uint32_t)&bar_map_8;color=red_button;break;
 		case 3: pointer=(uint32_t)&bar_map_64;color=yellow_button;break;
-		default:break;}
+		default:break;}*/
 
 
 /*
@@ -50,17 +97,30 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 	} //end of mod
 */
 
-	if ((incoming_data1>23) && (incoming_data1<40) && (!bar_map_screen_level)  ) {  // top 2 bars
+	if ((incoming_data1>23) && (incoming_data1<40)   ) {  // top 2 bars
 	// modify button from incoming
 
 			uint8_t alt_list=	 button_states[incoming_data1 ];
+
 			switch(alt_list){    // change state of button
-			case 0 :alt_list = 0;break;   //
-			default:alt_list = color; ;break; }
+			case 0 :alt_list = color;break;   //
+			default:alt_list = 0; ;break; }
 
 			button_states[incoming_data1 ]=alt_list;
-			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
 
+
+			if (incoming_data1>31){ // enter notes here
+			//	uint8_t step=(incoming_data1-32)*(32>>zoom_level); // change multiplier with zoom later
+				uint8_t step=(incoming_data1-32)*32; // need a dif way
+			memset(blink_light_list,0,256); //clear store lights
+				if (alt_list) {enter_note(step);
+
+			} else delete_note(step);
+
+			memcpy(lcd_buffer+16,"Step            ",16);lcd_number((step>>4),25);lcd_number((step&15),29);
+			}
+
+			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
  // modify data from button state
 	//	if(button_states[square_buttons_list[alt_list]])  {VAR_SET_BIT((pointer+(scene_select*2)),(alt_list&15));}
 	//	else {VAR_RESET_BIT((pointer+(scene_select*2)),(alt_list&15));}
@@ -68,7 +128,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 // use this for tracking note recorded ?
 	} //end of mod
 
-	if ((incoming_data1>15) && (incoming_data1<24) && (!bar_map_screen_level)  ) {   // middle row now recording select
+	if ((incoming_data1>15) && (incoming_data1<24)  ) {   // middle row now recording select
 	// modify button from incoming
 		// add shift copy to buf
 			memset(button_states+16,0,8);   // clear row
@@ -100,15 +160,8 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 
 // draw screen
 
-	if (bar_map_screen_level){       // draw bars , might dump al this
-		pointer+=(scene_select&12);
-		for(i=0;i<32;i++){
-			note_enabled=VAR_GET_BIT((pointer+(i>>3)),(i&7)); // read note on
-			if(!note_enabled) note_enabled=color; else note_enabled=0;
-			button_states[square_buttons_list[i]]=note_enabled;   // set light
-		}}
 
-	if (!bar_map_screen_level){   // normal screen default , runs always
+	//if (!bar_map_screen_level){   // normal screen default , runs always
 
 		uint8_t multi=countSetBits(note_on_tracking_buf[1]);// get number of bits on bar select
 
@@ -144,7 +197,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 		//pointer+=(scene_select*2);
 
 				//memset(button_states+8,0,16);
-	}   // end of !bar_map_level
+	//}   // end of !bar_map_level
 		USB_send();  // do full clear send before new data
 	} // end of bar map screen
 
@@ -173,6 +226,8 @@ void bar_map_tracker(void){     // creates sound enable for notes from bar_map_e
 
 
 
+
+
 void all_notes_off(void){
 	uint8_t data[48];
 	for (i=0;i<16;i++){
@@ -198,9 +253,6 @@ void alt_pots_playing(void){    // shows currently playing related to alt notes 
 
 	memset(button_states+12,0,4);memset(button_states+20,0,4); // clear area
 	button_states[8+note_played]=3;
-
-
-
 }
 
 
@@ -208,10 +260,8 @@ void alt_pots_playing(void){    // shows currently playing related to alt notes 
 void top_bar(uint8_t input){ // red bar function for top row
 
 	if (input>7){
-	memset(button_states+32,0,8);loop_screen_disable=0;}
+	clear_row(0);loop_screen_disable=0;}
 	else button_states[32+input]=3;
-
-
 
 }
 
@@ -402,18 +452,20 @@ void buttons_store(void){    // incoming data from controller
 		            if (shift) {memset(mute_list, 0, sound_set);  memcpy(lcd_buffer+16,"Clear all muting    ",16);}       // clear mutes on shift
 		            break;
 
-		        case right_arrow_button:        // zoom out
-		            if (bar_map_screen_level < 3) bar_map_screen_level++;
-		            bar_map_screen();
+		        case right_arrow_button:        // zoom in
+		            if (zoom_level<3) zoom_level++;
+		            memcpy(lcd_buffer+16,"Zoom in         ",16);lcd_number((zoom_level),29);
 		            right_arrow = 0;
 		            button_states[right_arrow_button] = 0;
+		            clear_row(0);
 		            break;
 
-		        case left_arrow_button:         // zoom in
-		            if (bar_map_screen_level > 0) bar_map_screen_level--;
-		            bar_map_screen();
-		            left_arrow = 0;
+		        case left_arrow_button:         // zoom out
+		        	if (zoom_level) zoom_level--;
+		        	 memcpy(lcd_buffer+16,"Zoom out        ",16);lcd_number((zoom_level),29);
+		        	left_arrow = 0;
 		            button_states[left_arrow_button] = 0;
+		            clear_row(0);
 		            break;
 
 		        case select_button:
@@ -575,11 +627,13 @@ void buttons_store(void){    // incoming data from controller
 			patch_screen();
 		}
 
-		if ((!down_arrow)&&(!clip_stop)){     // down arrow disabled ,default screen
+		if ((!down_arrow)){     // down arrow disabled ,default screen
 		switch(incoming_data1){   // pots data selector ,default screen
 
 		case pot_1:
-		{pitch_change_loop[current_scene]=pot_states[0]>>4;}    // sets number of notes on pitch chnage
+		{pitch_pot=pot_states[0]>>3;
+		memcpy(lcd_buffer+16,"Pitch enter     ",16);lcd_number((pitch_pot),29);
+		}    // sets pitch for entering notes
 		break;
 
 		//if ((select_bn) && (current_scene>3))  //  cc function
@@ -595,10 +649,10 @@ void buttons_store(void){    // incoming data from controller
 		case pot_4:seq_step_modify=(pot_states[3]&127)+1;memcpy(lcd_buffer+16,"Jump to bar     ",16);lcd_number((seq_step_modify-1),29);
 		 if(pause && (seq_step_modify)) seq_step_long=seq_step_modify-1;// just force
 		;break; // scrub bars
-		case pot_5: 	if ((!device)&& (!clip_stop)) {lfo_settings_list[(current_scene*2)]=incoming_message[2];} ;memcpy(lcd_buffer+16,"LFO rate        ",16);;lcd_number(incoming_message[2],29); break;  // lfo rate
+		case pot_5: 	if ((!device)) {lfo_settings_list[(current_scene*2)]=incoming_message[2];} ;memcpy(lcd_buffer+16,"LFO rate        ",16);;lcd_number(incoming_message[2],29); break;  // lfo rate
 		case pot_6: if ((!device) && (!clip_stop))   {lfo_settings_list[(current_scene*2)+1]=incoming_message[2] ;} ;memcpy(lcd_buffer+16,"LFO depth       ",16);lcd_number(incoming_message[2],29); break;  // lfo level
 
-		case pot_7:	if ((pause) && (device)&& (!clip_stop)) 		 {  // enter mid channel
+		case pot_7:	if ((pause) && (device)) 		 {  // enter mid channel
 			uint8_t midi_selected=(incoming_message[2]>>3)&15;
 			midi_channel_list[current_scene]=midi_selected;
 			lcd_number(midi_selected,29);
@@ -622,7 +676,7 @@ void buttons_store(void){    // incoming data from controller
 
 		}
 
-		}
+		status=0; }
 
 		if (down_arrow){      // with down arrow enabled fx menu section ,pot settings
 
@@ -631,31 +685,22 @@ void buttons_store(void){    // incoming data from controller
 
 				memcpy(lcd_buffer+16,"CC send         ",16);
 				uint8_t shift_fx=current_scene*8; // voice based
-
 				uint8_t cc_selected=fx_pot_settings[((incoming_data1-48))+shift_fx]; //gets cc number for the pot
-
 				lcd_number(cc_selected,9);
 				cc_lut(cc_selected);
 				memcpy(lcd_buffer+16,cc_string,15); // copy name of cc
-
-
 				lcd_number(incoming_message[2],13);
-
 				fx_menu(fx_incoming[1]);  // saves pot settings for fx
 			}
-			else {
+			else { // assign cc to pots
 
 				memcpy(lcd_buffer+16,"CC re-assign     ",16);
 				uint8_t shift_fx=current_scene*8; // voice based
-
-
-
 				fx_pot_settings[((incoming_data1-48))+shift_fx]=incoming_message[2]; //gets cc number for the pot
 				uint8_t cc_selected=fx_pot_settings[((incoming_data1-48))+shift_fx]; //gets cc nc number for the pot
 				lcd_number(cc_selected,9);
 				cc_lut(cc_selected);
 				memcpy(lcd_buffer+16,cc_string,15); // copy name of cc
-
 				lcd_number(incoming_message[2],13);
 
 
@@ -664,7 +709,7 @@ void buttons_store(void){    // incoming data from controller
 
 
 
-		}// end of down arrow
+			status=0;    }// end of down arrow
 
 
 
@@ -795,7 +840,7 @@ void pitch_mode(void){  // changes display when in pitch mode , maybe diff note 
 	} //end of mod
 	} // end of pause
 
-	memset(button_states+8,0,32);
+	clear_row(0);clear_row(1);clear_row(2);clear_row(3);
 	if(current_pitch_playing<8) button_states[32+current_pitch_playing]=1;  // shows current pitch on first two bars
 	else button_states[24+current_pitch_playing-8]=1;
 

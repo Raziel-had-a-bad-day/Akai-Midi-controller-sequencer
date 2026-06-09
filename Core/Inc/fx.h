@@ -92,23 +92,7 @@ void fx_map_screen(void){    // fx screen functions , 3 pages ,12 tracks  , disa
 		default:break;}
 
 
-	if ((incoming_data1>7) && (incoming_data1<40) && bar_map_screen_level) {
-	// modify button from incoming
-
-			uint8_t alt_list=	 button_states[incoming_data1 ];
-			switch(alt_list){    // change state of button
-			case 0 :alt_list = 0;break;   //
-			default:alt_list = color; ;break; }
-
-			button_states[incoming_data1 ]=alt_list;
-			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
-
- // modify data from button state
-			if (button_states[square_buttons_list[alt_list]]) {VAR_SET_BIT((pointer+(scene_select&12)+((alt_list>>3))),(alt_list&7));}
-			else {VAR_RESET_BIT((pointer+(scene_select&12)+((alt_list>>3))),(alt_list&7));}
-
-	} //end of mod
-	if ((incoming_data1>23) && (incoming_data1<40) && (!bar_map_screen_level)  ) { // only on zero
+	if ((incoming_data1>23) && (incoming_data1<40)  ) { // only on zero
 	// modify button from incoming
 
 			uint8_t alt_list=	 button_states[incoming_data1 ];
@@ -129,23 +113,17 @@ void fx_map_screen(void){    // fx screen functions , 3 pages ,12 tracks  , disa
 
 	// draw screen
 
-		if (bar_map_screen_level){       // draw bars
-			pointer+=(scene_select&12);
-			for(i=0;i<32;i++){
-				note_enabled=VAR_GET_BIT((pointer+(i>>3)),(i&7));
-				note_enabled*=0;
-				button_states[square_buttons_list[i]]=note_enabled;   // set light
-			}}
 
-		if (!bar_map_screen_level){   // draw notes
+
+		  // draw notes
 			pointer+=(scene_select*2);
 				for(i=0;i<16;i++){
 					note_enabled=VAR_GET_BIT(pointer,(i&15));
 					note_enabled*=0;
 					button_states[square_buttons_list[i]]=note_enabled;   // set light
 				}
-					memset(button_states+8,0,16);}   // clear last two rows
 
+					clear_row(2);clear_row(3);
 			USB_send();  // do full clear send before new data
 		} // end of bar map screen
 
@@ -278,7 +256,10 @@ void note_recording_tracker(void){  // runs always per bar , tracks which patter
 //
 //		note_recording_set_counter[i]=(note_recording_set_counter[i]+1) &255; // limited to 256
 		note_recording_set_current[n]=load_current_pattern(seq_step_long);
-
+		if (note_recording_set_current[n]!=pattern_hold[n]){
+			memset(blink_light_list,0,256); //clear store lights
+			pattern_hold[n]=note_recording_set_current[n];
+		}
 
 
 
@@ -292,7 +273,7 @@ void bar_start(void){
 	 bar_map_tracker();
 	 if (seq_step_modify && (!pause)) {seq_step_long=seq_step_modify-1;seq_step_modify=0;} // only while running
 
-	memset(button_states+32,0,8);
+	clear_row(0);
 	uint16_t current_scene=scene_buttons[0];  // gonna change to midi channel based and x8 for keys
 
 	current_scene=(voice_list[current_scene]); // midi channel based , might convert to a list ie 0=2 3=1 4=2 for now stay with 0-4

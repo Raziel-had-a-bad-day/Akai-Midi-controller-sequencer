@@ -309,6 +309,7 @@ uint8_t pitch_selected_drum_value[8]; // holds outgoing drum value
 uint8_t pitch_change_loop[8]={0,0,0,0,0,0,0,0}; //sets the looping length of pitch changes may default to pressed button as the first in step
 uint8_t pitch_change_loop_position[8]={0,0,0,0,0,0,0,0};  // keeps track of pitch change loop
 uint8_t pitch_change_rate[16]; // sets alt_pots playback rate , 2 bars ,4 bars , 8 bars ,16bars,32 bars
+uint8_t pitch_pot=0;
 
 uint8_t lfo_settings_list[sound_set*2]; //holds lfo settings 1 rate , 2 level , testing for now
 uint8_t lfo_full_send_enable=0; // lfo transmit flag
@@ -318,7 +319,7 @@ uint8_t overdub_enabled; // flag to keep track of overdub
 uint8_t keyboard_buffer[32]; // store keyboard presses  with recorded time , maybe clear on bar if pressed again  or mute for a bar on playback
 
 uint16_t bar_note_register[8];  //scans for data bars if none it keeps scene select light off    1 bit , 16bit-8bars
-uint8_t blink_light_list[8]; // just add blink light to scene buttons
+uint8_t blink_light_list[256]; // just add blink light to scene buttons
 
 uint8_t nrpn_gating_enable;  // for gating audio effects on drum
 uint8_t nrpn_gating_switch[8]; //just the levels for gating or volume
@@ -415,7 +416,7 @@ char lcd_char[4];
 
 char cc_string[16];  // holds outgoing string for lcd
 
-uint8_t note_recording_set_current[sound_set]={0,0,0,0,0,0,0,0};  // currently playing recording set , setting to 8
+uint8_t note_recording_set_current[sound_set]={0,0,0,0,0,0,0,0};  // currently playing pattern , setting to 8
 uint8_t note_recording_set_timer[sound_set]={0,3,7,15,31,63,127,255}; // higher number overules lower number , can be any number , may be presets
 uint8_t note_recording_set_counter[sound_set]; // keeps track , reset on stop
 uint8_t short_repeat_counter[sound_set];  // counts triggered playback //1-8 bars
@@ -427,8 +428,8 @@ uint8_t button_states_clear[128];
 uint8_t cdc_echo[3]; // deleteuint
 uint8_t cdc_to_notes[3];
 uint8_t note_accent_modulate[sound_set]={127,127,127,127,127,127,127,127}; // control velocity 0-127
-
-
+uint8_t zoom_level=0; // zoom with left-right arrow - +
+uint8_t pattern_hold[sound_set]; // stores last pattern
 uint16_t sine_wave[128]={
 		512, 537, 562, 587, 611, 636, 660, 684, 707, 730, 753, 774, 796, 816, 836, 855,
 		873, 890, 907, 922, 937, 950, 963, 974, 984, 993, 1001, 1008, 1013, 1017, 1021, 1022,
@@ -445,3 +446,8 @@ uint32_t seq_pos_millis(void){  // returns millis elapsed since playback start w
 
 	return temp; //
 }
+void clear_row(uint8_t row){  // clear selected row of leds ,start from top 0-4
+	if(row>4) return;
+	memset(button_states+(32-(row<<3)),0,8);
+
+	}

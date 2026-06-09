@@ -284,14 +284,15 @@ int main(void)
 
 		  if((seq_t>245 ) && (!bar_start_enable)  && (bar_end_enable) ) bar_end(); // this needs to change
 	  if ((seq_t==255)){
-	 {if (!pause) seq_step_long=(seq_step_long+1)&(song_length-1);}}
+	 if (!pause) seq_step_long=(seq_step_long+1)&(song_length-1);}
+
 		  if (!pause) seq_step = seq_t>> 4; else seq_step=seq_step; // changed seq_pos to 255 count
 
 		  //if(pause) green_position[0]=seq_record_timer>>5;  else green_position[0]=seq_step>>1;
 		 // if(!stop_all_clips)
-			  green_position[0]=seq_t>>5;
+			  green_position[0]=(seq_t>>(5-zoom_level))&7; // 0-7
 		  green_position[1]=seq_step>>1;
-
+		  if (green_position[0]==7) clear_row(0);
 		//  cdc_send(); // all midi compiled for send  8/per note , sends on seq_pos=1 atm
 		  if (seq_record_timer) seq_record_timer=(seq_record_timer+1)&255;  // runs only when started till the end then stops on 0
 		 if(solo) {	memset(bar_map_sound_enable,0,(sound_set*1)); bar_map_sound_enable[scene_buttons[0]]=1;	} // enable one sound for solo
@@ -333,7 +334,7 @@ int main(void)
 
 		  }}
 		  //progress bar
-		  memset(button_states+8,0,16);
+		  clear_row(2);clear_row(3);
 		 if (!seq_step_modify){
 		  button_states[8+((seq_step_long>>3)&7)]=5;  // shows 8 bar  on first screen
 		  button_states[8+(seq_step_long&7)]=3;
