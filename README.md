@@ -1,10 +1,10 @@
 Akai APC key 25 midi controller based sequencer project with STM32F411+flash ,can be used with a similarly mapped controller though , uses USB midi to talk to pc then midi-ox links it to the midi controller (including lighting the buttons) also midi out on serial   . Has LCD for useful info like tempo ,  but not super essential.
  
 lcd(16x2. I2c) shows cc options and operating modes 
-use left and right arrows to step through zoom levels : notes , bars , bars*8,bars*64 
 
 
-rec_arm on default screen , records midi notes played on keyboard , live or in pause , only way to enter notes now , 8 notes buffer 
+
+rec_arm on default screen , records midi notes played on keyboard , live or in pause ,  8 notes buffer 
  shift+rec_arm  = clears notes
 playing will loop for a short time , can be saved to the currently selected recording slot (shift held) 
  
@@ -12,7 +12,7 @@ playing will loop for a short time , can be saved to the currently selected reco
 shift+pause = loops current bar , can be changed with bar selector (fourth row) 
 row 5 = select sound, 1-3 keys rest drums 
 
-pot 4 = bar scrub
+pot 4 = bar scrub, jumps to selected bar use it to program pattern playing while in pause
 pot 7+pause+device = 	sets midi channel for current sound 
 pot8=		velocity/accent ,  now default and red is velocity:96
 pot8 +shift+device=tempo

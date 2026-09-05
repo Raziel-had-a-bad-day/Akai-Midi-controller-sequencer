@@ -9,13 +9,13 @@ uint8_t countSetBits(uint8_t number);
 
 void enter_note(uint8_t step){ // enters a midi note on for a selected voice at a certain step in the current pattern 0-255, mainly for one shot samples
 
-	uint8_t voice =voice_list[scene_buttons[0]];
+	uint8_t voice =voice_list[scene_buttons[0]]; // selects voice
 	uint8_t start=((note_recording_set_current[voice]&7)*seq_play_note_count)+(voice*(seq_play_note_count*sound_set)); // start time byte  in seq_play_buf_time
 	uint8_t pitch=pitch_pot;
-	if (!step) step=1; // always on
+	//if (!step) step=1; // always on
 
 	for(i=0;i<16;i++){
-		if (seq_play_buf_time[start+i]==step){
+		if ((seq_play_buf_time[start+i]==step)&&(seq_play_buf[(start+i)*3])) {
 			seq_play_buf[(start*3)+(i*3)]=pitch;
 			seq_play_buf[(start*3)+(i*3)+1]=127; //vel
 			return;} // replace exit if found an existing(first) record
@@ -38,7 +38,7 @@ void delete_note(uint8_t step){ // delete a midi note on for a selected voice at
 	uint8_t voice =voice_list[scene_buttons[0]];
 	uint8_t start=((note_recording_set_current[voice]&7)*seq_play_note_count)+(voice*(seq_play_note_count*sound_set)); // start time byte  in seq_play_buf_time
 
-	if (!step) step=1; // always on
+	//if (!step) step=1; // always on
 
 	for(i=0;i<16;i++){
 		if (seq_play_buf_time[start+i]==step){
@@ -60,7 +60,7 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 	uint8_t i=0;
 	//uint32_t pointer;   // this is the actual address
 	uint8_t incoming_message[3];
-	uint8_t color=green_button;
+	//uint8_t color=green_button;
 	uint8_t accent_color=yellow_button;
 	uint32_t note_pointer=(uint32_t)&note_on_tracking_buf;
 		memcpy(incoming_message,cdc_buf2, 3); // works off only receiving buffer , this might be changing
@@ -100,25 +100,25 @@ void bar_map_screen(void){    // draw and modify bar_ map screens, notes as well
 	if ((incoming_data1>23) && (incoming_data1<40)   ) {  // top 2 bars
 	// modify button from incoming
 
-			uint8_t alt_list=	 button_states[incoming_data1 ];
-
+			//uint8_t alt_list=	 button_states[incoming_data1 ]; // might use a diff system
+			uint8_t alt_list=blink_light_list[square_buttons_list[incoming_data1]];
 			switch(alt_list){    // change state of button
-			case 0 :alt_list = color;break;   //
+			case 0 :alt_list = red_button;break;   //not very effective
 			default:alt_list = 0; ;break; }
 
-			button_states[incoming_data1 ]=alt_list;
+			//button_states[incoming_data1 ]=alt_list;
+			blink_light_list[square_buttons_list[incoming_data1]]=alt_list;
 
-
-			if (incoming_data1>31){ // enter notes here
+			// enter notes here
 			//	uint8_t step=(incoming_data1-32)*(32>>zoom_level); // change multiplier with zoom later
-				uint8_t step=(incoming_data1-32)*32; // need a dif way
-			memset(blink_light_list,0,256); //clear store lights
+				uint8_t step=(square_buttons_list[incoming_data1])*16; // need a dif way
+			//memset(blink_light_list,0,256); //clear store lights
 				if (alt_list) {enter_note(step);
 
 			} else delete_note(step);
 
 			memcpy(lcd_buffer+16,"Step            ",16);lcd_number((step>>4),25);lcd_number((step&15),29);
-			}
+
 
 			alt_list=square_buttons_list[incoming_data1]; // chnage to 0-31
  // modify data from button state
@@ -340,11 +340,8 @@ void buttons_store(void){    // incoming data from controller
 	uint8_t scene_select=0;
 
 	uint8_t incoming_message[3];
-	//uint16_t drum_byte_select;   // selects a trigger 16 + (i*4) 16*64 ... 0-256
-	//uint8_t drum_byte;
-	// uint16_t pattern=bar_playing;
-	 //uint8_t offset_pitch=seq_pos>>3;
 
+	lcd_downcount=4;  // start on ay button presses as lots of messages
 	memcpy(incoming_message,cdc_to_notes,3); // works off only receiving buffer
 
 	if (incoming_message[0]==176){  // test for repeat cc
@@ -505,6 +502,7 @@ void buttons_store(void){    // incoming data from controller
 		            memcpy(lcd_buffer+16,"Recording mode  ",16);
 		            if (shift && !clip_stop)
 		            {
+		            	memset(blink_light_list,0,32); //clear store lights
 		            uint16_t set_scenes=current_scene;
 		            set_scenes&=7;
 		            set_scenes=((note_recording_set_current[set_scenes]&7)*seq_play_note_count)+(set_scenes*(16*sound_set));// 8*16 atm
@@ -590,11 +588,11 @@ void buttons_store(void){    // incoming data from controller
 		} // end of Note on for all buttons
 
 
-	if ((status == CC_Message) && (clip_stop)){   // pitch_mode enabled pto functions ,
+	if ((status == CC_Message) && (clip_stop)){   // send on cc screen
 
 		// add extra pot functions here
 		memcpy(lcd_buffer+16,"CC extra        ",16);
-		control_change_flag=current_scene+96;// extra cc send , not stored
+		// control_change_flag=current_scene+96;// extra cc send , not stored , this is enabled elsewhere
 
 		cc_extra_send[0]=(incoming_data1-48)+90;// select pot  cc 90-97
 		lcd_number(cc_extra_send[0],24);
@@ -686,10 +684,11 @@ void buttons_store(void){    // incoming data from controller
 				memcpy(lcd_buffer+16,"CC send         ",16);
 				uint8_t shift_fx=current_scene*8; // voice based
 				uint8_t cc_selected=fx_pot_settings[((incoming_data1-48))+shift_fx]; //gets cc number for the pot
-				lcd_number(cc_selected,9);
+				lcd_number(cc_selected,26);
 				cc_lut(cc_selected);
-				memcpy(lcd_buffer+16,cc_string,15); // copy name of cc
-				lcd_number(incoming_message[2],13);
+
+				memcpy(lcd_buffer+16,cc_string,10); // copy name of cc
+				lcd_number(incoming_message[2],29);
 				fx_menu(fx_incoming[1]);  // saves pot settings for fx
 			}
 			else { // assign cc to pots
@@ -698,10 +697,10 @@ void buttons_store(void){    // incoming data from controller
 				uint8_t shift_fx=current_scene*8; // voice based
 				fx_pot_settings[((incoming_data1-48))+shift_fx]=incoming_message[2]; //gets cc number for the pot
 				uint8_t cc_selected=fx_pot_settings[((incoming_data1-48))+shift_fx]; //gets cc nc number for the pot
-				lcd_number(cc_selected,9);
+				lcd_number(cc_selected,26);
 				cc_lut(cc_selected);
-				memcpy(lcd_buffer+16,cc_string,15); // copy name of cc
-				lcd_number(incoming_message[2],13);
+				memcpy(lcd_buffer+16,cc_string,10); // copy name of cc
+				lcd_number(incoming_message[2],29);
 
 
 			}

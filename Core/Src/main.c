@@ -278,7 +278,15 @@ int main(void)
 
 		  midi_timeout_check_and_send(); // this is ok
 
+
+
 		  accent_lfo();
+
+
+		  process_pot_midi(cc_extra_send[1], my_send_cc); // cc delay and filter process
+
+		  midi_idle_check(my_send_cc);  // cc delay timer check
+
 
 		  if((seq_t<10 ) && (bar_start_enable)  && (!bar_end_enable) ) {bar_start();} // a little time buffer  just in case
 
@@ -290,9 +298,9 @@ int main(void)
 
 		  //if(pause) green_position[0]=seq_record_timer>>5;  else green_position[0]=seq_step>>1;
 		 // if(!stop_all_clips)
-			  green_position[0]=(seq_t>>(5-zoom_level))&7; // 0-7
+			  green_position[0]=(seq_t>>4)&15; // 0-7
 		  green_position[1]=seq_step>>1;
-		  if (green_position[0]==7) clear_row(0);
+		  //if (green_position[0]==7) clear_row(0);
 		//  cdc_send(); // all midi compiled for send  8/per note , sends on seq_pos=1 atm
 		  if (seq_record_timer) seq_record_timer=(seq_record_timer+1)&255;  // runs only when started till the end then stops on 0
 		 if(solo) {	memset(bar_map_sound_enable,0,(sound_set*1)); bar_map_sound_enable[scene_buttons[0]]=1;	} // enable one sound for solo
@@ -300,7 +308,10 @@ int main(void)
 
 		 if (seq_t) {   cdc_send2(); }
 
-		  if(seq_t&&1) {{ if (fx_counter>63) fx_counter=0; else fx_counter++; } fx_cc_send(fx_counter);}// sending midi cc, sends only on change so can be called often
+		 // if(seq_t&&1) {{ if (fx_counter>63) fx_counter=0; else fx_counter++; } fx_cc_send(fx_counter);}// sending midi cc, sends only on change so can be called often
+		  // fills up send data buffer with cc data , might disable this for now and just send live data
+
+
 
 		  midi_extras(); // sends cc and pc , not a problem
 			 seq_pos_mem=seq_t;
@@ -311,7 +322,9 @@ int main(void)
 	  if ((s_temp) != (seq_t>>3)) {			// runs on note steps 0-31
 
 		  lcd_time_track();
-		  if (seq_step&1)  memset(blink_light_list,5,8);
+		  if(lcd_downcount==0)  lcd_current_patterns(); // needs a little delay
+		 if (lcd_downcount) lcd_downcount--;
+		  // if (seq_step&1)  memset(blink_light_list,5,8);
 		 // reset all lights
 			  if(seq_step==13) {  led_full_clear();	// this runs twice
 		  }
@@ -589,7 +602,7 @@ int main(void)
 
 				  }//end of keyboard
 
-					  if(((seq_pos&7)>3) && (cdc_to_notes[0]))   buttons_store();   // runs until empty
+				if(((seq_pos&7)>3) && (cdc_to_notes[0]))   buttons_store();   // runs until empty
 
 
     /* USER CODE END WHILE */

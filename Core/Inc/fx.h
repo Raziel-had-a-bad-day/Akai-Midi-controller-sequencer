@@ -55,12 +55,13 @@ void fx_cc_send(uint8_t send){   // sends cc for particular fx track , not scene
 
 	control_change_value=fx_pot_settings[(current_scene)]; // selects cc   , midi channel then cc
 	if (control_change_value==255) {fx_pot_settings[(current_scene)]=0;control_change_value=0;} // bad data
-		control_change[current_scene]=fx_pot_values[current_scene]&127;
+
+	control_change[current_scene]=fx_pot_values[current_scene]&127; // only sends for selected scene
 //	else control_change[current_scene]=fx_pot_values[(current_scene*4)+1]; // send onor off
 
 	if (control_change_buf[current_scene]!=control_change[current_scene])
 		{control_change_flag=current_scene+1;control_change_buf[current_scene]=control_change[current_scene];}
-			//only sends cc on change of value , nothing otherwise
+			//only sends cc on change of value , nothing otherwise, needs initial data
 
 	//control_change[current_scene]=pot_states[current_scene];
 
@@ -255,13 +256,11 @@ void note_recording_tracker(void){  // runs always per bar , tracks which patter
 //		}
 //
 //		note_recording_set_counter[i]=(note_recording_set_counter[i]+1) &255; // limited to 256
-		note_recording_set_current[n]=load_current_pattern(seq_step_long);
+		note_recording_set_current[n]=load_current_pattern(seq_step_long); // select currently playing pattern
 		if (note_recording_set_current[n]!=pattern_hold[n]){
-			memset(blink_light_list,0,256); //clear store lights
+			memset(blink_light_list,0,32); //clear store lights
 			pattern_hold[n]=note_recording_set_current[n];
 		}
-
-
 
 	}
 	lcd_number ((note_recording_set_current[voice_list[scene_buttons[0]]]+1),13); // print current playing recording
@@ -273,23 +272,23 @@ void bar_start(void){
 	 bar_map_tracker();
 	 if (seq_step_modify && (!pause)) {seq_step_long=seq_step_modify-1;seq_step_modify=0;} // only while running
 
-	clear_row(0);
+	//clear_row(0);
 	uint16_t current_scene=scene_buttons[0];  // gonna change to midi channel based and x8 for keys
 
 	current_scene=(voice_list[current_scene]); // midi channel based , might convert to a list ie 0=2 3=1 4=2 for now stay with 0-4
 	current_scene&=7;
 	current_scene=((note_recording_set_current[current_scene]&7)*seq_play_note_count)+(current_scene*seq_play_note_count*record_per_channel);
-	uint8_t time=0;
+	//uint8_t time=0;
 
-		for(i=0;i<8;i++){
+/*		for(i=0;i<8;i++){    // draw recorded notes , obsolete
 			time=seq_play_buf_time[current_scene+i];
 			if(time){
 
-			button_states[square_buttons_list[time>>5]]=red_button;   // was set light for notes,, this is now for soemthing else
+			button_states[square_buttons_list[time>>4]]=red_button;   // was set light for notes,, this is now for soemthing else
 			time=short_repeat_buf[current_scene+i];
 
-			if(time){button_states[square_buttons_list[time>>5]]=red_button; }  // was set light for notes,, this is now for soemthing else
-			}}
+			if(time){button_states[square_buttons_list[time>>4]]=red_button; }  // was set light for notes,, this is now for soemthing else
+			}}*/
 	//fx_map_tracker();} // normal playing screen ,disabled for pitch mode
 	   transpose_tracker();  // first change on second bar at the end
 	  bar_start_enable=0;bar_end_enable=1;
@@ -312,6 +311,8 @@ void bar_end(void){
 void cc_lut(uint8_t cc_number){
 
 	memset(cc_string,32,16);
+	char temp[]={"CC no:"};
+	memcpy(cc_string,temp,6);
 	for (i=0;i<43;i++){
 		if(cc_number==microkorg_cc_numbers[i])
 
@@ -319,7 +320,7 @@ void cc_lut(uint8_t cc_number){
 			uint8_t length=strlen(microkorg_cc_list[i]);
 
 			memcpy(cc_string,microkorg_cc_list[i],length);
-			i=43;
+			i=43;break;
 		}
 
 	}

@@ -110,7 +110,7 @@ struct SeqTime convert(uint32_t milliseconds) {  // calculate from elapsed milli
     return time;
 }
 uint16_t seq_pos_ref_time; // time of a single seq_pos step in millis, rounded ,not very accurate
-uint8_t current_pattern_list[song_length]; // stores selected pattern for a bar
+uint8_t current_pattern_list[song_length]; // stores selected pattern for a bar, program with scrub and buttons while in pause
 uint8_t cdc_repeat_check[3]; // hold last value in case repeating (likely cc) pattern
 
 //buttons
@@ -319,14 +319,14 @@ uint8_t overdub_enabled; // flag to keep track of overdub
 uint8_t keyboard_buffer[32]; // store keyboard presses  with recorded time , maybe clear on bar if pressed again  or mute for a bar on playback
 
 uint16_t bar_note_register[8];  //scans for data bars if none it keeps scene select light off    1 bit , 16bit-8bars
-uint8_t blink_light_list[256]; // just add blink light to scene buttons
+uint8_t blink_light_list[32]; // controls note lights , separate from button _states
 
 uint8_t nrpn_gating_enable;  // for gating audio effects on drum
 uint8_t nrpn_gating_switch[8]; //just the levels for gating or volume
 uint8_t nrpn_gating_sequence[16]={127,0,127,0,120,0,100,0,127,0,127,0,120,0,100,0};   // just a gating sequence
 
 uint8_t control_change_flag=0;  // selects from fx list , not sounds or midi, control chnage value+1
-uint8_t cc_extra_send[2]={0,0};
+uint8_t cc_extra_send[4]={0,0,0,0};
 uint8_t keyboard_step_record;   // keeps count of keys pressed once rec_arm and pause is on
 uint8_t loop_screen_disable=0;
 uint8_t control_change[sound_set*8];   // set control change data using fx menu list
@@ -413,6 +413,7 @@ uint8_t midi_channel_list[sound_set]={9,4,2,3,5};   //holds midi channel setting
 
 
 char lcd_char[4];
+
 
 char cc_string[16];  // holds outgoing string for lcd
 

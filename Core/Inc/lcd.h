@@ -279,7 +279,20 @@ lcd_buffer[10]=(uint8_t) ':';
 lcd_buffer[6]=(uint8_t) 'b';
 }
 
+void lcd_current_patterns(void){
 
+	uint8_t temp[16];
+	memset(temp,32,16);
+
+	for (uint8_t i=0;i<16;i+=2){
+		temp[i]= current_pattern_list[(seq_step_long&248)+(i/2)]+49; // show pattern selected for 8 bars
+
+	}
+	if( seq_step&1) temp[(seq_step_long&7)*2]=46; // blink
+	memcpy(lcd_buffer+16,temp,16);
+
+
+}
 
 
 

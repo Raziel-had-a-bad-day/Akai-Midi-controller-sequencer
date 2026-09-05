@@ -62,11 +62,12 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	  uint8_t buffer_out[512] ;  // large send
 	  uint16_t buffer_size=0;
 	  uint8_t buffer_short[4];
-	  uint8_t toggle=green_position[0]&1;
-	  uint8_t color=0;
-	  uint16_t counter=bar_map_counter;
+	  //uint8_t toggle=green_position[0]&1;
+	  uint8_t green=square_buttons_list[green_position[0]];
+	  //uint8_t color=0;
+	  //uint16_t counter=bar_map_counter;
 	  //uint8_t select_voice=voice_list[scene_buttons[0]];
-	  uint16_t seq_t=seq_pos;
+	  //uint16_t seq_t=seq_pos;
 
 	  memcpy(send_temp,button_states,100);
 	  if (clear_rows) { memset(send_temp+8,0,32);clear_rows=0;}
@@ -78,18 +79,23 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 	}
 	////  temporary lights , not stored
 
-	if  ((blink_light_list[seq_t])) { button_states[green_position[0]+32]=red_button; // notes
+	//if  ((blink_light_list[green_position[0]])) { send_temp[green]=red_button; // notes
 	 //send_temp[counter&7]=3;   // draws green runner and bar position on first screen
-	}
-		send_temp[green_position[0]+32]=green_button;
+	//}
+		memcpy(send_temp+32,blink_light_list,8);
+		memcpy(send_temp+24,blink_light_list+8,8); // always run
+		send_temp[green]=green_button;
 
-	if (bar_map_screen_level >= 1 && bar_map_screen_level <= 3) {
+	//memcpy(send_temp+32,blink_light_list+(seq_t>>4),8);
+
+
+/*	if (bar_map_screen_level >= 1 && bar_map_screen_level <= 3) {
 	    int shift = (bar_map_screen_level-1)*3;
 	    counter = (counter >> shift) & 7;
 	    color = (2*bar_map_screen_level - 1) * toggle;
 	    send_temp[8+counter] = send_temp[16+counter] =
 	    send_temp[24+counter] = send_temp[32+counter] = color;
-	}
+	}*/
 
 	//	if (record) send_temp[square_buttons_list[green_position[0]]]=3;   // add moving green light  ,off during pause
 	//send_temp[square_buttons_list[seq_step]]=1;
@@ -199,21 +205,22 @@ void midi_extras(void){    // extra midi data added here , program change , cc
 		  if(control_change_flag>95){
 			  voice_select=(control_change_flag-96); //
 			  midi_extra_cue[extras]=176+midi_channel_list[voice_select];   // select midi for cc
-			  		  midi_extra_cue[extras+1]=cc_extra_send[0]; // setting for reverb atm
-			  		  midi_extra_cue[extras+2]=cc_extra_send[1];
+			  		  midi_extra_cue[extras+1]=cc_extra_send[2]; // setting for reverb atm
+			  		  midi_extra_cue[extras+2]=cc_extra_send[3];
 			  			  midi_extra_cue[28]=extras+3;
 			  		  control_change_flag=0; //clear
 
 
 		  }
-		   voice_select=(control_change_flag-1)>>3;   //  this is already voice list NOT scene_buttons !!!
+
+/*		  voice_select=(control_change_flag-1)>>3;   //  this is already voice list NOT scene_buttons !!!
 		  if (control_change_flag){midi_extra_cue[extras]=176+midi_channel_list[voice_select];   // select midi for cc
 		  midi_extra_cue[extras+1]=control_change_value; // setting for reverb atm
 		  midi_extra_cue[extras+2]=control_change[control_change_flag-1];
 			  midi_extra_cue[28]=extras+3;
 		  control_change_flag=0; //clear
 
-		  }
+		  }*/
 
 
 
@@ -335,7 +342,7 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 	uint8_t voice=voice_list[scene_buttons[0]];
 	uint16_t count=0;
 	uint16_t count2=0;
-	uint16_t time_add=0;
+	//uint16_t time_add=0;
 	//uint16_t time_end=0;
 	uint16_t set_jump=0;
 
@@ -344,35 +351,23 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 
 	for (i=0;i<(seq_play_note_count*sound_set);i++){ //does only one round, 24 messages per track ,, uses search  , this now needs to change 24*8*4
 		// this stays but now in different regions , nothing to do with time !
+		// 0-127 0-15 16-23 ...
 
 		count=i>>4; // 0-7
 		counter=count; // this is now refers to voice selected
-		set_jump=(note_recording_set_current[count]*seq_play_note_count)+(count*(seq_play_note_count*sound_set));//0-512 range
-
-		count=(i&(seq_play_note_count-1))+set_jump; // jumps from currently playing notes to next voice channel (time)
+		set_jump=(note_recording_set_current[count]*seq_play_note_count)+(count*(seq_play_note_count*sound_set));//0-512 range, to the start of selected patterns of each voice
+		// pattenr * 16  + (voice * 16 *8 )  , 1 voice =(8 pattern with 16 notes ), 8 voices
+		count=(i&(seq_play_note_count-1))+set_jump; // jumps from currently playing notes to next voice channel (time) 16 notes + selected pattern start
 		count2=count*3; // *3 bytess in buf
 
-/*			if (!(i&15)) {
-				counter=i>>4;
-				time_add=0;
-				time=seq_pos_out[counter]; // 0-511 atm
-				time_end=seq_play_buf_end[counter];
-
-				if ((time_end<256) ) time_add=time&256; // plays multiple times , might drop it
-				if ((time_end<128) ) time_add=time&384;
-
-			}*/
-
-
-			//if (time>time_end) time_add=time_end;
 
 		//if (((seq_play_buf_time[i]+time_add)==time) && (seq_play_buf[count])){ //   works only on exact position
-			if ((seq_play_buf_time[count]+time_add)==time){    // plays when time matches to search position , this is just time
+			if (seq_play_buf_time[count]==time){    // plays when time matches to search position , this is just time
 			velocity=0;
 			status=MIDI_NOTE_OFF;
 			if (seq_play_buf[count2 + 1]) {status=MIDI_NOTE_ON;
 			velocity=note_accent_modulate[counter];  // gets messed up at times
-			{if(voice==count) blink_light_list[time&255]=3;} //red blink for note on, from voice list
+			{if(voice==counter) blink_light_list[(time>>4)&15]=3;} //red blink for note on, from voice list,getting bad data
 			}
 			note_midi[cue_counter] = midi_channel_list[counter] + status; // add Note_on only
 			pitch=seq_play_buf[count2]&127; // pitch
@@ -552,6 +547,95 @@ void accent_lfo(void){
 	}
 
 }
+
+
+// midi cc send filtering section /////////////////////////////////
+
+
+#include <stdint.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include "main.h"
+
+// ---------- Configurable ----------
+#define MIDI_CC_NUMBER      1
+#define MIN_CHANGE          2
+#define SEND_INTERVAL_MS    20
+#define SETTLE_TIME_MS      30
+
+// ---------- State ----------
+static uint8_t  last_value       = 0;   // last value we actually accepted
+static uint8_t  last_sent_value  = 0;
+static uint8_t  pending_value    = 0;
+static bool     has_pending      = false;
+static uint32_t last_send_time   = 0;
+static uint32_t last_change_time = 0;
+static bool     initialized      = false;
+
+void process_pot_midi(uint8_t new_value, void (*send_cc)(uint8_t cc, uint8_t value))
+{
+    uint32_t now = HAL_GetTick();
+
+    // First call – just remember the value, don’t send yet
+    if (!initialized) {
+        last_value = last_sent_value = pending_value = new_value;
+        initialized = true;
+        return;
+    }
+
+    // Ignore noise / no real change
+    if (abs((int)new_value - (int)last_value) < MIN_CHANGE) {
+        return;
+    }
+
+    // Real change detected
+    last_value       = new_value;
+    pending_value    = new_value;
+    has_pending      = true;
+    last_change_time = now;
+
+    // Send immediately if enough time has passed since last send
+    if ((now - last_send_time) >= SEND_INTERVAL_MS) {
+        send_cc(cc_extra_send[0], pending_value);
+        last_sent_value = pending_value;
+        last_send_time  = now;
+        has_pending     = false;
+    }
+}
+
+void midi_idle_check(void (*send_cc)(uint8_t cc, uint8_t value))
+{
+    if (!has_pending)
+        return;
+
+    uint32_t now = HAL_GetTick();
+
+    // Value has been stable long enough → force the final value out
+    if ((now - last_change_time) >= SETTLE_TIME_MS) {
+        if (pending_value != last_sent_value) {
+            send_cc(cc_extra_send[0], pending_value);
+            last_sent_value = pending_value;
+            last_send_time  = now;
+        }
+        has_pending = false;
+    }
+}
+
+
+void my_send_cc(uint8_t cc, uint8_t value)  // cc send prepare
+{
+
+	uint8_t current_scene=voice_list[scene_buttons[0]];
+	if (value) control_change_flag=current_scene+96; else control_change_flag=0; // extra cc send , not stored
+
+		cc_extra_send[2]=cc;
+		cc_extra_send[3]=value;
+
+
+	// your MIDI send code here
+    // e.g. USBD_MIDI_SendReport(...) or UART, etc.
+}
+
 
 
 /*
