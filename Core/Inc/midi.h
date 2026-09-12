@@ -88,19 +88,10 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 
 	//memcpy(send_temp+32,blink_light_list+(seq_t>>4),8);
 
-
-/*	if (bar_map_screen_level >= 1 && bar_map_screen_level <= 3) {
-	    int shift = (bar_map_screen_level-1)*3;
-	    counter = (counter >> shift) & 7;
-	    color = (2*bar_map_screen_level - 1) * toggle;
-	    send_temp[8+counter] = send_temp[16+counter] =
-	    send_temp[24+counter] = send_temp[32+counter] = color;
-	}*/
-
 	//	if (record) send_temp[square_buttons_list[green_position[0]]]=3;   // add moving green light  ,off during pause
 	//send_temp[square_buttons_list[seq_step]]=1;
 
-	for(n=0;n<512;n+=4){
+	//for(n=0;n<64;n+=4){
 
 
 	counter_a = 0; // clear
@@ -120,14 +111,22 @@ void USB_send(void){    // send to midi controller, clean atm , maybe do a full 
 		buffer_short[1] = (counter_a - 1) & 127;    // selected light
 		buffer_short[2] = send_temp[counter_a - 1] & 127;  // value for colour
 		buffer_short[3]=9;   // usb extra
+	buffer_size=4;
 	}
-	buffer_size=n;memcpy(buffer_out+buffer_size,buffer_short,4);
-	if (!counter_a) n=512;
+	//if (!counter_a) n=512;
+	//buffer_size=0;
+	//memcpy(buffer_out+buffer_size,buffer_short,4);
 
-	}  // end of loop
+
+	//}  // end of loop
 
 	//if (send_buffer[6]){ while (CDC_Transmit_FS(send_buffer+5, 3)== USBD_BUSY){HAL_Delay(1);}}//bad
-	if (buffer_size) CDC_Transmit_FS(buffer_out, buffer_size); // trying big send
+	if (buffer_size) {
+
+		 MIDI_Send(9, buffer_short[0], buffer_short[1],  buffer_short[2]);
+
+	}
+
 //	if (buffer_size)  tud_cdc_n_write(0, buffer_out, buffer_size);
 
 

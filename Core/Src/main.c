@@ -18,7 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "usb_device.h"
+#include "usb_host.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -26,9 +26,10 @@
 #include"string.h"
 #include "stdio.h"
 #include <stdlib.h>
+#include <usbh_related.h>
 #include "time.h"
 #include "variables.h"
-#include "usbd_cdc_if.h"
+
 
 
 //extern USBD_HandleTypeDef hUsbDeviceFS;
@@ -80,7 +81,7 @@ RTC_TimeTypeDef seq_clock;  // get time
 RTC_DateTypeDef seq_date; // get date ,needed
 RTC_TimeTypeDef set_Time = {0}; // to reset rtc
 
-
+//USBH_HandleTypeDef hUsbHostFS;
 #include "flash.h"
 
 
@@ -106,43 +107,38 @@ static void MX_I2C1_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_RTC_Init(void);
-/* USER CODE BEGIN PFP */
+void MX_USB_HOST_Process(void);
 
-void note_replace(uint8_t note_replace);
-//void USB_CDC_RxHandler(uint8_t*, uint32_t);
-void patch_screen(void);
+/* USER CODE BEGIN PFP */
+// moved unused into flash.h
+
 void buttons_store(void);
 void flash_write(void);
 void flash_read(void);
-void panic_delete(void);
-//void stop_start(void);
-void note_off(void);
-void arrows(void);
-void cdc_send(void);
 void all_notes_off(void);
-void play_muting(void);
+
+//void note_replace(uint8_t note_replace);
+//void USB_CDC_RxHandler(uint8_t*, uint32_t);
+//void patch_screen(void);
+
 void led_full_clear(void); // runs once clearing all leds
 
 void lcd_start(void);
-void lcd_print(uint8_t  pos , char print);  // position 0-39 , character
-void lcd_menu_vars(uint8_t selected_var ,uint8_t var_position);
-void nrpn_send(void);
-void loop_screen(void);// loop screen change
-void note_buttons(void); // all note functions from buttons
-void loop_lfo(void);
-void settings_storage(void);
-void pattern_settings(void);
-void USBD_MIDI_DataInHandler(uint8_t *usb_rx_buffer, uint8_t usb_rx_buffer_length);
-void midi_send_control(void); // runs midi send when needed
+
 void midi_extras(void);
-void flash_page_write(uint8_t page_select,uint8_t* data);
-uint8_t pattern_scale_process(uint8_t value, uint8_t selected_sound ); // midi in to scaled note
+
 void shift_hold_function(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+int __io_putchar(int ch)
+{
+ // Write character to ITM ch.0
+ ITM_SendChar(ch);
+ return(ch);
+}
 
 
 
@@ -183,7 +179,7 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM2_Init();
   MX_RTC_Init();
-  MX_USB_DEVICE_Init();
+  MX_USB_HOST_Init();
   /* USER CODE BEGIN 2 */
 
   // USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS);
@@ -206,6 +202,7 @@ int main(void)
   	    return (ch);
   	}
 */
+
 
     HAL_TIM_Base_Start_IT(&htim2);
    HAL_UART_Receive_IT(&huart1, serial_rx_buf, 1);		// midi irq
@@ -246,6 +243,8 @@ int main(void)
 	lcd_start();
 	scene_buttons[0]=0;
 //	 board_init();
+	printf(" hello world \n");
+
 
 /*
 	tusb_rhport_init_t dev_init={
@@ -266,7 +265,9 @@ int main(void)
   while (1)
   {
 
+	  usb_loop_start();
 
+	//  midi_rec();
 	 // HAL_GPIO_WritePin(PPQ_GPIO_Port, PPQ_Pin, (ppq_send|1));
 	 // uint16_t step_temp=0;
 	 // uint8_t seq_step_mod;
@@ -294,7 +295,7 @@ int main(void)
 	  if ((seq_t==255)){
 	 if (!pause) seq_step_long=(seq_step_long+1)&(song_length-1);}
 
-		  if (!pause) seq_step = seq_t>> 4; else seq_step=seq_step; // changed seq_pos to 255 count
+		  if (!pause) seq_step = seq_t>> 4;
 
 		  //if(pause) green_position[0]=seq_record_timer>>5;  else green_position[0]=seq_step>>1;
 		 // if(!stop_all_clips)
@@ -391,7 +392,7 @@ int main(void)
 
 			  if ((send) && shift) {  all_notes_off(); flash_read();  button_states[send_button]=0; send=0; }   // reload everything from flash
 
-
+			 // printf(hUsbHostFS.gState == HOST_CLASS);
 			//  uint8_t crap[64];
 			//  memcpy (crap,cdc_buffer,12);
 
@@ -419,12 +420,12 @@ int main(void)
  				// print section
 			  //if (lcd_downcount) { lcd_message();lcd_downcount--; }
  			//	lcd_menu_pages(1);
+			//  usb_print();
 
 
- 				//		printf(" %d ", midi_cue[3]);
  				//		printf(" %d\n ", midi_cue[6]);
 
- 				  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin,led_blink);
+ 				 HAL_GPIO_WritePin(GPIOC,GPIO_PIN_13,led_blink);
  				  led_blink=!led_blink;
 
  				  flash_write(); // works only if button pressed , not during pause ?
@@ -565,7 +566,7 @@ int main(void)
 
 		  if (keyboard[0])  {    // keyboard play live
 			//  if (rec_arm && pause && (keyboard[1]>48)&& (scene_buttons[0]>7)) {loop_screen_disable=1;step_recording();}
-			   if (clip_stop) {pitch_mode();keyboard[0]=0;} // disable send in pitch mode
+			 //  if (clip_stop) {pitch_mode();keyboard[0]=0;} // disable send in pitch mode
 				uint8_t note_flag=144; // just use vel 0 for off
 				short_track_disable=scene_buttons[0]+1;
 
@@ -575,24 +576,25 @@ int main(void)
 
 				//  if (incoming>>7)  {note_flag=128;velocity=0;}
 				  if (buffer_pos>23) buffer_pos=0;   // reset buffer in case
-				  if( rec_arm && (!clip_stop))  { button_states[square_buttons_list[seq_step>>1]]=red_button;seq_play_record(seq_play_buf, seq_play_buf_time );} // records live sequence from keyboard[0]
-				  if ((!rec_arm) && (!clip_stop)){button_states[square_buttons_list[seq_step>>1]]=red_button; seq_play_record(short_repeat_buf, short_repeat_time );} //being skipped ?
-
+				//  if( rec_arm && (!clip_stop))  { button_states[square_buttons_list[seq_step>>1]]=red_button;seq_play_record(seq_play_buf, seq_play_buf_time );} // records live sequence from keyboard[0]
+				//  if ((!rec_arm) && (!clip_stop)){button_states[square_buttons_list[seq_step>>1]]=red_button; seq_play_record(short_repeat_buf, short_repeat_time );} //being skipped ?
+				  // disabling all recording for now
 
  	  	  	  	  uint8_t incoming=keyboard[0]&127;
    	   	   	   	   uint8_t velocity=keyboard[1]&127;
 				  				 // uint8_t current_seq_pos=seq_pos&255;
 				  uint8_t extra_start=midi_extra_cue[28];  //start from last byte
 				  if (extra_start>21) midi_extra_cue[28]=21;
-				  if (midi_channel_list[voice_list[selected_scene]]==9)   // drums send
+/*				  if (midi_channel_list[voice_list[selected_scene]]==9)   // drums send
 
 
-				  {  midi_extra_cue[extra_start]=(note_flag+9);         // use drumlist for now
+				  //{  midi_extra_cue[extra_start]=(note_flag+9);         // use drumlist for now
 
-				  midi_extra_cue[1+extra_start]=(drum_list[selected_scene]);midi_extra_cue[2+extra_start]=velocity; midi_extra_cue[28]=extra_start+3;   // send midi
-
-				  incoming=0;}
-				  else  {midi_extra_cue[extra_start]=note_flag+midi_channel_list[voice_list[selected_scene]];  midi_extra_cue[1+extra_start]=((incoming))&127 ;
+				 // midi_extra_cue[1+extra_start]=(drum_list[selected_scene]);midi_extra_cue[2+extra_start]=velocity; midi_extra_cue[28]=extra_start+3;incoming=0;}
+				  {midi_extra_cue[extra_start]=note_flag+midi_channel_list[voice_list[selected_scene]];  midi_extra_cue[1+extra_start]=((incoming))&127 ;
+				 				  midi_extra_cue[2+extra_start]=velocity; midi_extra_cue[28]=extra_start+3;incoming=0;}
+				  else  */
+				  {midi_extra_cue[extra_start]=note_flag+midi_channel_list[voice_list[selected_scene]];  midi_extra_cue[1+extra_start]=((incoming))&127 ;
 				  midi_extra_cue[2+extra_start]=velocity; midi_extra_cue[28]=extra_start+3;incoming=0;}  // send normal then keyboard off
 
 
@@ -606,6 +608,7 @@ int main(void)
 
 
     /* USER CODE END WHILE */
+    MX_USB_HOST_Process();
 
     /* USER CODE BEGIN 3 */
 	  } // while loop
@@ -750,7 +753,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -880,17 +883,17 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, PPQ_Pin|CS1_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : LED_Pin */
-  GPIO_InitStruct.Pin = LED_Pin;
+  /*Configure GPIO pin : PC13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PPQ_Pin */
   GPIO_InitStruct.Pin = PPQ_Pin;

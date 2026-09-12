@@ -1,3 +1,29 @@
+
+/*
+//void lcd_print(uint8_t  pos , char print);  // position 0-39 , character
+//void lcd_menu_vars(uint8_t selected_var ,uint8_t var_position);
+//void nrpn_send(void);
+//void loop_screen(void);// loop screen change
+//void note_buttons(void); // all note functions from buttons
+//void loop_lfo(void);
+//void settings_storage(void);
+//void apattern_settings(void);
+//void aUSBD_MIDI_DataInHandler(uint8_t *usb_rx_buffer, uint8_t usb_rx_buffer_length);
+//void amidi_send_control(void); // runs midi send when needed
+//void play_muting(void);
+//void panic_delete(void);
+//void stop_start(void);
+//void note_off(void);
+//void arrows(void);
+//void cdc_send(void);
+//void flash_page_write(uint8_t page_select,uint8_t* data);
+//uint8_t pattern_scale_process(uint8_t value, uint8_t selected_sound ); // midi in to scaled note
+
+
+*/
+
+
+
 void read_busy(void){
 	uint8_t temp[2]={0x05};
 	uint8_t  temp2[2]={0,0};
