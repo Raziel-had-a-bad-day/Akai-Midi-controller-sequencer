@@ -1,5 +1,5 @@
 
-UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart1;
 
 void seq_play_record(uint8_t* buf, uint8_t*buf_time );
 void cdc_send2(void);
@@ -208,7 +208,8 @@ void midi_extras(void){    // extra midi data added here , program change , cc
 			  		  midi_extra_cue[extras+2]=cc_extra_send[3];
 			  			  midi_extra_cue[28]=extras+3;
 			  		  control_change_flag=0; //clear
-
+			  		cc_extra_send[2]=0;
+			  		cc_extra_send[3]=0;
 
 		  }
 
@@ -330,6 +331,8 @@ void seq_play_copy(void){    // copies current short_repeat_buf to seq_play_buf
 void cdc_send2(void){ // new midi send function ,  make a way to change playback speed per track also an offset
 		// now going voice based and only 4  , instead 8 records per track
 		//uint8_t playback_offset=0;  // this will change per triggering time for playback
+	// might dump most of this for a while
+
 	uint16_t time=seq_pos;
 	uint8_t cue_counter=0;
 	uint8_t note_midi[256];
@@ -348,7 +351,7 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 
 	if (	short_track_disable) bar_map_sound_enable[short_track_disable-1]=0; //mutes selected track when keyboard pressed
 
-	for (i=0;i<(seq_play_note_count*sound_set);i++){ //does only one round, 24 messages per track ,, uses search  , this now needs to change 24*8*4
+/*	for (i=0;i<(seq_play_note_count*sound_set);i++){ //does only one round, 24 messages per track ,, uses search  , this now needs to change 24*8*4
 		// this stays but now in different regions , nothing to do with time !
 		// 0-127 0-15 16-23 ...
 
@@ -399,7 +402,9 @@ void cdc_send2(void){ // new midi send function ,  make a way to change playback
 			//if ((time==(seq_play_buf_end[counter])) ) seq_reset_flag[counter]=time;  // restart after last note , not happy at all here
 		}}
 
-	}
+	}*/
+
+
 	if(cue_counter>95) cue_counter=95; // limit max send
 	//if (pause) cue_counter=0;
 	if (! serial_len) {serial_len=cue_counter;  // only update after clear
@@ -629,7 +634,7 @@ void my_send_cc(uint8_t cc, uint8_t value)  // cc send prepare
 
 		cc_extra_send[2]=cc;
 		cc_extra_send[3]=value;
-
+		update_live_cc(cc_extra_send[2], cc_extra_send[3]);
 
 	// your MIDI send code here
     // e.g. USBD_MIDI_SendReport(...) or UART, etc.

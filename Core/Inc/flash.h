@@ -208,11 +208,30 @@ void flash_write(void){					// too much crap needs to simplify , easy mistakes
 			 			flash_page_write(patch_mem,alt_pots); // stores pots
 			 			patch_mem=patch_mem+1;
 			 			up_counter=0;
+
+
 			 			play_buf_len = (uint16_t)sizeof(seq_play_buf);     // notes
 
 			 			while (play_buf_len>up_counter){
 
 			 				flash_page_write(patch_mem,seq_play_buf+up_counter);
+			 				patch_mem=patch_mem+1;
+			 				up_counter+=256;
+
+			 			}
+
+
+
+			 			up_counter=0;
+			 			play_buf_len = (uint16_t)sizeof(scenes);     // scenes =272 bytes atm
+			 			play_buf_len=256;  // limit it for now
+			 			uint8_t temp_data[play_buf_len];
+			 			memcpy(temp_data, scenes, play_buf_len);
+
+
+			 			while (play_buf_len>up_counter){
+
+			 				flash_page_write(patch_mem, temp_data+up_counter);
 			 				patch_mem=patch_mem+1;
 			 				up_counter+=256;
 
@@ -240,8 +259,10 @@ void flash_read(void){     //can hang here
 	uint16_t settings_len = (uint16_t)sizeof(all_settings);     // plenty big for settings
 	uint16_t play_buf_len = (uint16_t)sizeof(seq_play_buf);   // this will change
 	uint16_t total_len=0;
-	total_len=settings_len+play_buf_len+256+4; // should be a bit more consistent
 
+
+	total_len=settings_len+play_buf_len+256+4; // should be a bit more consistent
+	total_len+=256; // for scenes
 	uint8_t test_data2[total_len];
 	uint8_t test_data3[total_len];
 	uint8_t patch_mem=(patch_save&15)<<4;    // 16*16 (4kbyte)   start location
@@ -260,10 +281,26 @@ void flash_read(void){     //can hang here
 	memcpy(all_settings,test_data3+4,settings_len); // all settings
 	memcpy(alt_pots,test_data3+(settings_len+4),256); // alt pots
 	memcpy(seq_play_buf,test_data3+(settings_len+260),play_buf_len); //play buf
+	memcpy(scenes,test_data3+(settings_len+260+play_buf_len),256); //scenes
+
+
 
 	uint16_t d;
 	for (d=0;d<2048;d++) {  if(all_settings[d]==255) all_settings[d]=0;
-	 }
+
+
+	}
+/*
+	for (d=0;d<256;d++) {
+
+		scenes[s].pairs[i].cc    = *p++;
+		            scenes[s].pairs[i].value = *p++;
+
+
+		 }
+*/
+
+
 	settings_storage(); // all settings read out
 
 	tempo=single_settings_list[1];

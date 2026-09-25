@@ -17,6 +17,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+
 #include "main.h"
 #include "usb_host.h"
 
@@ -28,19 +29,14 @@
 #include <stdlib.h>
 #include <usbh_related.h>
 #include "time.h"
+
 #include "variables.h"
-
-
-
-//extern USBD_HandleTypeDef hUsbDeviceFS;
-
-// Build ALL  !
-// device configurator can overwrite usb_device  files
-//#include "usbd_cdc.h"
-//#include "usbd_cdc_if.h"
+#include  "scenes.h"
 #include "midi.h"
 #include "fx.h"
 #include "lcd.h"
+#include "action_dispatch.h" // this needs to be at the end
+
 #include "notes.h"
 
 
@@ -126,7 +122,7 @@ void led_full_clear(void); // runs once clearing all leds
 void lcd_start(void);
 
 void midi_extras(void);
-
+void input_handler(void);
 void shift_hold_function(void);
 /* USER CODE END PFP */
 
@@ -277,7 +273,7 @@ int main(void)
 	  if (seq_pos_mem!=seq_t){     // runs  8 times /step  , control sequencer counting
 
 
-		  midi_timeout_check_and_send(); // this is ok
+		 // midi_timeout_check_and_send(); // this is ok
 
 
 
@@ -335,7 +331,7 @@ int main(void)
 		  lcd_mem(); // this sends too fast when run constant
 		 // accent_bit=((seq_step_long&3)<<3)+(seq_step>>1);   //0-32 ,32+32 for 8 bytes ,1 bit is 2 steps, time reference
 		//  accent_bit_shift=((seq_step_long>>2)&1)*4; // changes per bar , time reference
-		  if (clip_stop && (scene_buttons[0]>7)) pitch_mode(); // only when second page
+		 // if (clip_stop && (scene_buttons[0]>7)) pitch_mode(); // only when second page
 
 		  if(s_temp==31){ seq_record_enable=0;
 
@@ -348,7 +344,7 @@ int main(void)
 
 		  }}
 		  //progress bar
-		  clear_row(2);clear_row(3);
+/*		  clear_row(2);clear_row(3);
 		 if (!seq_step_modify){
 		  button_states[8+((seq_step_long>>3)&7)]=5;  // shows 8 bar  on first screen
 		  button_states[8+(seq_step_long&7)]=3;
@@ -364,7 +360,7 @@ int main(void)
 			  uint8_t recordings=load_current_pattern(step);
 			  button_states[16+recordings]=5;
 
-		 }
+		 }*/
 		  /////////////
 
 
@@ -604,7 +600,7 @@ int main(void)
 
 				  }//end of keyboard
 
-				if(((seq_pos&7)>3) && (cdc_to_notes[0]))   buttons_store();   // runs until empty
+				if(((seq_pos&7)>3) && (cdc_to_notes[0]))   {buttons_store();input_handler();}   // incoming keyb midi ,runs until empty
 
 
     /* USER CODE END WHILE */
@@ -986,8 +982,23 @@ static void MX_GPIO_Init(void)
 		}
 
 //	HAL_I2C_SlaveRxCpltCallback(){}
+	void input_handler(void){ // this needs to be in main ,after notes process , controlling all actual functions (eventually, some day)
+		InputSig sig = {0};
+		sig.source =cdc_to_input[1];                     // pitch or cc
+		sig.value=cdc_to_input[2];
+		sig.mods   = build_mods(clip_stop, solo, rec_arm, mute, selecting,
+		                        stop_all_clips, volume, pan, send, device,
+		                        left, right, up, down);
+		sig.flags  = 0;
+		if (cdc_to_input[0]==176) sig.flags |= FLAG_CC;
+		if (shift)  sig.flags |= FLAG_SHIFT;
+		if (pause)  sig.flags |= FLAG_PAUSE;
+
+		ActionFn fn = lookup_action(&sig, action_table, ACTION_TABLE_SIZE);
+		if (fn) fn(&sig);
 
 
+	}
 
 
 

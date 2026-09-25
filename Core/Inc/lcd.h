@@ -294,7 +294,15 @@ void lcd_current_patterns(void){
 
 }
 
+void lcd_menu_print( char *message ,uint8_t pos){ // text and start position, print to screen
 
+	if(pos>31 ) pos=31;
+	uint8_t length=strlen(message);
+	if((pos+length)>31)  length=31-pos;  // limit message
+
+	   memcpy(lcd_buffer+pos,message,length);
+
+}
 
 
 

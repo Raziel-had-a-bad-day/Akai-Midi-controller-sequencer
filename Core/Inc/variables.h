@@ -43,7 +43,7 @@
 #define rec_arm_button 84
 #define mute_button 85
 #define select_button 86
-#define stop_all_clips 81
+#define stop_all_clips_button 81
 #define record_button 93
 #define shift_button 98
 
@@ -119,21 +119,25 @@ uint8_t pan;
 uint8_t shift; // track shift button
 uint8_t pause; // enable pause mode
 uint8_t select_bn; //select button
+
 uint8_t right_arrow;
 uint8_t left_arrow;
 uint8_t up_arrow=1; // on by default
 uint8_t down_arrow;
 uint8_t solo;
-
+uint8_t mute;
 uint8_t device;
 uint8_t clip_stop;
 uint8_t send;
 uint8_t record;
 uint8_t sustain;
 uint8_t pause_delay=0;
-
-
-
+uint8_t stop_all_clips;
+uint8_t down;
+uint8_t right;
+uint8_t left;
+uint8_t up;
+uint8_t selecting;
 
 uint8_t serial1_hold[10];
 uint8_t serial1_hold2[10];
@@ -452,4 +456,32 @@ void clear_row(uint8_t row){  // clear selected row of leds ,start from top 0-4
 	memset(button_states+(32-(row<<3)),0,8);
 
 	}
+typedef struct {  // add more for extra incoming data ,
+    uint8_t  source;     // pitch or cc 0-127
+    uint16_t mods;       // bitfield of the 14 modifiers
+    uint8_t  flags;      // FLAG_SHIFT | FLAG_PAUSE. FLAG_CC
+    uint8_t value; // second value sent , velocity or cc value 0-127
+} InputSig;
 
+typedef void (*ActionFn)(const InputSig *sig);
+uint8_t cdc_to_input[4];
+
+#define MAX_CCS_PER_SCENE   8
+#define MAX_SCENES          16
+#define MAGIC               0xCC
+
+typedef struct {
+    uint8_t cc;         /* absolute CC number 0-127 */
+    uint8_t value;
+} CcPair;
+
+typedef struct {
+    uint8_t count;                      /* 0…8 */
+    CcPair  pairs[MAX_CCS_PER_SCENE];
+} Scene;
+
+/* Live buffer (what you are currently recording into) */
+static Scene live;
+
+/* Permanent storage */
+static Scene scenes[MAX_SCENES];

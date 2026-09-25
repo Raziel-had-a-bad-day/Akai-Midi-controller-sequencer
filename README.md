@@ -37,7 +37,7 @@ Pot 3 =sets transpose pitch change advance rate on keys on main screen
 
 middle row = 8 patterns per midi channel/voice 
 Forth row is bar position of 8 bars. Holding down one and pressing another will loop those bars.Not doing anything atm 
-
-
-
+///////////////////////////////
+disabled all note sending for now only sending cc 
+middle row controls cc scenes ,saves on shift + button , up to 8 cc(any)  settings per slot , backup to flash 
  
