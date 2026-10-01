@@ -614,11 +614,23 @@ void buttons_store(void){    // incoming data from controller, will only hold lc
 
 	if (scene_select)  { // change scene select lite , one at a time though , fully update so need for extra sends
 		scene_select=scene_select-1;
+		if (clip_stop) {cc_pots_select_base=cc_pots_select_list[scene_select];
+		lcd_menu_print("CC start at=    ",16);
+		lcd_number((cc_pots_select_base),29);
+		clear_row(4);
+		button_states[scene_select&7]=3;
+		memset(cdc_to_notes,0,3);
+		return;
+
+		}
+
+
 		lcd_menu_print("Select keys,drums    ",16);
 
 		//uint8_t clear_green[8]= {1,1,1,1,1,1,1,1};
 		memset(alt_pots_overwrite_enable,0,sound_set );  // clear alt pots edit
-		memset(button_states,1,8); ;  // turn green
+		//memset(button_states,1,8); ;  // turn green
+		clear_row(4);
 		for (i=0;i<8;i++){
 		if(scene_select<8)	{if (mute_list[i]) button_states[i]=3;}
 	//	if(scene_select>7)	{if (mute_list[i+8]) button_states[i]=3;}

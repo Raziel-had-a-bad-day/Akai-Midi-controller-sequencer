@@ -319,7 +319,7 @@ int main(void)
 	  if ((s_temp) != (seq_t>>3)) {			// runs on note steps 0-31
 
 		  lcd_time_track();
-		  if(lcd_downcount==0)  lcd_current_patterns(); // needs a little delay
+		//  if(lcd_downcount==0)  lcd_current_patterns(); // delayed lcd display function
 		 if (lcd_downcount) lcd_downcount--;
 		  // if (seq_step&1)  memset(blink_light_list,5,8);
 		 // reset all lights

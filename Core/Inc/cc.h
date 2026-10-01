@@ -45,10 +45,10 @@ void cc_control_page_2(const InputSig *sig){
 	lcd_menu_print("CC extra        ",16);
 	// control_change_flag=current_scene+96;// extra cc send , not stored , this is enabled elsewhere
 
-	cc_extra_send[0]=(sig->source-48)+90;// select pot  cc 90-97
-	lcd_number(cc_extra_send[0],24);
+	cc_extra_send[0]=(sig->source-48)+cc_pots_select_base;// select pot  cc 90-97
+	lcd_number(cc_extra_send[0],25);
 	cc_extra_send[1]=sig->value;// cc value 0-127
-	lcd_number(cc_extra_send[1],28);
+	lcd_number(cc_extra_send[1],29);
 
 }
 

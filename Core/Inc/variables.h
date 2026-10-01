@@ -414,7 +414,8 @@ const uint8_t microkorg_cc_numbers[43]={05, 77, 14, 15, 78, 82, 82, 18, 19, 20, 
 
 uint8_t voice_list[sound_set]={3,1,2,0,0,0,0,0}; // tracks assigned to voice channels , related to midi channel
 uint8_t midi_channel_list[sound_set]={9,4,2,3,5};   //holds midi channel settings for voices
-
+uint8_t cc_pots_select_list[8]={90,100,108,116,0,8,16,24};  // starting address on selected cc pot set (wwith scene select buttons)
+uint8_t cc_pots_select_base=0; // outgoing base cc
 
 char lcd_char[4];
 
